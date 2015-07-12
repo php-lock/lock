@@ -29,10 +29,12 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             [function () {
                 return new TransactionalMutex(new \PDO("sqlite::memory:"));
             }],
-
             [function () {
                 vfsStream::setup("test");
                 return new Flock(fopen(vfsStream::url("test/lock"), "w"));
+            }],
+            [function () {
+                return new Semaphore(ftok(__FILE__, "a"));
             }],
         ];
     }

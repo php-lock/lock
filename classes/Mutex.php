@@ -13,9 +13,14 @@ abstract class Mutex
 {
     
     /**
-     * Executes a block of code non interruptable.
+     * Executes a block of code exclusively.
      *
-     * This method implements Java's synchronized semantic.
+     * This method implements Java's synchronized semantic. I.e. this method
+     * waits until a lock could be acquired, executes the code exclusively and
+     * releases the lock.
+     *
+     * The code block may throw an exception. In this case the lock will be
+     * released as well.
      *
      * @param callable $block The synchronized execution block.
      * @return mixed The return value of the execution block.

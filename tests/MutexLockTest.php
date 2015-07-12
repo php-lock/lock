@@ -25,6 +25,9 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
             [function () use ($lockFile) {
                 return new Flock(fopen($lockFile, "w"));
             }],
+            [function () {
+                return new Semaphore(ftok(__FILE__, "b"));
+            }],
         ];
     }
     
