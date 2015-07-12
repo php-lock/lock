@@ -32,7 +32,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
 
             [function () {
                 vfsStream::setup("test");
-                return new Flock(fopen(vfsStream::url("test/lock", "w")));
+                return new Flock(fopen(vfsStream::url("test/lock"), "w"));
             }],
         ];
     }
@@ -46,7 +46,12 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testSynchronizedDelegates(callable $mutexFactory)
     {
-        $this->markTestIncomplete();
+        $mutex  = call_user_func($mutexFactory);
+        $result = $mutex->synchronized(function () {
+            return "test";
+
+        });
+        $this->assertEquals("test", $result);
     }
     
     /**
@@ -59,6 +64,10 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)
     {
-        $this->markTestIncomplete();
+        $mutex = call_user_func($mutexFactory);
+        $mutex->synchronized(function () {
+            throw new \DomainException();
+
+        });
     }
 }
