@@ -1,0 +1,29 @@
+{
+    "name": "malkusch/lock",
+    "type": "library",
+    "description": "Mutex library for locked code execution.",
+    "keywords": ["mutex", "lock", "flock"],
+    "homepage": "https://github.com/malkusch/lock",
+    "license": "WTFPL",
+    "authors": [
+        {
+            "name": "Markus Malkusch",
+            "email": "markus@malkusch.de",
+            "homepage": "http://markus.malkusch.de",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"malkusch\\lock\\": "classes/"}
+    },
+    "require": {
+        "php": ">=5.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4",
+        "mikey179/vfsStream": "^1.5.0"
+    },
+    "archive": {
+        "exclude": ["/tests"]
+    }
+}
