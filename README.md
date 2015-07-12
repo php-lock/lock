@@ -18,7 +18,13 @@ The package is in the namespace
 ```php
 <?php
 
+use malkusch\lock\Flock;
 
+$handle = fopen(__DIR__ . "/lock", "w");
+$mutex  = new Flock($handle);
+$mutex->synchronized(function () {
+    // run locked code
+});
 ```
 
 # License and authors
