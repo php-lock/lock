@@ -1,11 +1,11 @@
-# Mutext
+# Lock
 
 # Installation
 
 Use [Composer](https://getcomposer.org/):
 
 ```sh
-composer require malkusch/mutext
+composer require malkusch/lock
 ```
 
 # Usage
