@@ -84,7 +84,9 @@ class Memcache extends Mutex
 
         } finally {
             if (microtime(true) - $begin > $this->timeout) {
-                throw new MutexException("The lock was released before the code finished execution. Increase the TTL value.");
+                throw new MutexException(
+                    "The lock was released before the code finished execution. Increase the TTL value."
+                );
                 
             }
             if (!$this->memcache->delete($this->key)) {
