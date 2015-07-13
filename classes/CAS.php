@@ -7,7 +7,8 @@ namespace malkusch\lock;
  *
  * This mutex doesn't block at all. It implements the compare-and-swap
  * approach. I.e. it will repeat excuting the code block until it wasn't
- * modified in between.
+ * modified in between. Use this only when you know that concurrency is
+ * a rare event.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
@@ -17,25 +18,25 @@ class CAS extends Mutex
 {
     
     /**
+     * @var int The timeout in seconds.
+     */
+    private $timeout;
+    
+    /**
      * @var bool The state of the last CAS operation.
      */
     private $successful;
     
     /**
-     * @var int Amount of execution attempts.
-     */
-    private $limit;
-    
-    /**
-     * Sets the maximum number of execution attempts.
+     * Sets the timeout.
      *
-     * The default limit is 1000 executions.
+     * The default is 3 seconds.
      *
-     * @param int $limit Amount of execution attempts.
+     * @param int $timeout The timeout in seconds.
      */
-    public function __construct($limit = 1000)
+    public function __construct($timeout = 3)
     {
-        $this->limit = $limit;
+        $this->timeout = $timeout;
     }
     
     /**
@@ -51,7 +52,9 @@ class CAS extends Mutex
      *
      * The code has to be designed in a way that it can be repeated without any
      * side effects. When the CAS operation was successful it should notify
-     * this mutex by calling {@link CAS::notify()}.
+     * this mutex by calling {@link CAS::notify()}. I.e. the only side effects
+     * of the code may happen after a successful CAS operation. The CAS
+     * operation itself is a valid side effect as well.
      *
      * If the code throws an exception it will stop repeating the execution.
      *
@@ -59,17 +62,30 @@ class CAS extends Mutex
      * @return mixed The return value of the execution block.
      *
      * @throws \Exception The execution block threw an exception.
-     * @throws MutexException The code was repeated more than the execution limit.
+     * @throws MutexException The timeout was reached.
      */
     public function synchronized(callable $block)
     {
         $this->successful = false;
-        for ($i = 0; $i < $this->limit && !$this->successful; $i++) {
+        $minWait = 100;
+        $maxWait = $this->timeout * 1000000;
+        $waited  = 0;
+        for ($i = 0; !$this->successful && $waited <= $maxWait; $i++) {
             $result = call_user_func($block);
+            if ($this->successful) {
+                break;
+
+            }
+            $min    = $minWait * pow(2, $i);
+            $max    = $min * 2;
+            $usleep = rand($min, $max);
+            
+            usleep($usleep);
+            $waited += $usleep;
 
         }
         if (!$this->successful) {
-            throw new MutexException("Exceeded CAS limit.");
+            throw new MutexException("Timeout");
 
         }
         return $result;

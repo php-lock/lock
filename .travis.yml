@@ -12,6 +12,13 @@ php:
   - 5.5
   - hhvm
 
+env: 
+  global:
+    - MEMCACHE_HOST=localhost
+
+services:
+  - memcached
+
 matrix:
   fast_finish: true
   allow_failures:
@@ -20,6 +27,9 @@ matrix:
 install:
   - composer require squizlabs/php_codesniffer
   - composer require phpmd/phpmd
+
+before_script:
+  - phpenv config-add tests/php-travis.ini
 
 script:
   - vendor/bin/phpunit

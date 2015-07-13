@@ -5,6 +5,10 @@ namespace malkusch\lock;
 /**
  * Tests for locking in Mutex.
  *
+ * If you want to run memcache tests you should provide this environment variable:
+ *
+ * - MEMCACHE_HOST
+ *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
@@ -21,7 +25,7 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
     public function provideMutexFactories()
     {
         $lockFile = stream_get_meta_data(tmpfile())["uri"];
-        return [
+        $cases = [
             [function () use ($lockFile) {
                 return new Flock(fopen($lockFile, "w"));
             }],
@@ -29,6 +33,14 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
                 return new Semaphore(ftok(__FILE__, "b"));
             }],
         ];
+        if (getenv("MEMCACHE_HOST")) {
+            $cases[] = [function () {
+                $memcache = new \Memcache();
+                $memcache->connect(getenv("MEMCACHE_HOST"));
+                return new Memcache("test", $memcache);
+            }];
+        }
+        return $cases;
     }
     
     /**
@@ -52,6 +64,6 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
         $isChild ? exit() : pcntl_wait($status);
 
         $delta = microtime(true) - $timestamp;
-        $this->assertTrue(abs($delta - 1) < 0.1);
+        $this->assertGreaterThan(1, $delta);
     }
 }

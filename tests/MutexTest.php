@@ -7,6 +7,10 @@ use org\bovigo\vfs\vfsStream;
 /**
  * Tests for Mutex.
  *
+ * If you want to run memcache tests you should provide this environment variable:
+ *
+ * - MEMCACHE_HOST
+ *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
@@ -22,7 +26,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      */
     public function provideMutexFactories()
     {
-        return [
+        $cases = [
             [function () {
                 return new NoMutex();
             }],
@@ -37,6 +41,14 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 return new Semaphore(ftok(__FILE__, "a"));
             }],
         ];
+        if (getenv("MEMCACHE_HOST")) {
+            $cases[] = [function () {
+                $memcache = new \Memcache();
+                $memcache->connect(getenv("MEMCACHE_HOST"));
+                return new Memcache("test", $memcache);
+            }];
+        }
+        return $cases;
     }
     
     /**

@@ -14,12 +14,12 @@ class CASTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * Tests exceeding the execution limit.
+     * Tests exceeding the execution timeout.
      *
      * @test
      * @expectedException malkusch\lock\MutexException
      */
-    public function testExceedLimit()
+    public function testExceedTimeout()
     {
         $this->markTestIncomplete();
     }
