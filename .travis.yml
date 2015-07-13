@@ -23,6 +23,7 @@ matrix:
   fast_finish: true
   allow_failures:
     - php: hhvm
+    - php: 7.0
 
 install:
   - composer require squizlabs/php_codesniffer
