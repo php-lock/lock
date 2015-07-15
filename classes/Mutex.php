@@ -29,8 +29,8 @@ abstract class Mutex
      * @return mixed The return value of the execution block.
      *
      * @throws \Exception The execution block threw an exception.
-     * @throws LockAcquireException The mutex could not be aquired.
-     * @throws LockReleaseException The mutex could not be released.
+     * @throws LockAcquireException The mutex could not be aquired, no further side effects.
+     * @throws LockReleaseException The mutex could not be released, the code was already executed.
      */
     abstract public function synchronized(callable $block);
     

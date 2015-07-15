@@ -7,7 +7,7 @@ use malkusch\lock\exception\LockAcquireException;
 /**
  * CAS based mutex implementation.
  *
- * This mutex doesn't block at all. It implements the compare-and-swap
+ * This mutex doesn't lock at all. It implements the compare-and-swap
  * approach. I.e. it will repeat excuting the code block until it wasn't
  * modified in between. Use this only when you know that concurrency is
  * a rare event.
