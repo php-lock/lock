@@ -3,21 +3,21 @@
 namespace malkusch\lock;
 
 /**
- * Tests for CAS.
+ * Tests for CASMutex.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
- * @see CAS
+ * @see CASMutex
  */
-class CASTest extends \PHPUnit_Framework_TestCase
+class CASMutexTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
      * Tests exceeding the execution timeout.
      *
      * @test
-     * @expectedException malkusch\lock\MutexException
+     * @expectedException malkusch\lock\exception\MutexException
      */
     public function testExceedTimeout()
     {

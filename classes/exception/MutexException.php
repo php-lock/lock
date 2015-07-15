@@ -1,6 +1,6 @@
 <?php
 
-namespace malkusch\lock;
+namespace malkusch\lock\exception;
 
 /**
  * A Mutex exception.

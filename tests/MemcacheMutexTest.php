@@ -3,14 +3,14 @@
 namespace malkusch\lock;
 
 /**
- * Tests for Memcache.
+ * Tests for MemcacheMutex.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
- * @see Memcache
+ * @see MemcacheMutex
  */
-class MemcacheTest extends \PHPUnit_Framework_TestCase
+class MemcacheMutexTest extends \PHPUnit_Framework_TestCase
 {
 
     /**

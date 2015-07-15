@@ -2,6 +2,8 @@
 
 namespace malkusch\lock;
 
+use malkusch\lock\exception\MutexException;
+
 /**
  * Flock() based mutex implementation.
  *
@@ -9,7 +11,7 @@ namespace malkusch\lock;
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
  */
-class Flock extends Mutex
+class FlockMutex extends Mutex
 {
     
     /**

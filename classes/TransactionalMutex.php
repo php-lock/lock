@@ -2,6 +2,8 @@
 
 namespace malkusch\lock;
 
+use malkusch\lock\exception\MutexException;
+
 /**
  * Synchronization is delegated to the DBS.
  *

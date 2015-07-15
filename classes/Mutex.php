@@ -2,6 +2,8 @@
 
 namespace malkusch\lock;
 
+use malkusch\lock\exception\MutexException;
+
 /**
  * The mutex provides methods for locked execution.
  *

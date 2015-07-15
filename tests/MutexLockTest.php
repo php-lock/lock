@@ -27,17 +27,17 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
         $lockFile = stream_get_meta_data(tmpfile())["uri"];
         $cases = [
             [function () use ($lockFile) {
-                return new Flock(fopen($lockFile, "w"));
+                return new FlockMutex(fopen($lockFile, "w"));
             }],
             [function () {
-                return new Semaphore(ftok(__FILE__, "b"));
+                return new SemaphoreMutex(ftok(__FILE__, "b"));
             }],
         ];
         if (getenv("MEMCACHE_HOST")) {
             $cases[] = [function () {
                 $memcache = new \Memcache();
                 $memcache->connect(getenv("MEMCACHE_HOST"));
-                return new Memcache("test", $memcache);
+                return new MemcacheMutex("test", $memcache);
             }];
         }
         return $cases;

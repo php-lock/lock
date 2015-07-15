@@ -2,6 +2,8 @@
 
 namespace malkusch\lock;
 
+use malkusch\lock\exception\MutexException;
+
 /**
  * The double-checked locking pattern.
  *

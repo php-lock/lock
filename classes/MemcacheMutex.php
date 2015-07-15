@@ -2,6 +2,8 @@
 
 namespace malkusch\lock;
 
+use malkusch\lock\exception\MutexException;
+
 /**
  * Memcache based mutex implementation.
  *
@@ -13,7 +15,7 @@ namespace malkusch\lock;
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
  */
-class Memcache extends Mutex
+class MemcacheMutex extends Mutex
 {
     
     /**

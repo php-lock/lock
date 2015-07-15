@@ -35,17 +35,17 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             }],
             [function () {
                 vfsStream::setup("test");
-                return new Flock(fopen(vfsStream::url("test/lock"), "w"));
+                return new FlockMutex(fopen(vfsStream::url("test/lock"), "w"));
             }],
             [function () {
-                return new Semaphore(ftok(__FILE__, "a"));
+                return new SemaphoreMutex(ftok(__FILE__, "a"));
             }],
         ];
         if (getenv("MEMCACHE_HOST")) {
             $cases[] = [function () {
                 $memcache = new \Memcache();
                 $memcache->connect(getenv("MEMCACHE_HOST"));
-                return new Memcache("test", $memcache);
+                return new MemcacheMutex("test", $memcache);
             }];
         }
         return $cases;
