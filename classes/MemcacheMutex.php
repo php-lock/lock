@@ -10,7 +10,7 @@ use malkusch\lock\exception\LockReleaseException;
  *
  * Don't use this unless you have to. This is a busy waiting lock with an
  * exponential back off. The memcache API doesn't allow anything better than
- * this. Prefere using the memcached API together with {@link CAS}.
+ * this. Prefere using the memcached API together with {@link CASMutex}.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
