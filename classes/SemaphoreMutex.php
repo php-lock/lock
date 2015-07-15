@@ -26,12 +26,13 @@ class SemaphoreMutex extends Mutex
      *
      * You can create the key with PHP's function ftok().
      *
-     * @param int $key The System V IPC key.
+     * @param int $key         The System V IPC key.
+     * @param int $max_acquire The number of processes that can acquire the semaphore simultaneously, default is 1.
      * @throws MutexException The Semaphore could not be created.
      */
-    public function __construct($key)
+    public function __construct($key, $max_acquire = 1)
     {
-        $this->semaphore = sem_get($key);
+        $this->semaphore = sem_get($key, $max_acquire);
         if (!is_resource($this->semaphore)) {
             throw new MutexException("Could not get Semaphore for key '$key'.");
         }
