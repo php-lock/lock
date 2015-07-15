@@ -25,6 +25,11 @@ class MemcacheMutex extends Mutex
     private $timeout;
     
     /**
+     * @var CASMutex The CASMutex.
+     */
+    private $casMutex;
+    
+    /**
      * @var \Memcache The connected memcache API.
      */
     private $memcache;
@@ -33,7 +38,7 @@ class MemcacheMutex extends Mutex
      * @var string The key for the lock.
      */
     private $key;
-
+    
     /**
      * The memcache key prefix.
      * @internal
@@ -55,46 +60,31 @@ class MemcacheMutex extends Mutex
         $this->memcache = $memcache;
         $this->key      = self::PREFIX . $name;
         $this->timeout  = $timeout;
+        $this->casMutex = new CASMutex($this->timeout);
     }
 
     public function synchronized(callable $block)
     {
-        $locked  = false;
-        $minWait = 100;
-        $maxWait = $this->timeout * 1000000;
-        $waited  = 0;
-        for ($i = 0; !$locked && $waited <= $maxWait; $i++) {
-            $locked = $this->memcache->add($this->key, true, 0, $this->timeout);
-            if ($locked) {
-                break;
-
+        return $this->casMutex->synchronized(function () use ($block) {
+            if (!$this->memcache->add($this->key, true, 0, $this->timeout)) {
+                return;
             }
-            $min    = $minWait * pow(2, $i);
-            $max    = $min * 2;
-            $usleep = rand($min, $max);
-            
-            usleep($usleep);
-            $waited += $usleep;
+            $this->casMutex->notify();
+            $begin = microtime(true);
+            try {
+                return call_user_func($block);
 
-        }
-        if (!$locked) {
-            throw new LockAcquireException("Timeout.");
+            } finally {
+                if (microtime(true) - $begin > $this->timeout) {
+                    throw new LockReleaseException(
+                        "The lock was released before the code finished execution. Increase the TTL value."
+                    );
 
-        }
-        $begin = microtime(true);
-        try {
-            return call_user_func($block);
-
-        } finally {
-            if (microtime(true) - $begin > $this->timeout) {
-                throw new LockReleaseException(
-                    "The lock was released before the code finished execution. Increase the TTL value."
-                );
-                
+                }
+                if (!$this->memcache->delete($this->key)) {
+                    throw new LockReleaseException("Could not release lock '$this->key'.");
+                }
             }
-            if (!$this->memcache->delete($this->key)) {
-                throw new LockReleaseException("Could not release lock '$this->key'.");
-            }
-        }
+        });
     }
 }
