@@ -3,6 +3,8 @@
 namespace malkusch\lock;
 
 use malkusch\lock\exception\MutexException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * System V IPC based mutex implementation.
@@ -38,14 +40,14 @@ class SemaphoreMutex extends Mutex
     public function synchronized(callable $block)
     {
         if (!sem_acquire($this->semaphore)) {
-            throw new MutexException("Could not acquire Semaphore.");
+            throw new LockAcquireException("Could not acquire Semaphore.");
         }
         try {
             return call_user_func($block);
             
         } finally {
             if (!sem_release($this->semaphore)) {
-                throw new MutexException("Could not release Semaphore.");
+                throw new LockReleaseException("Could not release Semaphore.");
             }
         }
     }

@@ -2,7 +2,8 @@
 
 namespace malkusch\lock;
 
-use malkusch\lock\exception\MutexException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * Flock() based mutex implementation.
@@ -32,14 +33,14 @@ class FlockMutex extends Mutex
     public function synchronized(callable $block)
     {
         if (!flock($this->fileHandle, LOCK_EX)) {
-            throw new MutexException("Could not aquire lock.");
+            throw new LockAcquireException("Could not aquire lock.");
         }
         try {
             return call_user_func($block);
             
         } finally {
             if (!flock($this->fileHandle, LOCK_UN)) {
-                throw new MutexException("Could not release lock.");
+                throw new LockReleaseException("Could not release lock.");
             }
         }
     }

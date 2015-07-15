@@ -2,7 +2,8 @@
 
 namespace malkusch\lock;
 
-use malkusch\lock\exception\MutexException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * The double-checked locking pattern.
@@ -55,7 +56,8 @@ class DoubleCheckedLocking
      * @param callable $code The locked code.
      *
      * @throws \Exception The execution block or the check threw an exception.
-     * @throws MutexException The mutex could not be aquired or released.
+     * @throws LockAcquireException The mutex could not be aquired.
+     * @throws LockReleaseException The mutex could not be released.
      */
     public function then(callable $code)
     {

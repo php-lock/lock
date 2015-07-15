@@ -2,7 +2,8 @@
 
 namespace malkusch\lock;
 
-use malkusch\lock\exception\MutexException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * The mutex provides methods for locked execution.
@@ -28,7 +29,8 @@ abstract class Mutex
      * @return mixed The return value of the execution block.
      *
      * @throws \Exception The execution block threw an exception.
-     * @throws MutexException The mutex could not be aquired or released.
+     * @throws LockAcquireException The mutex could not be aquired.
+     * @throws LockReleaseException The mutex could not be released.
      */
     abstract public function synchronized(callable $block);
     

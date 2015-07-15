@@ -17,7 +17,7 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
      * Tests exceeding the execution timeout.
      *
      * @test
-     * @expectedException malkusch\lock\exception\MutexException
+     * @expectedException malkusch\lock\exception\LockAcquireException
      */
     public function testExceedTimeout()
     {

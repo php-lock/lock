@@ -2,7 +2,7 @@
 
 namespace malkusch\lock;
 
-use malkusch\lock\exception\MutexException;
+use malkusch\lock\exception\LockAcquireException;
 
 /**
  * CAS based mutex implementation.
@@ -64,7 +64,7 @@ class CASMutex extends Mutex
      * @return mixed The return value of the execution block.
      *
      * @throws \Exception The execution block threw an exception.
-     * @throws MutexException The timeout was reached.
+     * @throws LockAcquireException The timeout was reached.
      */
     public function synchronized(callable $block)
     {
@@ -87,7 +87,7 @@ class CASMutex extends Mutex
 
         }
         if (!$this->successful) {
-            throw new MutexException("Timeout");
+            throw new LockAcquireException("Timeout");
 
         }
         return $result;

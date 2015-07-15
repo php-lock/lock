@@ -2,7 +2,8 @@
 
 namespace malkusch\lock;
 
-use malkusch\lock\exception\MutexException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * Synchronization is delegated to the DBS.
@@ -36,7 +37,7 @@ class TransactionalMutex extends Mutex
     public function synchronized(callable $block)
     {
         if (!$this->pdo->beginTransaction()) {
-            throw new MutexException("Could not begin transaction.");
+            throw new LockAcquireException("Could not begin transaction.");
         }
 
         try {
@@ -44,13 +45,13 @@ class TransactionalMutex extends Mutex
             
         } catch (\Exception $e) {
             if (!$this->pdo->rollBack()) {
-                throw new MutexException("Could not roll back transaction.", 0, $e);
+                throw new LockReleaseException("Could not roll back transaction.", 0, $e);
             }
             throw $e;
             
         }
         if (!$this->pdo->commit()) {
-            throw new MutexException("Could not commit transaction.");
+            throw new LockReleaseException("Could not commit transaction.");
 
         }
         return $result;

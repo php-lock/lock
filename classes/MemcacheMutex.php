@@ -2,7 +2,8 @@
 
 namespace malkusch\lock;
 
-use malkusch\lock\exception\MutexException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * Memcache based mutex implementation.
@@ -77,7 +78,7 @@ class MemcacheMutex extends Mutex
 
         }
         if (!$locked) {
-            throw new MutexException("Timeout.");
+            throw new LockAcquireException("Timeout.");
 
         }
         $begin = microtime(true);
@@ -86,13 +87,13 @@ class MemcacheMutex extends Mutex
 
         } finally {
             if (microtime(true) - $begin > $this->timeout) {
-                throw new MutexException(
+                throw new LockReleaseException(
                     "The lock was released before the code finished execution. Increase the TTL value."
                 );
                 
             }
             if (!$this->memcache->delete($this->key)) {
-                throw new MutexException("Could not release lock '$this->key'.");
+                throw new LockReleaseException("Could not release lock '$this->key'.");
             }
         }
     }
