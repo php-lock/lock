@@ -2,7 +2,6 @@
 
 namespace malkusch\lock;
 
-use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 
 /**

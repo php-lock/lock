@@ -2,7 +2,6 @@
 
 namespace malkusch\lock;
 
-use malkusch\lock\exception\MutexException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 
@@ -17,25 +16,25 @@ class SemaphoreMutex extends Mutex
 {
 
     /**
-     * @var resource The semaphore.
+     * @var resource The semaphore id.
      */
     private $semaphore;
     
     /**
-     * Sets the System V IPC key for the semaphore.
+     * Sets the semaphore id.
      *
-     * You can create the key with PHP's function ftok().
+     * Use sem_get() to create the semaphore id.
      *
-     * @param int $key         The System V IPC key.
-     * @param int $max_acquire The number of processes that can acquire the semaphore simultaneously, default is 1.
-     * @throws MutexException The Semaphore could not be created.
+     * @param resource semaphore The semaphore id.
+     * @throws \InvalidArgumentException The semaphore id is not a valid resource.
      */
-    public function __construct($key, $max_acquire = 1)
+    public function __construct($semaphore)
     {
-        $this->semaphore = sem_get($key, $max_acquire);
-        if (!is_resource($this->semaphore)) {
-            throw new MutexException("Could not get Semaphore for key '$key'.");
+        if (!is_resource($semaphore)) {
+            throw new \InvalidArgumentException("The semaphore id is not a valid resource.");
+            
         }
+        $this->semaphore = $semaphore;
     }
     
     public function synchronized(callable $block)

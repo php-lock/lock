@@ -25,7 +25,7 @@ class TransactionalMutex extends Mutex
      * @var CASMutex The CASMutex.
      */
     private $casMutex;
-    
+
     /**
      * Sets the PDO.
      *

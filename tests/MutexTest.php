@@ -38,7 +38,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 return new FlockMutex(fopen(vfsStream::url("test/lock"), "w"));
             }],
             [function () {
-                return new SemaphoreMutex(ftok(__FILE__, "a"));
+                return new SemaphoreMutex(sem_get(ftok(__FILE__, "a")));
             }],
         ];
         if (getenv("MEMCACHE_HOST")) {
