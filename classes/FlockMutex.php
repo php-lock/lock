@@ -24,9 +24,14 @@ class FlockMutex extends Mutex
      * Sets the file handle.
      *
      * @param resource $fileHandle The file handle.
+     * @throws \InvalidArgumentException The file handle is not a valid resource.
      */
     public function __construct($fileHandle)
     {
+        if (!is_resource($fileHandle)) {
+            throw new \InvalidArgumentException("The file handle is not a valid resource.");
+            
+        }
         $this->fileHandle = $fileHandle;
     }
     

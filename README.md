@@ -22,8 +22,7 @@ The package is in the namespace
 
 use malkusch\lock\Flock;
 
-$handle = fopen(__DIR__ . "/lock", "w");
-$mutex  = new Flock($handle);
+$mutex = new Flock(fopen(__FILE__, "r"));
 $mutex->synchronized(function () {
     // run locked code
 });
