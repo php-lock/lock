@@ -1,9 +1,10 @@
 <?php
 
-namespace malkusch\lock;
+namespace malkusch\lock\util;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\mutex\Mutex;
 
 /**
  * The double-checked locking pattern.

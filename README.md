@@ -20,9 +20,9 @@ The package is in the namespace
 ```php
 <?php
 
-use malkusch\lock\Flock;
+use malkusch\lock\mutex\FlockMutex;
 
-$mutex = new Flock(fopen(__FILE__, "r"));
+$mutex = new FlockMutex(fopen(__FILE__, "r"));
 $mutex->synchronized(function () {
     // run locked code
 });

@@ -1,6 +1,6 @@
 <?php
 
-namespace malkusch\lock;
+namespace malkusch\lock\mutex;
 
 /**
  * This mutex doesn't lock at all.

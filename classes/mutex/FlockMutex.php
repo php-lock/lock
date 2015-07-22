@@ -1,6 +1,6 @@
 <?php
 
-namespace malkusch\lock;
+namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
@@ -11,6 +11,7 @@ use malkusch\lock\exception\LockReleaseException;
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
+ * @see flock()
  */
 class FlockMutex extends Mutex
 {

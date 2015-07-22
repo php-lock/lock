@@ -1,6 +1,8 @@
 <?php
 
-namespace malkusch\lock;
+namespace malkusch\lock\util;
+
+use malkusch\lock\mutex\Mutex;
 
 /**
  * Tests for DoubleCheckedLocking.
