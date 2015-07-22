@@ -9,6 +9,8 @@ use malkusch\lock\mutex\Mutex;
 /**
  * The double-checked locking pattern.
  *
+ * You should not instantiate this class directly. Use {@link Mutex::check()}.
+ *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL

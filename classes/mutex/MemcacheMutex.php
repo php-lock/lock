@@ -61,16 +61,16 @@ class MemcacheMutex extends Mutex
         $this->loop     = new Loop($this->timeout);
     }
 
-    public function synchronized(callable $block)
+    public function synchronized(callable $code)
     {
-        return $this->loop->execute(function () use ($block) {
+        return $this->loop->execute(function () use ($code) {
             if (!$this->memcache->add($this->key, true, 0, $this->timeout + 1)) {
                 return;
             }
             $this->loop->notify();
             $begin = microtime(true);
             try {
-                return call_user_func($block);
+                return call_user_func($code);
 
             } finally {
                 if (microtime(true) - $begin >= $this->timeout) {

@@ -25,6 +25,12 @@ class SemaphoreMutex extends Mutex
      *
      * Use {@link sem_get()} to create the semaphore id.
      *
+     * Example:
+     * <code>
+     * $semaphore = sem_get(ftok(__FILE__, "a"));
+     * $mutex     = new SemaphoreMutex($semaphore);
+     * </code>
+     *
      * @param resource semaphore The semaphore id.
      * @throws \InvalidArgumentException The semaphore id is not a valid resource.
      */
@@ -37,13 +43,13 @@ class SemaphoreMutex extends Mutex
         $this->semaphore = $semaphore;
     }
     
-    public function synchronized(callable $block)
+    public function synchronized(callable $code)
     {
         if (!sem_acquire($this->semaphore)) {
             throw new LockAcquireException("Could not acquire Semaphore.");
         }
         try {
-            return call_user_func($block);
+            return call_user_func($code);
             
         } finally {
             if (!sem_release($this->semaphore)) {

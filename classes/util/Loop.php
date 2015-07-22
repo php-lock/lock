@@ -55,20 +55,20 @@ class Loop
      *
      * If the code throws an exception it will stop repeating the execution.
      *
-     * @param callable $block The executed code block.
+     * @param callable $code The executed code block.
      * @return mixed The return value of the executed block.
      *
      * @throws \Exception The execution block threw an exception.
      * @throws TimeoutException The timeout was reached.
      */
-    public function execute(callable $block)
+    public function execute(callable $code)
     {
         $this->successful = false;
         $minWait = 100;
         $maxWait = $this->timeout * 1000000;
         $waited  = 0;
         for ($i = 0; !$this->successful && $waited <= $maxWait; $i++) {
-            $result = call_user_func($block);
+            $result = call_user_func($code);
             if ($this->successful) {
                 break;
 

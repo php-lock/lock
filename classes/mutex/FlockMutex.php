@@ -36,13 +36,13 @@ class FlockMutex extends Mutex
         $this->fileHandle = $fileHandle;
     }
     
-    public function synchronized(callable $block)
+    public function synchronized(callable $code)
     {
         if (!flock($this->fileHandle, LOCK_EX)) {
             throw new LockAcquireException("Could not aquire lock.");
         }
         try {
-            return call_user_func($block);
+            return call_user_func($code);
             
         } finally {
             if (!flock($this->fileHandle, LOCK_UN)) {

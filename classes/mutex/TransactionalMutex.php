@@ -48,20 +48,20 @@ class TransactionalMutex extends Mutex
      *
      * If the code throws an exception, the transaction is rolled back.
      *
-     * @param callable $block The synchronized execution block.
+     * @param callable $code The synchronized execution block.
      * @return mixed The return value of the execution block.
      *
      * @throws \Exception The execution block threw an exception.
      * @throws LockAcquireException The transaction was not commited.
      */
-    public function synchronized(callable $block)
+    public function synchronized(callable $code)
     {
-        return $this->loop->execute(function () use ($block) {
+        return $this->loop->execute(function () use ($code) {
             if (!$this->pdo->beginTransaction()) {
                 throw new LockAcquireException("Could not begin transaction.");
             }
             try {
-                $result = call_user_func($block);
+                $result = call_user_func($code);
 
             } catch (\Exception $e) {
                 if (!$this->pdo->rollBack()) {

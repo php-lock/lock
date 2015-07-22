@@ -7,7 +7,7 @@ use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\util\DoubleCheckedLocking;
 
 /**
- * The mutex provides methods for locked execution.
+ * The mutex provides methods for exclusive execution.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
@@ -26,19 +26,29 @@ abstract class Mutex
      * The code block may throw an exception. In this case the lock will be
      * released as well.
      *
-     * @param callable $block The synchronized execution block.
+     * @param callable $code The synchronized execution block.
      * @return mixed The return value of the execution block.
      *
      * @throws \Exception The execution block threw an exception.
      * @throws LockAcquireException The mutex could not be aquired, no further side effects.
      * @throws LockReleaseException The mutex could not be released, the code was already executed.
      */
-    abstract public function synchronized(callable $block);
+    abstract public function synchronized(callable $code);
     
     /**
      * Performs a double-checked locking pattern.
      *
      * Call {@link DoubleCheckedLocking::then()} on the returned object.
+     *
+     * Example:
+     * <code>
+     * $mutex->check(function () use ($bankAccount, $amount) {
+     *     return $bankAccount->getBalance() >= $amount;
+     *
+     * })->then(function () use ($bankAccount, $amount) {
+     *     $bankAccount->withdraw($amount);
+     * });
+     * </code>
      *
      * @return DoubleCheckedLocking The double-checked locking pattern.
      */

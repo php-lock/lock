@@ -62,9 +62,9 @@ class MemcachedMutex extends Mutex
         $this->loop     = new Loop($this->timeout);
     }
 
-    public function synchronized(callable $block)
+    public function synchronized(callable $code)
     {
-        return $this->loop->execute(function () use ($block) {
+        return $this->loop->execute(function () use ($code) {
             $token = $this->acquireToken();
             if (is_null($token)) {
                 $this->initKey();
@@ -78,7 +78,7 @@ class MemcachedMutex extends Mutex
             }
             
             try {
-                return call_user_func($block);
+                return call_user_func($code);
 
             } finally {
                 if ($this->releaseToken($token)) {

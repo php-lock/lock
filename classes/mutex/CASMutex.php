@@ -9,7 +9,7 @@ use malkusch\lock\util\Loop;
  * CAS based mutex implementation.
  *
  * This mutex doesn't lock at all. It implements the compare-and-swap
- * approach. I.e. it will repeat excuting the code block until it wasn't
+ * approach. I.e. it will repeat executing the code block until it wasn't
  * modified in between. Use this only when you know that concurrency is
  * a rare event.
  *
@@ -56,14 +56,28 @@ class CASMutex extends Mutex
      *
      * If the code throws an exception it will stop repeating the execution.
      *
-     * @param callable $block The synchronized execution block.
+     * Example:
+     * <code>
+     * $mutex = new CASMutex();
+     * $mutex->synchronized(function () use ($memcached, $mutex, $amount) {
+     *     $balance = $memcached->get("balance", null, $casToken);
+     *     $balance -= $amount;
+     *     if (!$memcached->cas($casToken, "balance", $balance)) {
+     *         return;
+     *
+     *     }
+     *     $mutex->notify();
+     * });
+     * </code>
+     *
+     * @param callable $code The synchronized execution block.
      * @return mixed The return value of the execution block.
      *
      * @throws \Exception The execution block threw an exception.
      * @throws TimeoutException The timeout was reached.
      */
-    public function synchronized(callable $block)
+    public function synchronized(callable $code)
     {
-        return $this->loop->execute($block);
+        return $this->loop->execute($code);
     }
 }
