@@ -1,5 +1,7 @@
 # Lock
 
+This library helps executing critical code in concurrent situations.
+
 # Installation
 
 Use [Composer](https://getcomposer.org/):
@@ -11,7 +13,7 @@ composer require malkusch/lock
 # Usage
 
 The package is in the namespace
-[`malkusch\lock`](http://malkusch.github.io/mutext/api/namespace-malkusch.lock.html).
+[`malkusch\lock`](http://malkusch.github.io/lock/api/namespace-malkusch.lock.html).
 
 ## Example
 

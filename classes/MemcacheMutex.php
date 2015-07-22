@@ -48,7 +48,7 @@ class MemcacheMutex extends Mutex
      * Sets the lock's name and the connected memcache API.
      *
      * The memcache API needs to be connected to a server.
-     * I.e. Memcache::conneect() was already called.
+     * I.e. Memcache::connect() was already called.
      *
      * @param string    $name     The lock name.
      * @param \Memcache $memcache The connected memcache API.

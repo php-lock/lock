@@ -37,7 +37,7 @@ abstract class Mutex
     /**
      * Performs a double-checked locking pattern.
      *
-     * Call {@link DoubleCheckedLocking::execute()} on the returned object.
+     * Call {@link DoubleCheckedLocking::then()} on the returned object.
      *
      * @return DoubleCheckedLocking The double-checked locking pattern.
      */

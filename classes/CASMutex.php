@@ -54,7 +54,7 @@ class CASMutex extends Mutex
      *
      * The code has to be designed in a way that it can be repeated without any
      * side effects. When the CAS operation was successful it should notify
-     * this mutex by calling {@link CAS::notify()}. I.e. the only side effects
+     * this mutex by calling {@link CASMutex::notify()}. I.e. the only side effects
      * of the code may happen after a successful CAS operation. The CAS
      * operation itself is a valid side effect as well.
      *

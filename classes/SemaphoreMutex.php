@@ -23,7 +23,7 @@ class SemaphoreMutex extends Mutex
     /**
      * Sets the semaphore id.
      *
-     * Use sem_get() to create the semaphore id.
+     * Use {@link sem_get()} to create the semaphore id.
      *
      * @param resource semaphore The semaphore id.
      * @throws \InvalidArgumentException The semaphore id is not a valid resource.
