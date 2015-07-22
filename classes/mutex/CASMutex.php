@@ -2,7 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
-use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\TimeoutException;
+use malkusch\lock\util\Loop;
 
 /**
  * CAS based mutex implementation.
@@ -20,14 +21,9 @@ class CASMutex extends Mutex
 {
     
     /**
-     * @var int The timeout in seconds.
+     * @var Loop The loop.
      */
-    private $timeout;
-    
-    /**
-     * @var bool The state of the last CAS operation.
-     */
-    private $successful;
+    private $loop;
     
     /**
      * Sets the timeout.
@@ -38,7 +34,7 @@ class CASMutex extends Mutex
      */
     public function __construct($timeout = 3)
     {
-        $this->timeout = $timeout;
+        $this->loop = new Loop($timeout);
     }
     
     /**
@@ -46,7 +42,7 @@ class CASMutex extends Mutex
      */
     public function notify()
     {
-        $this->successful = true;
+        $this->loop->notify();
     }
     
     /**
@@ -64,32 +60,10 @@ class CASMutex extends Mutex
      * @return mixed The return value of the execution block.
      *
      * @throws \Exception The execution block threw an exception.
-     * @throws LockAcquireException The timeout was reached.
+     * @throws TimeoutException The timeout was reached.
      */
     public function synchronized(callable $block)
     {
-        $this->successful = false;
-        $minWait = 100;
-        $maxWait = $this->timeout * 1000000;
-        $waited  = 0;
-        for ($i = 0; !$this->successful && $waited <= $maxWait; $i++) {
-            $result = call_user_func($block);
-            if ($this->successful) {
-                break;
-
-            }
-            $min    = $minWait * pow(2, $i);
-            $max    = $min * 2;
-            $usleep = rand($min, $max);
-            
-            usleep($usleep);
-            $waited += $usleep;
-
-        }
-        if (!$this->successful) {
-            throw new LockAcquireException("Timeout");
-
-        }
-        return $result;
+        return $this->loop->execute($block);
     }
 }

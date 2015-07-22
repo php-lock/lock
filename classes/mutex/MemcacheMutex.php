@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\util\Loop;
 use malkusch\lock\exception\LockReleaseException;
 
 /**
@@ -24,9 +25,9 @@ class MemcacheMutex extends Mutex
     private $timeout;
     
     /**
-     * @var CASMutex The CASMutex.
+     * @var Loop The loop.
      */
-    private $casMutex;
+    private $loop;
     
     /**
      * @var \Memcache The connected memcache API.
@@ -59,16 +60,16 @@ class MemcacheMutex extends Mutex
         $this->memcache = $memcache;
         $this->key      = self::PREFIX . $name;
         $this->timeout  = $timeout;
-        $this->casMutex = new CASMutex($this->timeout);
+        $this->loop     = new Loop($this->timeout);
     }
 
     public function synchronized(callable $block)
     {
-        return $this->casMutex->synchronized(function () use ($block) {
+        return $this->loop->execute(function () use ($block) {
             if (!$this->memcache->add($this->key, true, 0, $this->timeout)) {
                 return;
             }
-            $this->casMutex->notify();
+            $this->loop->notify();
             $begin = microtime(true);
             try {
                 return call_user_func($block);

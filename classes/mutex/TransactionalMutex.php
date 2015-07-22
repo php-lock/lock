@@ -3,6 +3,7 @@
 namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\util\Loop;
 
 /**
  * Synchronization is delegated to the DBS.
@@ -22,9 +23,9 @@ class TransactionalMutex extends Mutex
     private $pdo;
     
     /**
-     * @var CASMutex The CASMutex.
+     * @var Loop The loop.
      */
-    private $casMutex;
+    private $loop;
 
     /**
      * Sets the PDO.
@@ -34,8 +35,8 @@ class TransactionalMutex extends Mutex
      */
     public function __construct(\PDO $pdo, $timeout = 3)
     {
-        $this->pdo = $pdo;
-        $this->casMutex = new CASMutex($timeout);
+        $this->pdo  = $pdo;
+        $this->loop = new Loop($timeout);
     }
     
     /**
@@ -55,7 +56,7 @@ class TransactionalMutex extends Mutex
      */
     public function synchronized(callable $block)
     {
-        return $this->casMutex->synchronized(function () use ($block) {
+        return $this->loop->execute(function () use ($block) {
             if (!$this->pdo->beginTransaction()) {
                 throw new LockAcquireException("Could not begin transaction.");
             }
@@ -77,7 +78,7 @@ class TransactionalMutex extends Mutex
                 return;
             }
 
-            $this->casMutex->notify();
+            $this->loop->notify();
             return $result;
         });
     }
