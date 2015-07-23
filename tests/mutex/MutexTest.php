@@ -47,6 +47,11 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 $memcache->connect(getenv("MEMCACHE_HOST"));
                 return new MemcacheMutex("test", $memcache);
             }];
+            $cases[] = [function () {
+                $memcache = new \Memcached();
+                $memcache->addServer(getenv("MEMCACHE_HOST"), 11211);
+                return new MemcachedMutex("test", $memcache);
+            }];
         }
         return $cases;
     }

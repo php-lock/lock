@@ -39,6 +39,11 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
                 $memcache->connect(getenv("MEMCACHE_HOST"));
                 return new MemcacheMutex("test", $memcache);
             }];
+            $cases[] = [function () {
+                $memcached = new \Memcached();
+                $memcached->addServer(getenv("MEMCACHE_HOST"), 11211);
+                return new MemcachedMutex("test", $memcached);
+            }];
         }
         return $cases;
     }
