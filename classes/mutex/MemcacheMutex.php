@@ -8,9 +8,7 @@ use malkusch\lock\exception\LockReleaseException;
 /**
  * Memcache based mutex implementation.
  *
- * Don't use this unless you have to. This is a busy waiting lock with an
- * exponential back off. The memcache API doesn't allow anything better than
- * this. Prefere using the memcached API together with {@link CASMutex}.
+ * This is a lockfree busy waiting with an exponential back off.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
@@ -30,7 +28,7 @@ class MemcacheMutex extends Mutex
     private $loop;
     
     /**
-     * @var \Memcache The connected memcache API.
+     * @var \Memcache The connected Memcache API.
      */
     private $memcache;
     
@@ -46,13 +44,13 @@ class MemcacheMutex extends Mutex
     const PREFIX = "lock_";
     
     /**
-     * Sets the lock's name and the connected memcache API.
+     * Sets the lock's name and the connected Memcache API.
      *
-     * The memcache API needs to be connected to a server.
+     * The Memcache API needs to be connected to a server.
      * I.e. Memcache::connect() was already called.
      *
      * @param string    $name     The lock name.
-     * @param \Memcache $memcache The connected memcache API.
+     * @param \Memcache $memcache The connected Memcache API.
      * @param int       $timeout  The time in seconds a lock expires, default is 3.
      */
     public function __construct($name, \Memcache $memcache, $timeout = 3)
@@ -66,7 +64,7 @@ class MemcacheMutex extends Mutex
     public function synchronized(callable $block)
     {
         return $this->loop->execute(function () use ($block) {
-            if (!$this->memcache->add($this->key, true, 0, $this->timeout)) {
+            if (!$this->memcache->add($this->key, true, 0, $this->timeout + 1)) {
                 return;
             }
             $this->loop->notify();
@@ -75,12 +73,17 @@ class MemcacheMutex extends Mutex
                 return call_user_func($block);
 
             } finally {
-                if (microtime(true) - $begin > $this->timeout) {
+                if (microtime(true) - $begin >= $this->timeout) {
                     throw new LockReleaseException(
                         "The lock was released before the code finished execution. Increase the TTL value."
                     );
 
                 }
+                
+                /*
+                 * Worst case would still be one second before the key expires.
+                 * This guarantees that we don't delete a wrong key.
+                 */
                 if (!$this->memcache->delete($this->key)) {
                     throw new LockReleaseException("Could not release lock '$this->key'.");
                 }

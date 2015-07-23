@@ -34,6 +34,17 @@ class MemcacheMutexTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Tests executing exactly unil the timeout will leave the key one more second.
+     *
+     * @test
+     */
+    public function testExecuteTimeoutLeavesOneSecondForKeyToExpire()
+    {
+        $this->markTestIncomplete();
+    }
+    
+    
+    /**
      * Tests failing to release a lock.
      *
      * @test
