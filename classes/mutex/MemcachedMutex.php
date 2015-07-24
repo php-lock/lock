@@ -65,78 +65,30 @@ class MemcachedMutex extends Mutex
     public function synchronized(callable $code)
     {
         return $this->loop->execute(function () use ($code) {
-            $token = $this->acquireToken();
-            if (is_null($token)) {
-                $this->initKey();
-                $token = $this->acquireToken();
-                if (is_null($token)) {
-                    throw new LockAcquireException(
-                        $this->memcache->getResultMessage(),
-                        $this->memcache->getResultCode()
-                    );
-                }
+            if (!$this->memcache->add($this->key, true, $this->timeout + 1)) {
+                return;
             }
-            
+            $this->loop->notify();
+            $begin = microtime(true);
             try {
                 return call_user_func($code);
 
             } finally {
-                if ($this->releaseToken($token)) {
-                    $this->loop->notify();
+                if (microtime(true) - $begin >= $this->timeout) {
+                    throw new LockReleaseException(
+                        "The lock was released before the code finished execution. Increase the TTL value."
+                    );
+
+                }
+                
+                /*
+                 * Worst case would still be one second before the key expires.
+                 * This guarantees that we don't delete a wrong key.
+                 */
+                if (!$this->memcache->delete($this->key)) {
+                    throw new LockReleaseException("Could not release lock '$this->key'.");
                 }
             }
         });
-    }
-    
-    /**
-     * Acquires a CAS token.
-     *
-     * @return int|null The CAS token, null if the key doesn't exist yet.
-     * @throws LockAcquireException Failed to acquire the CAS token.
-     */
-    private function acquireToken()
-    {
-        if ($this->memcache->get($this->key, null, $casToken)) {
-            return $casToken;
-            
-        } elseif ($this->memcache->getResultCode() === \Memcached::RES_NOTFOUND) {
-            return null;
-            
-        }
-        throw new LockAcquireException($this->memcache->getResultMessage(), $this->memcache->getResultCode());
-    }
-    
-    /**
-     * Releases a CAS token.
-     *
-     * @param int $casToken The CAS token.
-     * @return bool True if the CAS operation was successful.
-     * @throws LockReleaseException Failed to release the CAS token.
-     */
-    private function releaseToken($casToken)
-    {
-        if ($this->memcache->cas($casToken, $this->key, true, $this->timeout)) {
-            return true;
-
-        } elseif ($this->memcache->getResultCode() === \Memcached::RES_DATA_EXISTS) {
-            return false;
-            
-        }
-        throw new LockReleaseException($this->memcache->getResultMessage(), $this->memcache->getResultCode());
-    }
-    
-    /**
-     * Sets the key initially.
-     *
-     * @throws LockAcquireException The key could not be set.
-     */
-    private function initKey()
-    {
-        if ($this->memcache->add($this->key, true, $this->timeout)) {
-            return;
-            
-        } elseif ($this->memcache->getResultCode() !== \Memcached::RES_NOTSTORED) {
-            throw new LockAcquireException($this->memcache->getResultMessage(), $this->memcache->getResultCode());
-        }
     }
 }

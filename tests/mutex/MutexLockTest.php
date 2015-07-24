@@ -18,34 +18,80 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
 {
     
     /**
-     * Provides Mutex factories.
+     * Tests high concurrency empirically.
      *
-     * @return callable[][] The mutex factories.
+     * @param callable $code         The counter code.
+     * @param callable $mutexFactory The mutex factory.
+     * @param int      $concurrency  The number of processes.
+     *
+     * @test
+     * @dataProvider provideTestHighConcurrency
      */
-    public function provideMutexFactories()
+    public function testHighConcurrency(callable $code, callable $mutexFactory, $concurrency)
     {
-        $lockFile = stream_get_meta_data(tmpfile())["uri"];
-        $cases = [
-            [function () use ($lockFile) {
-                return new FlockMutex(fopen($lockFile, "w"));
-            }],
-            [function () {
-                return new SemaphoreMutex(sem_get(ftok(__FILE__, "b")));
-            }],
-        ];
-        if (getenv("MEMCACHE_HOST")) {
-            $cases[] = [function () {
-                $memcache = new \Memcache();
-                $memcache->connect(getenv("MEMCACHE_HOST"));
-                return new MemcacheMutex("test", $memcache);
-            }];
-            $cases[] = [function () {
-                $memcached = new \Memcached();
-                $memcached->addServer(getenv("MEMCACHE_HOST"), 11211);
-                return new MemcachedMutex("test", $memcached);
-            }];
+        $isChild = false;
+        $pids    = [];
+        for ($i = 0; $i < $concurrency; $i++) {
+            $pid     = pcntl_fork();
+            $isChild = $pid == 0;
+            if ($isChild) {
+                break;
+
+            }
+            $pids[] = $pid;
         }
-        return $cases;
+        
+        // Concurrent increment.
+        if ($isChild) {
+            $mutex = call_user_func($mutexFactory);
+            $mutex->synchronized(function () use ($code) {
+                call_user_func($code, 1);
+            });
+            exit();
+            
+        }
+        
+        // Wait for all children.
+        foreach ($pids as $pid) {
+            pcntl_waitpid($pid, $status);
+
+        }
+        
+        $counter = call_user_func($code, 0);
+        $this->assertEquals($concurrency, $counter);
+    }
+    
+    /**
+     * Returns test cases for testHighConcurrency().
+     *
+     * @return array The test cases.
+     */
+    public function provideTestHighConcurrency()
+    {
+        return array_map(function (array $mutexFactory) {
+            $file = tmpfile();
+            fputs($file, pack("i", 0));
+            fflush($file);
+
+            return [
+                function ($increment) use ($file) {
+                    fseek($file, 0);
+                    $data = fread($file, 4);
+                    $counter = unpack("i", $data)[1];
+
+                    $counter += $increment;
+                    
+                    fseek($file, 0);
+                    fwrite($file, pack("i", $counter));
+                    fflush($file);
+                    
+                    return $counter;
+                },
+                $mutexFactory[0],
+                100
+            ];
+            
+        }, $this->provideMutexFactories());
     }
     
     /**
@@ -70,5 +116,40 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
 
         $delta = microtime(true) - $timestamp;
         $this->assertGreaterThan(1, $delta);
+    }
+    
+    /**
+     * Provides Mutex factories.
+     *
+     * @return callable[][] The mutex factories.
+     */
+    public function provideMutexFactories()
+    {
+        $path = stream_get_meta_data(tmpfile())["uri"];
+        
+        $cases = [
+            "flock" => [function () use ($path) {
+                $file = fopen($path, "w");
+                return new FlockMutex($file);
+            }],
+            "semaphore" => [function () use ($path) {
+                $semaphore = sem_get(ftok($path, "b"));
+                $this->assertTrue(is_resource($semaphore));
+                return new SemaphoreMutex($semaphore);
+            }],
+        ];
+        if (getenv("MEMCACHE_HOST")) {
+            $cases["memcache"] = [function () {
+                $memcache = new \Memcache();
+                $memcache->connect(getenv("MEMCACHE_HOST"));
+                return new MemcacheMutex("test", $memcache);
+            }];
+            $cases["memcached"] = [function () {
+                $memcached = new \Memcached();
+                $memcached->addServer(getenv("MEMCACHE_HOST"), 11211);
+                return new MemcachedMutex("test", $memcached);
+            }];
+        }
+        return $cases;
     }
 }
