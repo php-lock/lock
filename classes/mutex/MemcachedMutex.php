@@ -68,7 +68,7 @@ class MemcachedMutex extends Mutex
             if (!$this->memcache->add($this->key, true, $this->timeout + 1)) {
                 return;
             }
-            $this->loop->notify();
+            $this->loop->end();
             $begin = microtime(true);
             try {
                 return call_user_func($code);

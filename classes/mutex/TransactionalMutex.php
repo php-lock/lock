@@ -78,7 +78,7 @@ class TransactionalMutex extends Mutex
                 return;
             }
 
-            $this->loop->notify();
+            $this->loop->end();
             return $result;
         });
     }

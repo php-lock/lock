@@ -21,9 +21,9 @@ class Loop
     private $timeout;
     
     /**
-     * @var bool The state of the code.
+     * @var bool True while code should be repeated.
      */
-    private $successful;
+    private $looping;
     
     /**
      * Sets the timeout.
@@ -38,11 +38,11 @@ class Loop
     }
     
     /**
-     * Notifies about a successfull execution.
+     * Notifies that this was the last iteration.
      */
-    public function notify()
+    public function end()
     {
-        $this->successful = true;
+        $this->looping = false;
     }
     
     /**
@@ -50,7 +50,7 @@ class Loop
      *
      * The code has to be designed in a way that it can be repeated without any
      * side effects. When execution was successful it should notify that event
-     * by calling {@link Loop::notify()}. I.e. the only side effects
+     * by calling {@link Loop::end()}. I.e. the only side effects
      * of the code may happen after a successful execution.
      *
      * If the code throws an exception it will stop repeating the execution.
@@ -63,13 +63,13 @@ class Loop
      */
     public function execute(callable $code)
     {
-        $this->successful = false;
+        $this->looping = true;
         $minWait = 100;
         $maxWait = $this->timeout * 1000000;
         $waited  = 0;
-        for ($i = 0; !$this->successful && $waited <= $maxWait; $i++) {
+        for ($i = 0; $this->looping && $waited <= $maxWait; $i++) {
             $result = call_user_func($code);
-            if ($this->successful) {
+            if (!$this->looping) {
                 break;
 
             }
@@ -81,7 +81,7 @@ class Loop
             $waited += $usleep;
 
         }
-        if (!$this->successful) {
+        if ($this->looping) {
             throw new TimeoutException("Timeout of $this->timeout seconds exceeded.");
 
         }

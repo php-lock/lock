@@ -36,11 +36,11 @@ class LoopTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Tests notify() will stop the iteration and return the result.
+     * Tests end() will stop the iteration and return the result.
      *
      * @test
      */
-    public function testNotify()
+    public function testEnd()
     {
         $this->markTestIncomplete();
     }
