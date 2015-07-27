@@ -65,9 +65,8 @@ class Loop
     {
         $this->looping = true;
         $minWait = 100;
-        $maxWait = $this->timeout * 1000000;
-        $waited  = 0;
-        for ($i = 0; $this->looping && $waited <= $maxWait; $i++) {
+        $timeout = microtime(true) + $this->timeout;
+        for ($i = 0; $this->looping && microtime(true) <= $timeout; $i++) {
             $result = call_user_func($code);
             if (!$this->looping) {
                 break;
@@ -78,7 +77,6 @@ class Loop
             $usleep = rand($min, $max);
             
             usleep($usleep);
-            $waited += $usleep;
 
         }
         if ($this->looping) {

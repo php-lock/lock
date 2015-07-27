@@ -2,6 +2,9 @@
 
 namespace malkusch\lock\util;
 
+use phpmock\phpunit\PHPMock;
+use phpmock\environment\SleepEnvironmentBuilder;
+
 /**
  * Tests for Loop.
  *
@@ -12,7 +15,21 @@ namespace malkusch\lock\util;
  */
 class LoopTest extends \PHPUnit_Framework_TestCase
 {
+
+    use PHPMock;
     
+    protected function setUp()
+    {
+        parent::setUp();
+        
+        $builder = new SleepEnvironmentBuilder();
+        $builder->addNamespace(__NAMESPACE__);
+        $sleep = $builder->build();
+        $sleep->enable();
+        
+        $this->registerForTearDown($sleep);
+    }
+
     /**
      * Tests exceeding the execution timeout.
      *
@@ -21,7 +38,10 @@ class LoopTest extends \PHPUnit_Framework_TestCase
      */
     public function testExceedTimeout()
     {
-        $this->markTestIncomplete();
+        $loop = new Loop(1);
+        $loop->execute(function () {
+            sleep(2);
+        });
     }
 
     /**
@@ -32,7 +52,10 @@ class LoopTest extends \PHPUnit_Framework_TestCase
      */
     public function testExceptionStopsIteration()
     {
-        $this->markTestIncomplete();
+        $loop = new Loop();
+        $loop->execute(function () {
+            throw new \DomainException();
+        });
     }
 
     /**
@@ -42,7 +65,13 @@ class LoopTest extends \PHPUnit_Framework_TestCase
      */
     public function testEnd()
     {
-        $this->markTestIncomplete();
+        $i    = 0;
+        $loop = new Loop();
+        $loop->execute(function () use ($loop, &$i) {
+            $i++;
+            $loop->end();
+        });
+        $this->assertEquals(1, $i);
     }
 
     /**
@@ -52,6 +81,14 @@ class LoopTest extends \PHPUnit_Framework_TestCase
      */
     public function testIteration()
     {
-        $this->markTestIncomplete();
+        $i    = 0;
+        $loop = new Loop();
+        $loop->execute(function () use ($loop, &$i) {
+            $i++;
+            if ($i > 1) {
+                $loop->end();
+            }
+        });
+        $this->assertEquals(2, $i);
     }
 }

@@ -2,6 +2,9 @@
 
 namespace malkusch\lock\mutex;
 
+use phpmock\phpunit\PHPMock;
+use phpmock\environment\SleepEnvironmentBuilder;
+
 /**
  * Tests for CASMutex.
  *
@@ -13,6 +16,20 @@ namespace malkusch\lock\mutex;
 class CASMutexTest extends \PHPUnit_Framework_TestCase
 {
 
+    use PHPMock;
+    
+    protected function setUp()
+    {
+        parent::setUp();
+        
+        $builder = new SleepEnvironmentBuilder();
+        $builder->addNamespace(__NAMESPACE__);
+        $sleep = $builder->build();
+        $sleep->enable();
+        
+        $this->registerForTearDown($sleep);
+    }
+
     /**
      * Tests exceeding the execution timeout.
      *
@@ -21,7 +38,10 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testExceedTimeout()
     {
-        $this->markTestIncomplete();
+        $mutex = new CASMutex(1);
+        $mutex->synchronized(function () {
+            sleep(2);
+        });
     }
 
     /**
@@ -32,7 +52,10 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testExceptionStopsIteration()
     {
-        $this->markTestIncomplete();
+        $mutex = new CASMutex();
+        $mutex->synchronized(function () {
+            throw new \DomainException();
+        });
     }
 
     /**
@@ -42,7 +65,13 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testNotify()
     {
-        $this->markTestIncomplete();
+        $i     = 0;
+        $mutex = new CASMutex();
+        $mutex->synchronized(function () use ($mutex, &$i) {
+            $i++;
+            $mutex->notify();
+        });
+        $this->assertEquals(1, $i);
     }
 
     /**
@@ -52,6 +81,14 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testIteration()
     {
-        $this->markTestIncomplete();
+        $i     = 0;
+        $mutex = new CASMutex();
+        $mutex->synchronized(function () use ($mutex, &$i) {
+            $i++;
+            if ($i > 1) {
+                $mutex->notify();
+            }
+        });
+        $this->assertEquals(2, $i);
     }
 }
