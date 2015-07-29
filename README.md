@@ -98,7 +98,7 @@ $mutex->synchronized(function () use ($memcached, $mutex, $amount) {
 #### FlockMutex
 
 The [`FlockMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.FlockMutex.html)
-is a simple lock implementation based on [`flock()`](http://php.net/manual/en/function.flock.php).
+is a lock implementation based on [`flock()`](http://php.net/manual/en/function.flock.php).
 
 Example:
 ```php
@@ -117,7 +117,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 #### MemcacheMutex
 
 The [`MemcacheMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.MemcacheMutex.html)
-is a lock free implementation which uses the [`Memcache` API](http://php.net/manual/en/book.memcache.php).
+is a spinlock implementation which uses the [`Memcache` API](http://php.net/manual/en/book.memcache.php).
 
 Example:
 ```php
@@ -139,7 +139,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 #### MemcachedMutex
 
 The [`MemcachedMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.MemcachedMutex.html)
-is a lock free implementation which uses the [`Memcached` API](http://php.net/manual/en/book.memcached.php).
+is a spinlock implementation which uses the [`Memcached` API](http://php.net/manual/en/book.memcached.php).
 
 Example:
 ```php
@@ -161,7 +161,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 #### SemaphoreMutex
 
 The [`SemaphoreMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.SemaphoreMutex.html)
-is a simple lock implementation based on [Semaphore](http://php.net/manual/en/ref.sem.php).
+is a lock implementation based on [Semaphore](http://php.net/manual/en/ref.sem.php).
 
 Example:
 ```php
@@ -181,7 +181,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 #### TransactionalMutex
 
 The [`TransactionalMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.TransactionalMutex.html)
-delegates the synchronisation to the DBS. The exclusive code is executed within
+delegates the serialization to the DBS. The exclusive code is executed within
 a transaction. It's up to you to set the correct transaction isolation level.
 However if the transaction fails (i.e. a `PDOException` was thrown), the code
 will be executed again. Therefore the code must not have any side effects

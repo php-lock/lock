@@ -4,12 +4,9 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\util\Loop;
 use malkusch\lock\exception\LockReleaseException;
-use malkusch\lock\exception\LockAcquireException;
 
 /**
- * Memcached based mutex implementation.
- *
- * This is a lockfree busy waiting with an exponential back off.
+ * Memcached based spinlock implementation.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations

@@ -6,7 +6,7 @@ use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\util\Loop;
 
 /**
- * Synchronization is delegated to the DBS.
+ * Serialization is delegated to the DBS.
  *
  * The exclusive code is executed within a transaction. A failing transaction
  * will be replayed.
