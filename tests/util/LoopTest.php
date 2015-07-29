@@ -31,6 +31,17 @@ class LoopTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test an invalid timeout.
+     *
+     * @test
+     * @expectedException \LengthException
+     */
+    public function testInvalidTimeout()
+    {
+        new Loop(0);
+    }
+    
+    /**
      * Tests exceeding the execution timeout.
      *
      * @test

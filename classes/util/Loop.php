@@ -31,9 +31,14 @@ class Loop
      * The default is 3 seconds.
      *
      * @param int $timeout The timeout in seconds.
+     * @throws \LengthException The timeout must be greater than 0.
      */
     public function __construct($timeout = 3)
     {
+        if ($timeout <= 0) {
+            throw new \LengthException("The timeout must be greater than 0. '$timeout' was given");
+            
+        }
         $this->timeout = $timeout;
     }
     

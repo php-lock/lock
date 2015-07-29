@@ -50,6 +50,8 @@ class MemcacheMutex extends Mutex
      * @param string    $name     The lock name.
      * @param \Memcache $memcache The connected Memcache API.
      * @param int       $timeout  The time in seconds a lock expires, default is 3.
+     *
+     * @throws \LengthException The timeout must be greater than 0.
      */
     public function __construct($name, \Memcache $memcache, $timeout = 3)
     {

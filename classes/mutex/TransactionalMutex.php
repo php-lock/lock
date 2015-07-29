@@ -35,6 +35,7 @@ class TransactionalMutex extends Mutex
      * @param int  $timeout The timeout in seconds, default is 3.
      *
      * @throws \InvalidArgumentException PDO must be configured to throw exceptions.
+     * @throws \LengthException The timeout must be greater than 0.
      */
     public function __construct(\PDO $pdo, $timeout = 3)
     {
