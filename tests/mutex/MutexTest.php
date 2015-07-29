@@ -31,7 +31,9 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 return new NoMutex();
             }],
             [function () {
-                return new TransactionalMutex(new \PDO("sqlite::memory:"));
+                $pdo = new \PDO("sqlite::memory:");
+                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                return new TransactionalMutex($pdo);
             }],
             [function () {
                 vfsStream::setup("test");

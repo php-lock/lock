@@ -183,9 +183,10 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 The [`TransactionalMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.TransactionalMutex.html)
 delegates the synchronisation to the DBS. The exclusive code is executed within
 a transaction. It's up to you to set the correct transaction isolation level.
-However if the commit fails, the code will be executed again. Therefore
-the code must not have any side effects besides SQL statements.
-If the code throws an exception, the transaction is rolled back.
+However if the transaction fails (i.e. a `PDOException` was thrown), the code
+will be executed again. Therefore the code must not have any side effects
+besides SQL statements. If the code throws an exception, the transaction is
+rolled back and not replayed again.
 
 Example:
 ```php

@@ -8,7 +8,8 @@ use malkusch\lock\util\Loop;
 /**
  * Synchronization is delegated to the DBS.
  *
- * The exclusive code is executed within a transaction.
+ * The exclusive code is executed within a transaction. A failing transaction
+ * will be replayed.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
@@ -32,9 +33,15 @@ class TransactionalMutex extends Mutex
      *
      * @param \PDO $pdo     The PDO.
      * @param int  $timeout The timeout in seconds, default is 3.
+     *
+     * @throws \InvalidArgumentException PDO must be configured to throw exceptions.
      */
     public function __construct(\PDO $pdo, $timeout = 3)
     {
+        if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
+            throw new \InvalidArgumentException("The pdo must have PDO::ERRMODE_EXCEPTION set.");
+            
+        }
         $this->pdo  = $pdo;
         $this->loop = new Loop($timeout);
     }
@@ -43,10 +50,12 @@ class TransactionalMutex extends Mutex
      * Executes the critical code within a transaction.
      *
      * It's up to the user to set the correct transaction isolation level.
-     * However if the commit fails, the code will be executed again. Therefore
-     * the code must not have any side effects besides SQL statements.
+     * However if the transaction fails (i.e. a \PDOException is thrown),
+     * the code will be executed again. Therefore the code must not have any
+     * side effects besides SQL statements.
      *
-     * If the code throws an exception, the transaction is rolled back.
+     * If the code throws an exception, the transaction is rolled back and will
+     * not be replayed.
      *
      * @param callable $code The synchronized execution block.
      * @return mixed The return value of the execution block.
@@ -57,29 +66,52 @@ class TransactionalMutex extends Mutex
     public function synchronized(callable $code)
     {
         return $this->loop->execute(function () use ($code) {
-            if (!$this->pdo->beginTransaction()) {
-                throw new LockAcquireException("Could not begin transaction.");
-            }
             try {
-                $result = call_user_func($code);
-
-            } catch (\Exception $e) {
-                if (!$this->pdo->rollBack()) {
-                    throw new LockAcquireException("Could not roll back transaction.", 0, $e);
-                }
-                throw $e;
+                // BEGIN
+                $this->pdo->beginTransaction();
+                    
+            } catch (\PDOException $e) {
+                throw new LockAcquireException("Could not begin transaction.", 0, $e);
             }
             
-            if (!$this->pdo->commit()) {
-                if (!$this->pdo->rollBack()) {
-                    throw new LockAcquireException("Could not roll back transaction.");
-                }
-                // repeat transaction.
-                return;
-            }
+            try {
+                // Unit of work
+                $result = call_user_func($code);
+                $this->pdo->commit();
+                $this->loop->end();
+                return $result;
 
-            $this->loop->end();
-            return $result;
+            } catch (\PDOException $e) {
+                // ROLLBACK and replay the transaction.
+                $this->rollBack($e);
+                return;
+
+            } catch (\Exception $e) {
+                // ROLLBACK and rethrow the exception.
+                $this->rollBack($e);
+                throw $e;
+            }
         });
+    }
+    
+    /**
+     * Rolls back a transaction.
+     *
+     * @param \Exception $exception The causing exception.
+     *
+     * @throws LockAcquireException The roll back failed.
+     */
+    private function rollBack(\Exception $exception)
+    {
+        try {
+            $this->pdo->rollBack();
+
+        } catch (\PDOException $e2) {
+            throw new LockAcquireException(
+                "Could not roll back transaction: {$e2->getMessage()})",
+                0,
+                $exception
+            );
+        }
     }
 }
