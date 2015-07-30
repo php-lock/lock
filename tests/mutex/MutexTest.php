@@ -42,6 +42,12 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             [function () {
                 return new SemaphoreMutex(sem_get(ftok(__FILE__, "a")));
             }],
+            [function () {
+                $mock = $this->getMockForAbstractClass(AbstractSpinlockMutex::class, ["test"]);
+                $mock->expects($this->any())->method("acquire")->willReturn(true);
+                $mock->expects($this->any())->method("release")->willReturn(true);
+                return $mock;
+            }],
         ];
         if (getenv("MEMCACHE_HOST")) {
             $cases[] = [function () {
@@ -82,6 +88,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      * @test
      * @dataProvider provideMutexFactories
      * @expectedException \DomainException
+     * @requires PHP 5.6
      */
     public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)
     {

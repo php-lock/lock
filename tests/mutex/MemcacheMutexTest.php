@@ -104,34 +104,6 @@ class MemcacheMutexTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * Tests executing code which exceeds the timeout fails.
-     *
-     * @test
-     * @param Mutex $mutex The SUT.
-     * @expectedException malkusch\lock\exception\LockReleaseException
-     * @dataProvider provideTestExecuteTooLong
-     */
-    public function testExecuteTooLong(Mutex $mutex)
-    {
-        $mutex->synchronized(function () {
-            sleep(2);
-        });
-    }
-    
-    /**
-     * Returns test cases for testExecuteTooLong().
-     *
-     * @return array Test cases.
-     */
-    public function provideTestExecuteTooLong()
-    {
-        return [
-            [$this->buildMemcacheMutex("testExecuteTooLong", $memcache, 1)],
-            [$this->buildMemcachedMutex("testExecuteTooLong", $memcache, 1)],
-        ];
-    }
-
-    /**
      * Tests failing to release a lock.
      *
      * @param Mutex $mutex The SUT.
@@ -167,15 +139,5 @@ class MemcacheMutexTest extends \PHPUnit_Framework_TestCase
                 }
             ],
         ];
-    }
-    
-    /**
-     * Tests executing exactly unil the timeout will leave the key one more second.
-     *
-     * @test
-     */
-    public function testExecuteTimeoutLeavesOneSecondForKeyToExpire()
-    {
-        $this->markTestIncomplete();
     }
 }
