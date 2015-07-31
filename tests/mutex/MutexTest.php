@@ -51,8 +51,8 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 return new SemaphoreMutex(sem_get(ftok(__FILE__, "a")));
             }],
 
-            "AbstractSpinlockMutex" => [function () {
-                $mock = $this->getMockForAbstractClass(AbstractSpinlockMutex::class, ["test"]);
+            "SpinlockMutex" => [function () {
+                $mock = $this->getMockForAbstractClass(SpinlockMutex::class, ["test"]);
                 $mock->expects($this->any())->method("acquire")->willReturn(true);
                 $mock->expects($this->any())->method("release")->willReturn(true);
                 return $mock;

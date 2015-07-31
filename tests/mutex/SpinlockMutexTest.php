@@ -3,14 +3,14 @@
 namespace malkusch\lock\mutex;
 
 /**
- * Tests for AbstractSpinlockMutex.
+ * Tests for SpinlockMutex.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
- * @see AbstractSpinlockMutex
+ * @see SpinlockMutex
  */
-class AbstractSpinlockMutexTest extends \PHPUnit_Framework_TestCase
+class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
 {
     
     /**
@@ -21,7 +21,7 @@ class AbstractSpinlockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testFailAcquireLock()
     {
-        $mutex = $this->getMockForAbstractClass(AbstractSpinlockMutex::class, ["test"]);
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test"]);
         $mutex->expects($this->any())->method("acquire")->willReturn(false);
 
         $mutex->synchronized(function () {
@@ -37,7 +37,7 @@ class AbstractSpinlockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteTooLong()
     {
-        $mutex = $this->getMockForAbstractClass(AbstractSpinlockMutex::class, ["test", 1]);
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test", 1]);
         $mutex->expects($this->any())->method("acquire")->willReturn(true);
         $mutex->expects($this->any())->method("release")->willReturn(true);
 
@@ -54,7 +54,7 @@ class AbstractSpinlockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testFailReleasingLock()
     {
-        $mutex = $this->getMockForAbstractClass(AbstractSpinlockMutex::class, ["test"]);
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test"]);
         $mutex->expects($this->any())->method("acquire")->willReturn(true);
         $mutex->expects($this->any())->method("release")->willReturn(false);
         

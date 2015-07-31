@@ -14,7 +14,7 @@ use malkusch\lock\exception\LockAcquireException;
  * @license WTFPL
  * @internal
  */
-abstract class AbstractSpinlockMutex extends Mutex
+abstract class SpinlockMutex extends Mutex
 {
     
     /**

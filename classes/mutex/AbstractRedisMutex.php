@@ -14,7 +14,7 @@ namespace malkusch\lock\mutex;
  * @link http://redis.io/topics/distlock
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  */
-abstract class AbstractRedisMutex extends AbstractSpinlockMutex
+abstract class AbstractRedisMutex extends SpinlockMutex
 {
     
     /**

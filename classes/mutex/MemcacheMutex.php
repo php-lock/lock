@@ -11,7 +11,7 @@ use Memcache;
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
  */
-class MemcacheMutex extends AbstractSpinlockMutex
+class MemcacheMutex extends SpinlockMutex
 {
     
     /**
