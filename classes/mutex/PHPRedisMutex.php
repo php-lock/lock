@@ -19,13 +19,8 @@ use RedisException;
  * @link http://redis.io/topics/distlock
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  */
-class PHPRedisMutex extends AbstractRedisMutex
+class PHPRedisMutex extends RedisMutex
 {
-    
-    /**
-     * @var Redis[] The Redis connections.
-     */
-    private $connections;
     
     /**
      * Sets the connected Redis APIs.
@@ -33,26 +28,24 @@ class PHPRedisMutex extends AbstractRedisMutex
      * The Redis APIs needs to be connected yet. I.e. Redis::connect() was
      * called already.
      *
-     * @param Redis[] $connections The Redis connections.
-     * @param string  $name        The lock name.
-     * @param int     $timeout     The time in seconds a lock expires, default is 3.
+     * @param Redis[] $redisAPIs The Redis connections.
+     * @param string  $name      The lock name.
+     * @param int     $timeout   The time in seconds a lock expires, default is 3.
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $connections, $name, $timeout = 3)
+    public function __construct(array $redisAPIs, $name, $timeout = 3)
     {
-        parent::__construct($name, $timeout);
-        
-        $this->connections = $connections;
+        parent::__construct($redisAPIs, $name, $timeout);
     }
     
     /**
      * @internal
      */
-    protected function add($connection, $key, $value, $expire)
+    protected function add($redis, $key, $value, $expire)
     {
         try {
-            return $connection->set($key, $value, ["nx", "ex" => $expire]);
+            return $redis->set($key, $value, ["nx", "ex" => $expire]);
             
         } catch (RedisException $e) {
             return false;
@@ -62,21 +55,13 @@ class PHPRedisMutex extends AbstractRedisMutex
     /**
      * @internal
      */
-    protected function evalScript($connection, $script, $numkeys, array $arguments)
+    protected function evalScript($redis, $script, $numkeys, array $arguments)
     {
         try {
-            return $connection->eval($script, $arguments, $numkeys);
+            return $redis->eval($script, $arguments, $numkeys);
             
         } catch (RedisException $e) {
             return false;
         }
-    }
-
-    /**
-     * @internal
-     */
-    protected function getConnections()
-    {
-        return $this->connections;
     }
 }

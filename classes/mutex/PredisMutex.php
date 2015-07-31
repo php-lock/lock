@@ -17,13 +17,8 @@ use Predis\PredisException;
  * @link http://redis.io/topics/distlock
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  */
-class PredisMutex extends AbstractRedisMutex
+class PredisMutex extends RedisMutex
 {
-    
-    /**
-     * @var Client[] The Redis connections.
-     */
-    private $clients;
     
     /**
      * Sets the Redis connections.
@@ -36,18 +31,16 @@ class PredisMutex extends AbstractRedisMutex
      */
     public function __construct(array $clients, $name, $timeout = 3)
     {
-        parent::__construct($name, $timeout);
-        
-        $this->clients = $clients;
+        parent::__construct($clients, $name, $timeout);
     }
     
     /**
      * @internal
      */
-    protected function add($connection, $key, $value, $expire)
+    protected function add($client, $key, $value, $expire)
     {
         try {
-            return $connection->set($key, $value, "EX", $expire, "NX");
+            return $client->set($key, $value, "EX", $expire, "NX");
             
         } catch (PredisException $e) {
             return false;
@@ -57,24 +50,16 @@ class PredisMutex extends AbstractRedisMutex
     /**
      * @internal
      */
-    protected function evalScript($connection, $script, $numkeys, array $arguments)
+    protected function evalScript($client, $script, $numkeys, array $arguments)
     {
         try {
             return call_user_func_array(
-                [$connection, "eval"],
+                [$client, "eval"],
                 array_merge([$script, $numkeys], $arguments)
             );
             
         } catch (PredisException $e) {
             return false;
         }
-    }
-
-    /**
-     * @internal
-     */
-    protected function getConnections()
-    {
-        return $this->clients;
     }
 }

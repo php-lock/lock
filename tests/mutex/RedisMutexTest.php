@@ -3,17 +3,17 @@
 namespace malkusch\lock\mutex;
 
 /**
- * Tests for AbstractRedisMutex and its implementations.
+ * Tests for RedisMutex and its implementations.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
  *
- * @see AbstractRedisMutex
+ * @see RedisMutex
  * @see PHPRedisMutex
  * @see PredisMutex
  */
-class AbstractRedisMutexTest extends \PHPUnit_Framework_TestCase
+class RedisMutexTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
