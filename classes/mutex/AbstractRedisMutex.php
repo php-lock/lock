@@ -2,8 +2,6 @@
 
 namespace malkusch\lock\mutex;
 
-use malkusch\lock\exception\LockReleaseException;
-
 /**
  * Mutex based on the Redlock algorithm.
  *
