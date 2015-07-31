@@ -1,8 +1,8 @@
 {
     "name": "malkusch/lock",
     "type": "library",
-    "description": "Mutex library for locked code execution.",
-    "keywords": ["mutex", "lock", "flock", "semaphore"],
+    "description": "Mutex library for exclusive code execution.",
+    "keywords": ["mutex", "lock", "flock", "semaphore", "redlock", "memcache", "redis", "cas"],
     "homepage": "https://github.com/malkusch/lock",
     "license": "WTFPL",
     "authors": [
