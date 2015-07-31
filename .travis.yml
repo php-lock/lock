@@ -15,9 +15,11 @@ php:
 env: 
   global:
     - MEMCACHE_HOST=localhost
+    - REDIS_URI=redis://localhost
 
 services:
   - memcached
+  - redis-server
 
 matrix:
   fast_finish: true
@@ -25,12 +27,12 @@ matrix:
     - php: hhvm
     - php: 7.0
 
+before_install:
+  - phpenv config-add tests/php-travis.ini
+
 install:
   - composer require squizlabs/php_codesniffer
   - composer require phpmd/phpmd
-
-before_script:
-  - phpenv config-add tests/php-travis.ini
 
 script:
   - vendor/bin/phpunit

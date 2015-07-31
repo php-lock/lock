@@ -67,6 +67,8 @@ The `Mutex` is an abstract class. You will have to chose an implementation:
 - [`FlockMutex`](#flockmutex)
 - [`MemcacheMutex`](#memcachemutex)
 - [`MemcachedMutex`](#memcachedmutex)
+- [`PHPRedisMutex`](#phpredismutex)
+- [`PredisMutex`](#predismutex)
 - [`SemaphoreMutex`](#semaphoremutex)
 - [`TransactionalMutex`](#transactionalmutex)
 
@@ -147,6 +149,53 @@ $memcache = new \Memcached();
 $memcache->addServer("localhost", 11211);
 
 $mutex = new MemcachedMutex("balance", $memcache);
+$mutex->synchronized(function () use ($bankAccount, $amount) {
+    $balance = $bankAccount->getBalance();
+    $balance -= $amount;
+    if ($balance < 0) {
+        throw new \DomainException("You have no credit.");
+
+    }
+    $bankAccount->setBalance($balance);
+});
+```
+
+#### PHPRedisMutex
+
+The [`PHPRedisMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.PHPRedisMutex.html)
+is the distributed lock implementation of [RedLock](http://redis.io/topics/distlock)
+which uses the [`phpredis` extension](https://github.com/phpredis/phpredis).
+
+This implementation requires at least phpredis-2.2.4.
+
+Example:
+```php
+$redis = new Redis();
+$redis->connect("localhost");
+
+$mutex = new PHPRedisMutex([$redis], "balance");
+$mutex->synchronized(function () use ($bankAccount, $amount) {
+    $balance = $bankAccount->getBalance();
+    $balance -= $amount;
+    if ($balance < 0) {
+        throw new \DomainException("You have no credit.");
+
+    }
+    $bankAccount->setBalance($balance);
+});
+```
+
+#### PredisMutex
+
+The [`PredisMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.PredisMutex.html)
+is the distributed lock implementation of [RedLock](http://redis.io/topics/distlock)
+which uses the [`Predis` API](https://github.com/nrk/predis).
+
+Example:
+```php
+$redis = new Client("redis://localhost");
+
+$mutex = new PredisMutex([$redis], "balance");
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;

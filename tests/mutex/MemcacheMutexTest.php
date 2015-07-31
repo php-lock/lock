@@ -5,6 +5,8 @@ namespace malkusch\lock\mutex;
 /**
  * Tests for MemcacheMutex and MemcachedMutex.
  *
+ * Please provide the environment variable MEMCACHE_HOST.
+ *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL

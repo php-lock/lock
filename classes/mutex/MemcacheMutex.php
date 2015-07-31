@@ -44,11 +44,17 @@ class MemcacheMutex extends AbstractSpinlockMutex
         $this->memcache = $memcache;
     }
     
+    /**
+     * @internal
+     */
     protected function acquire($key, $expire)
     {
         return $this->memcache->add($key, true, 0, $expire);
     }
 
+    /**
+     * @internal
+     */
     protected function release($key)
     {
         return $this->memcache->delete($key);

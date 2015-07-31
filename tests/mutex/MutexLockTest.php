@@ -2,12 +2,17 @@
 
 namespace malkusch\lock\mutex;
 
+use Predis\Client;
+use Redis;
+use ezcSystemInfo;
+
 /**
  * Tests for locking in Mutex.
  *
- * If you want to run memcache tests you should provide this environment variable:
+ * If you want to run integration tests you should provide these environment variables:
  *
  * - MEMCACHE_HOST
+ * - REDIS_URI
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
@@ -18,17 +23,19 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
 {
     
     /**
-     * Tests high concurrency empirically.
+     * Tests high contention empirically.
      *
      * @param callable $code         The counter code.
      * @param callable $mutexFactory The mutex factory.
-     * @param int      $concurrency  The number of processes.
      *
      * @test
-     * @dataProvider provideTestHighConcurrency
+     * @dataProvider provideTestHighContention
      */
-    public function testHighConcurrency(callable $code, callable $mutexFactory, $concurrency)
+    public function testHighContention(callable $code, callable $mutexFactory)
     {
+        $concurrency = max(2, ezcSystemInfo::getInstance()->cpuCount);
+        $iterations  = 20000 / $concurrency;
+        $timeout = $concurrency * 20;
         $isChild = false;
         $pids    = [];
         for ($i = 0; $i < $concurrency; $i++) {
@@ -43,10 +50,13 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
         
         // Concurrent increment.
         if ($isChild) {
-            $mutex = call_user_func($mutexFactory);
-            $mutex->synchronized(function () use ($code) {
-                call_user_func($code, 1);
-            });
+            for ($i = 0; $i < $iterations; $i++) {
+                $mutex = call_user_func($mutexFactory, $timeout);
+                $mutex->synchronized(function () use ($code) {
+                    call_user_func($code, 1);
+                });
+
+            }
             exit();
             
         }
@@ -58,15 +68,15 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
         }
         
         $counter = call_user_func($code, 0);
-        $this->assertEquals($concurrency, $counter);
+        $this->assertEquals($concurrency * $iterations, $counter);
     }
     
     /**
-     * Returns test cases for testHighConcurrency().
+     * Returns test cases for testHighContention().
      *
      * @return array The test cases.
      */
-    public function provideTestHighConcurrency()
+    public function provideTestHighContention()
     {
         return array_map(function (array $mutexFactory) {
             $file = tmpfile();
@@ -87,8 +97,7 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
                     
                     return $counter;
                 },
-                $mutexFactory[0],
-                100
+                $mutexFactory[0]
             ];
             
         }, $this->provideMutexFactories());
@@ -128,28 +137,46 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
         $path = stream_get_meta_data(tmpfile())["uri"];
         
         $cases = [
-            "flock" => [function () use ($path) {
+            "flock" => [function ($timeout = 3) use ($path) {
                 $file = fopen($path, "w");
                 return new FlockMutex($file);
             }],
-            "semaphore" => [function () use ($path) {
+                    
+            "semaphore" => [function ($timeout = 3) use ($path) {
                 $semaphore = sem_get(ftok($path, "b"));
                 $this->assertTrue(is_resource($semaphore));
                 return new SemaphoreMutex($semaphore);
             }],
         ];
+            
         if (getenv("MEMCACHE_HOST")) {
-            $cases["memcache"] = [function () {
+            $cases["memcache"] = [function ($timeout = 3) {
                 $memcache = new \Memcache();
                 $memcache->connect(getenv("MEMCACHE_HOST"));
-                return new MemcacheMutex("test", $memcache);
+                return new MemcacheMutex("test", $memcache, $timeout);
             }];
-            $cases["memcached"] = [function () {
+            
+            $cases["memcached"] = [function ($timeout = 3) {
                 $memcached = new \Memcached();
                 $memcached->addServer(getenv("MEMCACHE_HOST"), 11211);
-                return new MemcachedMutex("test", $memcached);
+                return new MemcachedMutex("test", $memcached, $timeout);
             }];
         }
+        
+        if (getenv("REDIS_URI")) {
+            $cases["PredisMutex"] = [function ($timeout = 3) {
+                $client = new Client(getenv("REDIS_URI"));
+                return new PredisMutex([$client], "test", $timeout);
+            }];
+            
+            $cases["PHPRedisMutex"] = [function ($timeout = 3) {
+                $redis = new Redis();
+                $uri   = parse_url(getenv("REDIS_URI"));
+                $redis->connect($uri["host"]);
+                return new PHPRedisMutex([$redis], "test", $timeout);
+            }];
+        }
+        
         return $cases;
     }
 }

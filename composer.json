@@ -17,12 +17,16 @@
         "psr-4": {"malkusch\\lock\\": "classes/"}
     },
     "require": {
-        "php": ">=5.5"
+        "php": ">=5.5",
+        "ircmaxell/random-lib": "~1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^4",
         "php-mock/php-mock-phpunit": "^0.3",
-        "mikey179/vfsStream": "^1.5.0"
+        "mikey179/vfsStream": "^1.5.0",
+        "predis/predis": "~1.0",
+        "ext-redis": "^2.2.4",
+        "zetacomponents/system-information": "~1.1"
     },
     "archive": {
         "exclude": ["/tests"]

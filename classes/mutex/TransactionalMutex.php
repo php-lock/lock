@@ -8,8 +8,10 @@ use malkusch\lock\util\Loop;
 /**
  * Serialization is delegated to the DBS.
  *
- * The exclusive code is executed within a transaction. A failing transaction
- * will be replayed.
+ * The critical code is executed within a transaction. The DBS will decide
+ * which parts of that code need to be locked (if at all).
+ *
+ * A failing transaction will be replayed.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations

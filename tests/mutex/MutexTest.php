@@ -3,13 +3,18 @@
 namespace malkusch\lock\mutex;
 
 use org\bovigo\vfs\vfsStream;
+use Predis\Client;
+use Redis;
+use Memcache;
+use Memcached;
 
 /**
  * Tests for Mutex.
  *
- * If you want to run memcache tests you should provide this environment variable:
+ * If you want to run integrations tests you should provide these environment variables:
  *
  * - MEMCACHE_HOST
+ * - REDIS_URI
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
@@ -27,40 +32,61 @@ class MutexTest extends \PHPUnit_Framework_TestCase
     public function provideMutexFactories()
     {
         $cases = [
-            [function () {
+            "NoMutex" => [function () {
                 return new NoMutex();
             }],
-            [function () {
+
+            "TransactionalMutex" => [function () {
                 $pdo = new \PDO("sqlite::memory:");
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
                 return new TransactionalMutex($pdo);
             }],
-            [function () {
+
+            "FlockMutex" => [function () {
                 vfsStream::setup("test");
                 return new FlockMutex(fopen(vfsStream::url("test/lock"), "w"));
             }],
-            [function () {
+
+            "SemaphoreMutex" => [function () {
                 return new SemaphoreMutex(sem_get(ftok(__FILE__, "a")));
             }],
-            [function () {
+
+            "AbstractSpinlockMutex" => [function () {
                 $mock = $this->getMockForAbstractClass(AbstractSpinlockMutex::class, ["test"]);
                 $mock->expects($this->any())->method("acquire")->willReturn(true);
                 $mock->expects($this->any())->method("release")->willReturn(true);
                 return $mock;
             }],
         ];
+
         if (getenv("MEMCACHE_HOST")) {
-            $cases[] = [function () {
-                $memcache = new \Memcache();
+            $cases["MemcacheMutex"] = [function () {
+                $memcache = new Memcache();
                 $memcache->connect(getenv("MEMCACHE_HOST"));
                 return new MemcacheMutex("test", $memcache);
             }];
-            $cases[] = [function () {
-                $memcache = new \Memcached();
+
+            $cases["MemcachedMutex"] = [function () {
+                $memcache = new Memcached();
                 $memcache->addServer(getenv("MEMCACHE_HOST"), 11211);
                 return new MemcachedMutex("test", $memcache);
             }];
         }
+
+        if (getenv("REDIS_URI")) {
+            $cases["PredisMutex"] = [function () {
+                $client = new Client(getenv("REDIS_URI"));
+                return new PredisMutex([$client], "test");
+            }];
+
+            $cases["PHPRedisMutex"] = [function () {
+                $redis = new Redis();
+                $uri   = parse_url(getenv("REDIS_URI"));
+                $redis->connect($uri["host"]);
+                return new PHPRedisMutex([$redis], "test");
+            }];
+        }
+
         return $cases;
     }
     
@@ -82,6 +108,22 @@ class MutexTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * Tests that synchronized() released the lock.
+     *
+     * @param callable $mutexFactory The Mutex factory.
+     * @test
+     * @dataProvider provideMutexFactories
+     */
+    public function testLiveness(callable $mutexFactory)
+    {
+        $mutex = call_user_func($mutexFactory);
+        $mutex->synchronized(function () {
+        });
+        $mutex->synchronized(function () {
+        });
+    }
+    
+    /**
      * Tests synchronized() rethrows the exception of the code.
      *
      * @param callable $mutexFactory The Mutex factory.
@@ -95,7 +137,6 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         $mutex = call_user_func($mutexFactory);
         $mutex->synchronized(function () {
             throw new \DomainException();
-
         });
     }
 }

@@ -4,6 +4,7 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\util\Loop;
 use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\exception\LockAcquireException;
 
 /**
  * Spinlock implementation.
@@ -89,6 +90,7 @@ abstract class AbstractSpinlockMutex extends Mutex
      * @param int $expire The timeout in seconds when a lock expires.
      *
      * @return bool True, if the lock could be acquired.
+     * @throws LockAcquireException An error happened.
      */
     abstract protected function acquire($key, $expire);
 
