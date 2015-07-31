@@ -17,8 +17,7 @@
         "psr-4": {"malkusch\\lock\\": "classes/"}
     },
     "require": {
-        "php": ">=5.5",
-        "ircmaxell/random-lib": "~1.1"
+        "php": ">=5.5"
     },
     "require-dev": {
         "phpunit/phpunit": "^4",

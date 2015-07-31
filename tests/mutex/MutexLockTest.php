@@ -23,6 +23,37 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
 {
     
     /**
+     * Forks, runs code in the children and wait until all finished.
+     *
+     * @param int $concurrency The amount of forks.
+     * @param callable $code The code for the fork.
+     */
+    private function fork($concurrency, callable $code)
+    {
+        $isChild = false;
+        $pids    = [];
+        for ($i = 0; $i < $concurrency; $i++) {
+            $pid     = pcntl_fork();
+            $isChild = $pid == 0;
+            if ($isChild) {
+                break;
+
+            }
+            $pids[] = $pid;
+        }
+        
+        if ($isChild) {
+            call_user_func($code);
+            exit();
+        }
+        
+        // Wait for all children.
+        foreach ($pids as $pid) {
+            pcntl_waitpid($pid, $status);
+        }
+    }
+    
+    /**
      * Tests high contention empirically.
      *
      * @param callable $code         The counter code.
@@ -36,36 +67,16 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
         $concurrency = max(2, ezcSystemInfo::getInstance()->cpuCount);
         $iterations  = 20000 / $concurrency;
         $timeout = $concurrency * 20;
-        $isChild = false;
-        $pids    = [];
-        for ($i = 0; $i < $concurrency; $i++) {
-            $pid     = pcntl_fork();
-            $isChild = $pid == 0;
-            if ($isChild) {
-                break;
-
-            }
-            $pids[] = $pid;
-        }
         
-        // Concurrent increment.
-        if ($isChild) {
+        $this->fork($concurrency, function () use ($mutexFactory, $timeout, $iterations, $code) {
+            $mutex = call_user_func($mutexFactory, $timeout);
             for ($i = 0; $i < $iterations; $i++) {
-                $mutex = call_user_func($mutexFactory, $timeout);
                 $mutex->synchronized(function () use ($code) {
                     call_user_func($code, 1);
                 });
 
             }
-            exit();
-            
-        }
-        
-        // Wait for all children.
-        foreach ($pids as $pid) {
-            pcntl_waitpid($pid, $status);
-
-        }
+        });
         
         $counter = call_user_func($code, 0);
         $this->assertEquals($concurrency * $iterations, $counter);
@@ -113,15 +124,13 @@ class MutexLockTest extends \PHPUnit_Framework_TestCase
     public function testSerialisation(callable $mutexFactory)
     {
         $timestamp = microtime(true);
-        $isChild   = pcntl_fork() == 0;
         
-        $mutex = call_user_func($mutexFactory);
-        $mutex->synchronized(function () {
-            usleep(500000);
+        $this->fork(2, function () use ($mutexFactory) {
+            $mutex = call_user_func($mutexFactory);
+            $mutex->synchronized(function () {
+                usleep(500000);
+            });
         });
-        
-        // exit the child.
-        $isChild ? exit() : pcntl_wait($status);
 
         $delta = microtime(true) - $timestamp;
         $this->assertGreaterThan(1, $delta);

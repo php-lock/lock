@@ -4,12 +4,14 @@ namespace malkusch\lock\mutex;
 
 use Redis;
 use RedisException;
-use malkusch\lock\exception\MutexException;
 
 /**
  * Mutex based on the Redlock algorithm using the phpredis extension.
  *
  * This implementation requires at least phpredis-2.2.4.
+ *
+ * Note: If you're going to use this mutex in a forked process, you have to call
+ * {@link seedRandom()} in each instance.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @license WTFPL
@@ -36,7 +38,6 @@ class PHPRedisMutex extends AbstractRedisMutex
      * @param int     $timeout     The time in seconds a lock expires, default is 3.
      *
      * @throws \LengthException The timeout must be greater than 0.
-     * @throws MutexException Failed to initialize the random generator.
      */
     public function __construct(array $connections, $name, $timeout = 3)
     {

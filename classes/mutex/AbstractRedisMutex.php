@@ -2,17 +2,16 @@
 
 namespace malkusch\lock\mutex;
 
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\MutexException;
-use RandomLib\Factory;
-use RandomLib\Generator;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * Mutex based on the Redlock algorithm.
  *
+ * Note: If you're going to use this mutex in a forked process, you have to call
+ * {@link seedRandom()} in each instance.
+ *
  * @author Markus Malkusch <markus@malkusch.de>
  * @license WTFPL
- * @internal
  *
  * @link http://redis.io/topics/distlock
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
@@ -24,31 +23,32 @@ abstract class AbstractRedisMutex extends AbstractSpinlockMutex
      * @var string The random value token for key identification.
      */
     private $token;
-    
-    /**
-     * @var Generator The random generator;
-     */
-    private $random;
-    
-    /**
-     * @throws MutexException Failed to initialize the random generator.
-     * @throws \LengthException The timeout must be greater than 0.
-     */
+
     public function __construct($name, $timeout = 3)
     {
         parent::__construct($name, $timeout);
-        
-        try {
-            $factory = new Factory();
-            $this->random = $factory->getMediumStrengthGenerator();
-            
-        } catch (\Exception $e) {
-            throw new MutexException("Failed to initialize the random generator.", 0, $e);
-        }
+
+        $this->seedRandom();
+    }
+    
+    /**
+     * Seeds the random number generator.
+     *
+     * Normally you don't need to seed, as this happens automatically. But
+     * if you experience a {@link LockReleaseException} this might come
+     * from identically created random tokens. In this case you could seed
+     * from /dev/urandom.
+     *
+     * @param int|null $seed The optional seed.
+     */
+    public function seedRandom($seed = null)
+    {
+        is_null($seed) ? srand() : srand($seed);
     }
     
     /**
      * @SuppressWarnings(PHPMD)
+     * @internal
      */
     protected function acquire($key, $expire)
     {
@@ -56,13 +56,7 @@ abstract class AbstractRedisMutex extends AbstractSpinlockMutex
         $time = microtime(true);
         
         // 2.
-        try {
-            $this->token = $this->random->generateInt();
-
-        } catch (\Exception $e) {
-            throw new LockAcquireException("Failed to generate a random token", 0, $e);
-
-        }
+        $this->token = rand();
         $acquired = 0;
         foreach ($this->getConnections() as $connection) {
             if ($this->add($connection, $key, $this->token, $expire)) {
@@ -85,6 +79,9 @@ abstract class AbstractRedisMutex extends AbstractSpinlockMutex
         }
     }
     
+    /**
+     * @internal
+     */
     protected function release($key)
     {
         /*
@@ -122,6 +119,7 @@ abstract class AbstractRedisMutex extends AbstractSpinlockMutex
     
     /**
      * @return array The list of connected Redis APIs.
+     * @internal
      */
     abstract protected function getConnections();
 
@@ -134,6 +132,7 @@ abstract class AbstractRedisMutex extends AbstractSpinlockMutex
      * @param int    $expire The TTL seconds.
      *
      * @return bool True, if the key was set.
+     * @internal
      */
     abstract protected function add($connection, $key, $value, $expire);
 
@@ -144,6 +143,7 @@ abstract class AbstractRedisMutex extends AbstractSpinlockMutex
      * @param array  $arguments  Keys and values.
      *
      * @return mixed The script result, or false if executing failed.
+     * @internal
      */
     abstract protected function evalScript($connection, $script, $numkeys, array $arguments);
 }

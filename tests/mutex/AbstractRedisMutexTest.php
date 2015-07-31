@@ -17,6 +17,16 @@ class AbstractRedisMutexTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
+     * Tests seeding produces different tokens for each process.
+     *
+     * @test
+     */
+    public function testSeedRandom()
+    {
+        $this->markTestIncomplete();
+    }
+    
+    /**
      * TODO define tests for AbstractRedisMutex and its implementations.
      *
      * @test
