@@ -57,6 +57,13 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 $mock->expects($this->any())->method("release")->willReturn(true);
                 return $mock;
             }],
+
+            "LockMutex" => [function () {
+                $mock = $this->getMockForAbstractClass(LockMutex::class);
+                $mock->expects($this->any())->method("lock")->willReturn(true);
+                $mock->expects($this->any())->method("unlock")->willReturn(true);
+                return $mock;
+            }],
         ];
 
         if (getenv("MEMCACHE_HOST")) {

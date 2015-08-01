@@ -4,7 +4,6 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\util\Loop;
 use malkusch\lock\exception\LockReleaseException;
-use malkusch\lock\exception\LockAcquireException;
 
 /**
  * Spinlock implementation.
@@ -14,7 +13,7 @@ use malkusch\lock\exception\LockAcquireException;
  * @license WTFPL
  * @internal
  */
-abstract class SpinlockMutex extends Mutex
+abstract class SpinlockMutex extends LockMutex
 {
     
     /**
@@ -31,6 +30,11 @@ abstract class SpinlockMutex extends Mutex
      * @var string The lock key.
      */
     private $key;
+    
+    /**
+     * @var double The timestamp when the lock was acquired.
+     */
+    private $acquired;
     
     /**
      * The prefix for the lock key.
@@ -51,36 +55,35 @@ abstract class SpinlockMutex extends Mutex
         $this->key     = static::PREFIX.$name;
     }
     
-    public function synchronized(callable $code)
+    protected function lock()
     {
-        return $this->loop->execute(function () use ($code) {
-            $begin = microtime(true);
-
-            if (!$this->acquire($this->key, $this->timeout + 1)) {
-                return; // try again.
-            }
-            
-            try {
-                return call_user_func($code);
-
-            } finally {
-                if (microtime(true) - $begin >= $this->timeout) {
-                    throw new LockReleaseException(
-                        "The lock was released before the code finished execution. Increase the timeout."
-                    );
-                }
-                
-                /*
-                 * Worst case would still be one second before the key expires.
-                 * This guarantees that we don't delete a wrong key.
-                 */
-                if (!$this->release($this->key)) {
-                    throw new LockReleaseException("Could not release lock.");
-
-                }
+        $this->loop->execute(function () {
+            $this->acquired = microtime(true);
+            if ($this->acquire($this->key, $this->timeout + 1)) {
                 $this->loop->end();
             }
         });
+    }
+
+    protected function unlock()
+    {
+        $elapsed = microtime(true) - $this->acquired;
+        if ($elapsed >= $this->timeout) {
+            $message = sprintf(
+                "The code excuted %d seconds. But the timeout is %d seconds.",
+                $elapsed,
+                $this->timeout
+            );
+            throw new LockReleaseException($message);
+        }
+
+        /*
+         * Worst case would still be one second before the key expires.
+         * This guarantees that we don't delete a wrong key.
+         */
+        if (!$this->release($this->key)) {
+            throw new LockReleaseException("Failed to release the lock.");
+        }
     }
     
     /**
@@ -90,7 +93,6 @@ abstract class SpinlockMutex extends Mutex
      * @param int $expire The timeout in seconds when a lock expires.
      *
      * @return bool True, if the lock could be acquired.
-     * @throws LockAcquireException An error happened.
      */
     abstract protected function acquire($key, $expire);
 

@@ -7,7 +7,7 @@ use Redis;
 use ezcSystemInfo;
 
 /**
- * Tests for locking in Mutex.
+ * Concurrency Tests for Mutex.
  *
  * If you want to run integration tests you should provide these environment variables:
  *
@@ -19,7 +19,7 @@ use ezcSystemInfo;
  * @license WTFPL
  * @see Mutex
  */
-class MutexLockTest extends \PHPUnit_Framework_TestCase
+class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
 {
     
     /**

@@ -13,7 +13,7 @@ use malkusch\lock\exception\LockReleaseException;
  * @license WTFPL
  * @see flock()
  */
-class FlockMutex extends Mutex
+class FlockMutex extends LockMutex
 {
     
     /**
@@ -36,18 +36,23 @@ class FlockMutex extends Mutex
         $this->fileHandle = $fileHandle;
     }
     
-    public function synchronized(callable $code)
+    /**
+     * @internal
+     */
+    protected function lock()
     {
         if (!flock($this->fileHandle, LOCK_EX)) {
-            throw new LockAcquireException("Could not aquire lock.");
+            throw new LockAcquireException("Failed to lock the file.");
         }
-        try {
-            return call_user_func($code);
-            
-        } finally {
-            if (!flock($this->fileHandle, LOCK_UN)) {
-                throw new LockReleaseException("Could not release lock.");
-            }
+    }
+    
+    /**
+     * @internal
+     */
+    protected function unlock()
+    {
+        if (!flock($this->fileHandle, LOCK_UN)) {
+            throw new LockReleaseException("Failed to unlock the file.");
         }
     }
 }

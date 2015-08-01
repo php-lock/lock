@@ -12,7 +12,7 @@ use malkusch\lock\exception\LockReleaseException;
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
  */
-class SemaphoreMutex extends Mutex
+class SemaphoreMutex extends LockMutex
 {
 
     /**
@@ -43,18 +43,23 @@ class SemaphoreMutex extends Mutex
         $this->semaphore = $semaphore;
     }
     
-    public function synchronized(callable $code)
+    /**
+     * @internal
+     */
+    protected function lock()
     {
         if (!sem_acquire($this->semaphore)) {
-            throw new LockAcquireException("Could not acquire Semaphore.");
+            throw new LockAcquireException("Failed to acquire the Semaphore.");
         }
-        try {
-            return call_user_func($code);
-            
-        } finally {
-            if (!sem_release($this->semaphore)) {
-                throw new LockReleaseException("Could not release Semaphore.");
-            }
+    }
+
+    /**
+     * @internal
+     */
+    protected function unlock()
+    {
+        if (!sem_release($this->semaphore)) {
+            throw new LockReleaseException("Failed to release the Semaphore.");
         }
     }
 }
