@@ -25,7 +25,8 @@
         "mikey179/vfsStream": "^1.5.0",
         "predis/predis": "~1.0",
         "ext-redis": "^2.2.4",
-        "zetacomponents/system-information": "~1.1"
+        "zetacomponents/system-information": "~1.1",
+        "kriswallsmith/spork": "0.3.*"
     },
     "archive": {
         "exclude": ["/tests"]

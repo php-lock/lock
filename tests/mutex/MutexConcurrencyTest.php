@@ -5,6 +5,7 @@ namespace malkusch\lock\mutex;
 use Predis\Client;
 use Redis;
 use ezcSystemInfo;
+use Spork\ProcessManager;
 
 /**
  * Concurrency Tests for Mutex.
@@ -30,26 +31,9 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
      */
     private function fork($concurrency, callable $code)
     {
-        $isChild = false;
-        $pids    = [];
+        $manager = new ProcessManager();
         for ($i = 0; $i < $concurrency; $i++) {
-            $pid     = pcntl_fork();
-            $isChild = $pid == 0;
-            if ($isChild) {
-                break;
-
-            }
-            $pids[] = $pid;
-        }
-        
-        if ($isChild) {
-            call_user_func($code);
-            exit();
-        }
-        
-        // Wait for all children.
-        foreach ($pids as $pid) {
-            pcntl_waitpid($pid, $status);
+            $manager->fork($code);
         }
     }
     
@@ -89,7 +73,7 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
      */
     public function provideTestHighContention()
     {
-        return array_map(function (array $mutexFactory) {
+        $cases = array_map(function (array $mutexFactory) {
             $file = tmpfile();
             fputs($file, pack("i", 0));
             fflush($file);
@@ -112,6 +96,8 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
             ];
             
         }, $this->provideMutexFactories());
+        
+        return $cases;
     }
     
     /**
