@@ -241,9 +241,9 @@ Example:
 ```php
 $mutex = new TransactionalMutex($pdo);
 $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
-    $balance = $pdo->prepare("SELECT balance FROM account WHERE id = ?")
-        ->execute([$accountId])
-        ->fetchColumn();
+    $select = $pdo->prepare("SELECT balance FROM account WHERE id = ? FOR UPDATE");
+    $select->execute([$accountId]);
+    $balance = $select->fetchColumn();
 
     $balance -= $amount;
     if ($balance < 0) {

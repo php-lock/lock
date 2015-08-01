@@ -14,6 +14,16 @@ class TransactionalMutexTestTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
+     * Tests building the mutex with AUTOCOMMIT fails.
+     *
+     * @test
+     */
+    public function testAutocommitFails()
+    {
+        $this->markTestIncomplete();
+    }
+
+    /**
      * Tests building the mutex with an invalid error mode.
      *
      * @test

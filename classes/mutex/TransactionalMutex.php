@@ -36,15 +36,26 @@ class TransactionalMutex extends Mutex
      * @param \PDO $pdo     The PDO.
      * @param int  $timeout The timeout in seconds, default is 3.
      *
-     * @throws \InvalidArgumentException PDO must be configured to throw exceptions.
+     * @throws \InvalidArgumentException PDO must be configured to throw exceptions and AUTOCOMMIT should be disabled.
      * @throws \LengthException The timeout must be greater than 0.
      */
     public function __construct(\PDO $pdo, $timeout = 3)
     {
         if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
             throw new \InvalidArgumentException("The pdo must have PDO::ERRMODE_EXCEPTION set.");
-            
         }
+
+        try {
+            if ($pdo->getAttribute(\PDO::ATTR_AUTOCOMMIT)) {
+                throw new \InvalidArgumentException("PDO::ATTR_AUTOCOMMIT should be disabled.");
+            }
+        } catch (\PDOException $e) {
+            /*
+             * Ignore this, as some drivers would throw an exception for an
+             * unsupported attribute (e.g. Postgres).
+             */
+        }
+
         $this->pdo  = $pdo;
         $this->loop = new Loop($timeout);
     }
@@ -72,7 +83,7 @@ class TransactionalMutex extends Mutex
             try {
                 // BEGIN
                 $this->pdo->beginTransaction();
-                    
+                
             } catch (\PDOException $e) {
                 throw new LockAcquireException("Could not begin transaction.", 0, $e);
             }
