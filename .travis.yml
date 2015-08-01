@@ -15,7 +15,7 @@ php:
 env: 
   global:
     - MEMCACHE_HOST=localhost
-    - REDIS_URI=redis://localhost
+    - REDIS_URIS=redis://localhost,redis://localhost:63791
 
 services:
   - memcached
@@ -29,6 +29,7 @@ matrix:
 
 before_install:
   - phpenv config-add tests/php-travis.ini
+  - redis-server --port 63791 &
 
 install:
   - composer require squizlabs/php_codesniffer

@@ -14,7 +14,7 @@ use Memcached;
  * If you want to run integrations tests you should provide these environment variables:
  *
  * - MEMCACHE_HOST
- * - REDIS_URI
+ * - REDIS_URIS - a comma separated list of redis:// URIs.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
@@ -80,17 +80,36 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             }];
         }
 
-        if (getenv("REDIS_URI")) {
-            $cases["PredisMutex"] = [function () {
-                $client = new Client(getenv("REDIS_URI"));
-                return new PredisMutex([$client], "test");
+        if (getenv("REDIS_URIS")) {
+            $uris = explode(",", getenv("REDIS_URIS"));
+
+            $cases["PredisMutex"] = [function () use ($uris) {
+                $clients = array_map(
+                    function ($uri) {
+                        return new Client($uri);
+                    },
+                    $uris
+                );
+                return new PredisMutex($clients, "test");
             }];
 
-            $cases["PHPRedisMutex"] = [function () {
-                $redis = new Redis();
-                $uri   = parse_url(getenv("REDIS_URI"));
-                $redis->connect($uri["host"]);
-                return new PHPRedisMutex([$redis], "test");
+            $cases["PHPRedisMutex"] = [function () use ($uris) {
+                $apis = array_map(
+                    function ($uri) {
+                        $redis = new Redis();
+                        
+                        $uri = parse_url($uri);
+                        if (!empty($uri["port"])) {
+                            $redis->connect($uri["host"], $uri["port"]);
+                        } else {
+                            $redis->connect($uri["host"]);
+                        }
+                        
+                        return $redis;
+                    },
+                    $uris
+                );
+                return new PHPRedisMutex($apis, "test");
             }];
         }
 
