@@ -65,8 +65,9 @@ class TransactionalMutex extends Mutex
      *
      * It's up to the user to set the correct transaction isolation level.
      * However if the transaction fails (i.e. a \PDOException is thrown),
-     * the code will be executed again. Therefore the code must not have any
-     * side effects besides SQL statements.
+     * the code will be executed again in a new transaction. Therefore the
+     * code must not have any side effects besides SQL statements. Also the
+     * isolation level should be conserved for the repeated transaction.
      *
      * If the code throws an exception, the transaction is rolled back and will
      * not be replayed.

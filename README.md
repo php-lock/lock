@@ -233,9 +233,10 @@ The [`TransactionalMutex`](http://malkusch.github.io/lock/api/class-malkusch.loc
 delegates the serialization to the DBS. The exclusive code is executed within
 a transaction. It's up to you to set the correct transaction isolation level.
 However if the transaction fails (i.e. a `PDOException` was thrown), the code
-will be executed again. Therefore the code must not have any side effects
-besides SQL statements. If the code throws an exception, the transaction is
-rolled back and not replayed again.
+will be executed again in a new transaction. Therefore the code must not have
+any side effects besides SQL statements. Also the isolation level should be
+conserved for the repeated transaction. If the code throws an exception,
+the transaction is rolled back and not replayed again.
 
 Example:
 ```php
