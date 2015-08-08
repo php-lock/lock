@@ -2,6 +2,9 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
+
 /**
  * Tests for LockMutex.
  *
@@ -14,6 +17,18 @@ class LockMutexTest extends \PHPUnit_Framework_TestCase
 {
     
     /**
+     * @var \PHPUnit_Framework_MockObject_MockObject The SUT
+     */
+    private $mutex;
+    
+    protected function setUp()
+    {
+        parent::setUp();
+        
+        $this->mutex = $this->getMockForAbstractClass(LockMutex::class);
+    }
+
+    /**
      * Tests lock() fails and the code is not executed.
      *
      * @test
@@ -21,18 +36,13 @@ class LockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testLockFails()
     {
-        $this->markTestIncomplete();
-    }
-    
-    /**
-     * Tests lock() fails and the code is not executed.
-     *
-     * @test
-     * @expectedException malkusch\lock\exception\LockAcquireException
-     */
-    public function testLockReturnsFalse()
-    {
-        $this->markTestIncomplete();
+        $this->mutex->expects($this->any())
+            ->method("lock")
+            ->willThrowException(new LockAcquireException());
+        
+        $this->mutex->synchronized(function () {
+            $this->fail("Should not execute code.");
+        });
     }
     
     /**
@@ -42,7 +52,10 @@ class LockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnlockAfterCode()
     {
-        $this->markTestIncomplete();
+        $this->mutex->expects($this->once())->method("unlock");
+        
+        $this->mutex->synchronized(function () {
+        });
     }
     
     /**
@@ -52,7 +65,15 @@ class LockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnlockAfterException()
     {
-        $this->markTestIncomplete();
+        $this->mutex->expects($this->once())->method("unlock");
+        
+        try {
+            $this->mutex->synchronized(function () {
+                throw new \DomainException();
+            });
+        } catch (\DomainException $e) {
+            // expected
+        }
     }
     
     /**
@@ -63,7 +84,12 @@ class LockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnlockFailsAfterCode()
     {
-        $this->markTestIncomplete();
+        $this->mutex->expects($this->any())
+            ->method("unlock")
+            ->willThrowException(new LockReleaseException());
+        
+        $this->mutex->synchronized(function () {
+        });
     }
     
     /**
@@ -76,6 +102,12 @@ class LockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnlockFailsAfterException()
     {
-        $this->markTestIncomplete();
+        $this->mutex->expects($this->any())
+            ->method("unlock")
+            ->willThrowException(new LockReleaseException());
+        
+        $this->mutex->synchronized(function () {
+            throw new \DomainException();
+        });
     }
 }

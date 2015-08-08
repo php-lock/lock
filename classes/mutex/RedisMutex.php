@@ -136,7 +136,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                 assert(!is_null($exception)); // The last exception for some context.
                 throw new LockAcquireException(
                     "It's not possible to acquire a lock because at least half of the Redis server are not available.",
-                    0,
+                    LockAcquireException::REDIS_NOT_ENOUGH_SERVERS,
                     $exception
                 );
             }

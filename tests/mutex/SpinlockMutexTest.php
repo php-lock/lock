@@ -3,6 +3,8 @@
 namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
+use phpmock\phpunit\PHPMock;
+use phpmock\environment\SleepEnvironmentBuilder;
 
 /**
  * Tests for SpinlockMutex.
@@ -14,6 +16,21 @@ use malkusch\lock\exception\LockAcquireException;
  */
 class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
 {
+    
+    use PHPMock;
+    
+    protected function setUp()
+    {
+        parent::setUp();
+        
+        $builder = new SleepEnvironmentBuilder();
+        $builder->addNamespace(__NAMESPACE__);
+        $builder->addNamespace('malkusch\lock\util');
+        $sleep = $builder->build();
+        $sleep->enable();
+        
+        $this->registerForTearDown($sleep);
+    }
     
     /**
      * Tests failing to acquire the lock.

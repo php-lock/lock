@@ -24,6 +24,7 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
         
         $builder = new SleepEnvironmentBuilder();
         $builder->addNamespace(__NAMESPACE__);
+        $builder->addNamespace('malkusch\lock\util');
         $sleep = $builder->build();
         $sleep->enable();
         
