@@ -2,6 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\LockAcquireException;
+
 /**
  * Tests for SpinlockMutex.
  *
@@ -17,9 +19,25 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
      * Tests failing to acquire the lock.
      *
      * @test
-     * @expectedException malkusch\lock\exception\TimeoutException
+     * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testFailAcquireLock()
+    {
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test"]);
+        $mutex->expects($this->any())->method("acquire")->willThrowException(new LockAcquireException());
+
+        $mutex->synchronized(function () {
+            $this->fail("execution is not expected");
+        });
+    }
+    
+    /**
+     * Tests failing to acquire the lock due to a timeout.
+     *
+     * @test
+     * @expectedException malkusch\lock\exception\TimeoutException
+     */
+    public function testAcquireTimesOut()
     {
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test"]);
         $mutex->expects($this->any())->method("acquire")->willReturn(false);

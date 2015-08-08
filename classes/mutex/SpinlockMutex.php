@@ -4,6 +4,7 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\util\Loop;
 use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\exception\LockAcquireException;
 
 /**
  * Spinlock implementation.
@@ -70,7 +71,7 @@ abstract class SpinlockMutex extends LockMutex
         $elapsed = microtime(true) - $this->acquired;
         if ($elapsed >= $this->timeout) {
             $message = sprintf(
-                "The code excuted %d seconds. But the timeout is %d seconds.",
+                "The code executed for %d seconds. But the timeout is %d seconds.",
                 $elapsed,
                 $this->timeout
             );
@@ -93,6 +94,7 @@ abstract class SpinlockMutex extends LockMutex
      * @param int $expire The timeout in seconds when a lock expires.
      *
      * @return bool True, if the lock could be acquired.
+     * @throws LockAcquireException An unexpected error happened.
      */
     abstract protected function acquire($key, $expire);
 

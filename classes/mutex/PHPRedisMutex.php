@@ -4,6 +4,8 @@ namespace malkusch\lock\mutex;
 
 use Redis;
 use RedisException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * Mutex based on the Redlock algorithm using the phpredis extension.
@@ -48,7 +50,12 @@ class PHPRedisMutex extends RedisMutex
             return $redis->set($key, $value, ["nx", "ex" => $expire]);
             
         } catch (RedisException $e) {
-            return false;
+            $message = sprintf(
+                "Failed to acquire lock for key '%s' at %s",
+                $key,
+                $this->getRedisIdentifier($redis)
+            );
+            throw new LockAcquireException($message, 0, $e);
         }
     }
 
@@ -61,7 +68,19 @@ class PHPRedisMutex extends RedisMutex
             return $redis->eval($script, $arguments, $numkeys);
             
         } catch (RedisException $e) {
-            return false;
+            $message = sprintf(
+                "Failed to release lock at %s",
+                $this->getRedisIdentifier($redis)
+            );
+            throw new LockReleaseException($message, 0, $e);
         }
+    }
+    
+    /**
+     * @internal
+     */
+    protected function getRedisIdentifier($redis)
+    {
+        return sprintf("redis://%s:%d?database=%s", $redis->getHost(), $redis->getPort(), $redis->getDBNum());
     }
 }

@@ -2,6 +2,12 @@
 
 namespace malkusch\lock\mutex;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use Psr\Log\LoggerAwareInterface;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
+
 /**
  * Mutex based on the Redlock algorithm.
  *
@@ -14,7 +20,7 @@ namespace malkusch\lock\mutex;
  * @link http://redis.io/topics/distlock
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  */
-abstract class RedisMutex extends SpinlockMutex
+abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 {
     
     /**
@@ -26,6 +32,11 @@ abstract class RedisMutex extends SpinlockMutex
      * @var array The Redis APIs.
      */
     private $redisAPIs;
+    
+    /**
+     * @var LoggerInterface The logger.
+     */
+    private $logger;
 
     /**
      * Sets the Redis APIs.
@@ -41,7 +52,23 @@ abstract class RedisMutex extends SpinlockMutex
         parent::__construct($name, $timeout);
 
         $this->redisAPIs = $redisAPIs;
+        $this->logger    = new NullLogger();
         $this->seedRandom();
+    }
+    
+    /**
+     * Sets a logger instance on the object
+     *
+     * RedLock is a fault tolerant lock algorithm. I.e. it does tolerate
+     * failing redis connections without breaking. If you want to get notified
+     * about such events you'll have to provide a logger. Those events will
+     * be logged as warnings.
+     *
+     * @param LoggerInterface $logger The logger.
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
     }
     
     /**
@@ -65,15 +92,30 @@ abstract class RedisMutex extends SpinlockMutex
      */
     protected function acquire($key, $expire)
     {
-        // 1. This differs from the specification to avoid an overflow on 32-BIT systems.
+        // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $time = microtime(true);
         
         // 2.
-        $this->token = rand();
         $acquired = 0;
+        $errored  = 0;
+        $this->token = rand();
+        $exception   = null;
         foreach ($this->redisAPIs as $redis) {
-            if ($this->add($redis, $key, $this->token, $expire)) {
-                $acquired++;
+            try {
+                if ($this->add($redis, $key, $this->token, $expire)) {
+                    $acquired++;
+
+                }
+            } catch (LockAcquireException $exception) {
+                $context = [
+                    "key"       => $key,
+                    "token"     => $this->token,
+                    "redis"     => $this->getRedisIdentifier($redis),
+                    "exception" => $exception
+                ];
+                $this->logger->warning("Could not set {key} = {token} at {redis}.", $context);
+
+                $errored++;
             }
         }
         
@@ -88,6 +130,17 @@ abstract class RedisMutex extends SpinlockMutex
         } else {
             // 5.
             $this->release($key);
+            
+            // In addition to RedLock it's an exception if too many servers fail.
+            if (!$this->isMajority(count($this->redisAPIs) - $errored)) {
+                assert(!is_null($exception)); // The last exception for some context.
+                throw new LockAcquireException(
+                    "It's not possible to acquire a lock because at least half of the Redis server are not available.",
+                    0,
+                    $exception
+                );
+            }
+
             return false;
         }
     }
@@ -112,8 +165,20 @@ abstract class RedisMutex extends SpinlockMutex
         ';
         $released = 0;
         foreach ($this->redisAPIs as $redis) {
-            if ($this->evalScript($redis, $script, 1, [$key, $this->token])) {
-                $released++;
+            try {
+                if ($this->evalScript($redis, $script, 1, [$key, $this->token])) {
+                    $released++;
+                    
+                }
+            } catch (LockReleaseException $e) {
+                $context = [
+                    "key"       => $key,
+                    "token"     => $this->token,
+                    "redis"     => $this->getRedisIdentifier($redis),
+                    "exception" => $e
+                ];
+                $this->logger->warning("Could not unset {key} = {token} at {redis}.", $context);
+
             }
         }
         return $this->isMajority($released);
@@ -139,6 +204,7 @@ abstract class RedisMutex extends SpinlockMutex
      * @param int    $expire The TTL seconds.
      *
      * @return bool True, if the key was set.
+     * @throws LockAcquireException An unexpected error happened.
      * @internal
      */
     abstract protected function add($redisAPI, $key, $value, $expire);
@@ -150,7 +216,17 @@ abstract class RedisMutex extends SpinlockMutex
      * @param array  $arguments Keys and values.
      *
      * @return mixed The script result, or false if executing failed.
+     * @throws LockReleaseException An unexpected error happened.
      * @internal
      */
     abstract protected function evalScript($redisAPI, $script, $numkeys, array $arguments);
+    
+    /**
+     * Returns a string representation of the Redis API.
+     *
+     * @param mixed  $redisAPI The connected Redis API.
+     * @return string The identifier.
+     * @internal
+     */
+    abstract protected function getRedisIdentifier($redisAPI);
 }
