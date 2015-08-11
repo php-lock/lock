@@ -64,13 +64,16 @@ class TransactionalMutex extends Mutex
      * Executes the critical code within a transaction.
      *
      * It's up to the user to set the correct transaction isolation level.
-     * However if the transaction fails (i.e. a \PDOException is thrown),
-     * the code will be executed again in a new transaction. Therefore the
-     * code must not have any side effects besides SQL statements. Also the
-     * isolation level should be conserved for the repeated transaction.
+     * However if the transaction fails, the code will be executed again in a
+     * new transaction. Therefore the code must not have any side effects
+     * besides SQL statements. Also the isolation level should be conserved for
+     * the repeated transaction.
      *
-     * If the code throws an exception, the transaction is rolled back and will
-     * not be replayed.
+     * A transaction is considered as failed if a PDOException or an exception
+     * which has a PDOException as any previous exception was raised.
+     *
+     * If the code throws any other exception, the transaction is rolled back
+     * and won't  be replayed.
      *
      * @param callable $code The synchronized execution block.
      * @return mixed The return value of the execution block.
@@ -96,17 +99,36 @@ class TransactionalMutex extends Mutex
                 $this->loop->end();
                 return $result;
 
-            } catch (\PDOException $e) {
-                // ROLLBACK and replay the transaction.
-                $this->rollBack($e);
-                return;
-
             } catch (\Exception $e) {
-                // ROLLBACK and rethrow the exception.
                 $this->rollBack($e);
-                throw $e;
+                
+                if ($this->hasPDOException($e)) {
+                    return; // Replay
+                    
+                } else {
+                    throw $e;
+                }
             }
         });
+    }
+    
+    /**
+     * Checks if an exception or any of its previous exceptions is a PDOException.
+     *
+     * @param \Exception $exception The exception.
+     * @return boolean True if there's a PDOException.
+     */
+    private function hasPDOException(\Exception $exception)
+    {
+        if ($exception instanceof \PDOException) {
+            return true;
+            
+        }
+        if ($exception->getPrevious() === null) {
+            return false;
+
+        }
+        return $this->hasPDOException($exception->getPrevious());
     }
     
     /**

@@ -128,9 +128,11 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests replaying the transaction.
      *
+     * @param \Exception $exception The thrown exception.
      * @test
+     * @dataProvider provideTestReplayTransaction
      */
-    public function testReplayTransaction()
+    public function testReplayTransaction(\Exception $exception)
     {
         $pdo   = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
@@ -142,9 +144,9 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
         ");
         
         $i = 0;
-        $mutex->synchronized(function () use ($pdo, &$i) {
+        $mutex->synchronized(function () use ($pdo, &$i, $exception) {
             $i++;
-            
+
             $count = $pdo->query("SELECT count(*) FROM testExceptionRollsback")->fetchColumn();
             $this->assertEquals(0, $count);
             
@@ -152,9 +154,27 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
             
             // this provokes the replay
             if ($i < 5) {
-                throw new \PDOException();
+                throw $exception;
             }
         });
+
+        $count = $pdo->query("SELECT count(*) FROM testExceptionRollsback")->fetchColumn();
+        $this->assertEquals(1, $count);
+        
+        $this->assertEquals(5, $i);
+    }
+    
+    /**
+     * Returns test cases for testReplayTransaction().
+     *
+     * @return \Exception[][] Test cases.
+     */
+    public function provideTestReplayTransaction()
+    {
+        return [
+            [new \PDOException()],
+            [new \Exception("", 0, new \PDOException())],
+        ];
     }
     
     /**
