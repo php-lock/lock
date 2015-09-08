@@ -215,7 +215,7 @@ is a lock implementation based on [Semaphore](http://php.net/manual/en/ref.sem.p
 Example:
 ```php
 $semaphore = sem_get(ftok(__FILE__, "a"));
-$mutex     = new SemaphoreMutex(semaphore);
+$mutex     = new SemaphoreMutex($semaphore);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
