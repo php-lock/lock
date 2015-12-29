@@ -98,12 +98,22 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * Tests executing exactly unil the timeout will leave the key one more second.
+     * Tests executing exactly unitl the timeout will leave the key one more second.
      *
      * @test
      */
     public function testExecuteTimeoutLeavesOneSecondForKeyToExpire()
     {
-        $this->markTestIncomplete();
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test", 3]);
+        $mutex->expects($this->once())
+            ->method("acquire")
+            ->with($this->anything(), 4)
+            ->willReturn(true);
+        
+        $mutex->expects($this->once())->method("release")->willReturn(true);
+        
+        $mutex->synchronized(function () {
+            usleep(2999999);
+        });
     }
 }

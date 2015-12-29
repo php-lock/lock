@@ -60,6 +60,14 @@ abstract class SpinlockMutex extends LockMutex
     {
         $this->loop->execute(function () {
             $this->acquired = microtime(true);
+            
+            /*
+             * The expiration time for the lock is increased by one second
+             * to ensure that we delete only our keys. This will prevent the
+             * case that this key expires before the timeout, and another process
+             * acquires successfully the same key which would then be deleted
+             * by this process.
+             */
             if ($this->acquire($this->key, $this->timeout + 1)) {
                 $this->loop->end();
             }
