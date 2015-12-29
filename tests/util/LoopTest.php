@@ -42,6 +42,20 @@ class LoopTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * Tests execution within the timeout.
+     *
+     * @test
+     */
+    public function testExecutionWithinTimeout()
+    {
+        $loop = new Loop(1);
+        $loop->execute(function () use ($loop) {
+            usleep(999999);
+            $loop->end();
+        });
+    }
+    
+    /**
      * Tests exceeding the execution timeout.
      *
      * @test
@@ -50,8 +64,23 @@ class LoopTest extends \PHPUnit_Framework_TestCase
     public function testExceedTimeout()
     {
         $loop = new Loop(1);
+        $loop->execute(function () use ($loop) {
+            sleep(1);
+            $loop->end();
+        });
+    }
+    
+    /**
+     * Tests exceeding the execution timeout without calling end().
+     *
+     * @test
+     * @expectedException malkusch\lock\exception\TimeoutException
+     */
+    public function testExceedTimeoutWithoutExplicitEnd()
+    {
+        $loop = new Loop(1);
         $loop->execute(function () {
-            sleep(2);
+            sleep(1);
         });
     }
 

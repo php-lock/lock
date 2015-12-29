@@ -71,7 +71,7 @@ class Loop
         $this->looping = true;
         $minWait = 100;
         $timeout = microtime(true) + $this->timeout;
-        for ($i = 0; $this->looping && microtime(true) <= $timeout; $i++) {
+        for ($i = 0; $this->looping && microtime(true) < $timeout; $i++) {
             $result = call_user_func($code);
             if (!$this->looping) {
                 break;
@@ -82,12 +82,12 @@ class Loop
             $usleep = rand($min, $max);
             
             usleep($usleep);
-
         }
-        if ($this->looping) {
+
+        if (microtime(true) >= $timeout) {
             throw new TimeoutException("Timeout of $this->timeout seconds exceeded.");
-
         }
+
         return $result;
     }
 }
