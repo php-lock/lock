@@ -77,7 +77,23 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
         $mutex->expects($this->any())->method("release")->willReturn(true);
 
         $mutex->synchronized(function () {
-            sleep(2);
+            sleep(1);
+        });
+    }
+    
+    /**
+     * Tests executing code which barely doesn't hit the timeout.
+     *
+     * @test
+     */
+    public function testExecuteBarelySucceeds()
+    {
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test", 1]);
+        $mutex->expects($this->any())->method("acquire")->willReturn(true);
+        $mutex->expects($this->once())->method("release")->willReturn(true);
+
+        $mutex->synchronized(function () {
+            usleep(999999);
         });
     }
 
