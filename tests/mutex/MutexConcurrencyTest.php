@@ -46,7 +46,6 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
 
             try {
                 $this->pdo->setAttribute(\PDO::ATTR_AUTOCOMMIT, false);
-
             } catch (\PDOException $e) {
                 // Ignore this for Postgres.
             }
@@ -89,7 +88,6 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                 $mutex->synchronized(function () use ($code) {
                     call_user_func($code, 1);
                 });
-
             }
         });
 
@@ -146,7 +144,6 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                     // This prevents using a closed connection from a child.
                     if ($increment == 0) {
                         $this->pdo = null;
-                        
                     }
                     $pdo = $this->getPDO($dsn, $user);
                     $id  = 1;

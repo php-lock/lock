@@ -38,7 +38,6 @@ class SemaphoreMutex extends LockMutex
     {
         if (!is_resource($semaphore)) {
             throw new \InvalidArgumentException("The semaphore id is not a valid resource.");
-            
         }
         $this->semaphore = $semaphore;
     }

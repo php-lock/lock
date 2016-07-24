@@ -48,7 +48,6 @@ class PHPRedisMutex extends RedisMutex
     {
         try {
             return $redis->set($key, $value, ["nx", "ex" => $expire]);
-            
         } catch (RedisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s' at %s",
@@ -66,7 +65,6 @@ class PHPRedisMutex extends RedisMutex
     {
         try {
             return $redis->eval($script, $arguments, $numkeys);
-            
         } catch (RedisException $e) {
             $message = sprintf(
                 "Failed to release lock at %s",

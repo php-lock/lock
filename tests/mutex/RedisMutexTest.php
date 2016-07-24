@@ -115,7 +115,6 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 if ($i < $available) {
                     $i++;
                     return true;
-
                 } else {
                     throw new LockAcquireException();
                 }
@@ -147,7 +146,6 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 if ($i < $available) {
                     $i++;
                     return true;
-
                 } else {
                     throw new LockAcquireException();
                 }
@@ -271,7 +269,6 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 if ($i < $available) {
                     $i++;
                     return true;
-
                 } else {
                     throw new LockReleaseException();
                 }

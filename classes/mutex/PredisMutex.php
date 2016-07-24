@@ -43,7 +43,6 @@ class PredisMutex extends RedisMutex
     {
         try {
             return $client->set($key, $value, "EX", $expire, "NX");
-            
         } catch (PredisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s' at %s",
@@ -64,7 +63,6 @@ class PredisMutex extends RedisMutex
                 [$client, "eval"],
                 array_merge([$script, $numkeys], $arguments)
             );
-            
         } catch (PredisException $e) {
             $message = sprintf(
                 "Failed to release lock at %s",

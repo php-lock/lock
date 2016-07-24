@@ -37,7 +37,6 @@ class Loop
     {
         if ($timeout <= 0) {
             throw new \LengthException("The timeout must be greater than 0. '$timeout' was given");
-            
         }
         $this->timeout = $timeout;
     }
@@ -75,7 +74,6 @@ class Loop
             $result = call_user_func($code);
             if (!$this->looping) {
                 break;
-
             }
             $min    = $minWait * pow(2, $i);
             $max    = $min * 2;

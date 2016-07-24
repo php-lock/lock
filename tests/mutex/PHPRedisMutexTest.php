@@ -37,7 +37,6 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
         if (!getenv("REDIS_URIS")) {
              $this->markTestSkipped();
              return;
-
         }
         $this->redis = new Redis();
 

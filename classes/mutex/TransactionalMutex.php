@@ -88,7 +88,6 @@ class TransactionalMutex extends Mutex
             try {
                 // BEGIN
                 $this->pdo->beginTransaction();
-                
             } catch (\PDOException $e) {
                 throw new LockAcquireException("Could not begin transaction.", 0, $e);
             }
@@ -99,13 +98,11 @@ class TransactionalMutex extends Mutex
                 $this->pdo->commit();
                 $this->loop->end();
                 return $result;
-
             } catch (\Exception $e) {
                 $this->rollBack($e);
                 
                 if ($this->hasPDOException($e)) {
                     return; // Replay
-                    
                 } else {
                     throw $e;
                 }
@@ -123,11 +120,9 @@ class TransactionalMutex extends Mutex
     {
         if ($exception instanceof \PDOException) {
             return true;
-            
         }
         if ($exception->getPrevious() === null) {
             return false;
-
         }
         return $this->hasPDOException($exception->getPrevious());
     }
@@ -143,7 +138,6 @@ class TransactionalMutex extends Mutex
     {
         try {
             $this->pdo->rollBack();
-
         } catch (\PDOException $e2) {
             throw new LockAcquireException(
                 "Could not roll back transaction: {$e2->getMessage()})",

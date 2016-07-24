@@ -72,7 +72,6 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
         $this->checkedLocking->setCheck(function () use (&$lock, &$check) {
             if ($check == 1) {
                 $this->assertEquals(1, $lock);
-                
             }
             $check++;
             return true;

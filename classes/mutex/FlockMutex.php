@@ -31,7 +31,6 @@ class FlockMutex extends LockMutex
     {
         if (!is_resource($fileHandle)) {
             throw new \InvalidArgumentException("The file handle is not a valid resource.");
-            
         }
         $this->fileHandle = $fileHandle;
     }

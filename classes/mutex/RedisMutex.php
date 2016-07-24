@@ -104,7 +104,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
             try {
                 if ($this->add($redis, $key, $this->token, $expire)) {
                     $acquired++;
-
                 }
             } catch (LockAcquireException $exception) {
                 $context = [
@@ -126,7 +125,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         if ($isAcquired) {
             // 4.
             return true;
-            
         } else {
             // 5.
             $this->release($key);
@@ -168,7 +166,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
             try {
                 if ($this->evalScript($redis, $script, 1, [$key, $this->token])) {
                     $released++;
-                    
                 }
             } catch (LockReleaseException $e) {
                 $context = [
@@ -178,7 +175,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                     "exception" => $e
                 ];
                 $this->logger->warning("Could not unset {key} = {token} at {redis}.", $context);
-
             }
         }
         return $this->isMajority($released);

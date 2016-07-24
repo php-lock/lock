@@ -37,7 +37,6 @@ class MemcacheMutexTest extends \PHPUnit_Framework_TestCase
     {
         if (!getenv("MEMCACHE_HOST")) {
             return;
-
         }
         $memcache = new \Memcache();
         $memcache->connect(getenv("MEMCACHE_HOST"));
@@ -57,7 +56,6 @@ class MemcacheMutexTest extends \PHPUnit_Framework_TestCase
     {
         if (!getenv("MEMCACHE_HOST")) {
             return;
-
         }
         $memcache = new \Memcached();
         $memcache->addServer(getenv("MEMCACHE_HOST"), 11211);
