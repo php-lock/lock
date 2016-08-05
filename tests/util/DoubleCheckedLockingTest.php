@@ -43,11 +43,9 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
         $this->mutex->expects($this->never())->method("synchronized");
         $this->checkedLocking->setCheck(function () {
             return false;
-
         });
         $this->checkedLocking->then(function () {
             $this->fail();
-
         });
     }
     
@@ -102,7 +100,6 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
         $this->checkedLocking->setCheck($check);
         $this->checkedLocking->then(function () {
             $this->fail();
-
         });
     }
     
@@ -142,13 +139,11 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
                 
         $this->checkedLocking->setCheck(function () {
             return true;
-
         });
 
         $executed = false;
         $this->checkedLocking->then(function () use (&$executed) {
             $executed = true;
-
         });
         $this->assertTrue($executed);
     }

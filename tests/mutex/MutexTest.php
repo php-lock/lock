@@ -128,7 +128,6 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         $mutex  = call_user_func($mutexFactory);
         $result = $mutex->synchronized(function () {
             return "test";
-
         });
         $this->assertEquals("test", $result);
     }

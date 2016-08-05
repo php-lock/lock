@@ -123,7 +123,6 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                 },
                 $mutexFactory[0]
             ];
-            
         }, $this->provideMutexFactories());
         
         $addPDO = function ($dsn, $user, $vendor) use (&$cases) {

@@ -66,7 +66,6 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 });
 
                 return $token;
-
             })->then(function (Fork $fork) use (&$tokens) {
                 $this->assertArrayNotHasKey($fork->getResult(), $tokens);
                 $tokens[$fork->getResult()] = $fork->getResult();
