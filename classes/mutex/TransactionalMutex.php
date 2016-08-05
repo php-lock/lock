@@ -36,7 +36,7 @@ class TransactionalMutex extends Mutex
      * The PDO object MUST be configured with PDO::ATTR_ERRMODE
      * to throw exceptions on errors.
      *
-     * As this implementation spans a transation over a unit of work,
+     * As this implementation spans a transaction over a unit of work,
      * PDO::ATTR_AUTOCOMMIT SHOULD not be enabled.
      *
      * @param \PDO $pdo     The PDO.
