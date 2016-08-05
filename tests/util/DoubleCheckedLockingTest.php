@@ -29,7 +29,7 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
         
-        $this->mutex          = $this->getMock(Mutex::class);
+        $this->mutex          = $this->createMock(Mutex::class);
         $this->checkedLocking = new DoubleCheckedLocking($this->mutex);
     }
 
