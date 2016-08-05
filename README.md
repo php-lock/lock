@@ -65,7 +65,6 @@ The `Mutex` is an abstract class. You will have to chose an implementation:
 
 - [`CASMutex`](#casmutex)
 - [`FlockMutex`](#flockmutex)
-- [`MemcacheMutex`](#memcachemutex)
 - [`MemcachedMutex`](#memcachedmutex)
 - [`PHPRedisMutex`](#phpredismutex)
 - [`PredisMutex`](#predismutex)
@@ -105,28 +104,6 @@ is a lock implementation based on [`flock()`](http://php.net/manual/en/function.
 Example:
 ```php
 $mutex = new FlockMutex(fopen(__FILE__, "r"));
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
-
-    }
-    $bankAccount->setBalance($balance);
-});
-```
-
-#### MemcacheMutex
-
-The [`MemcacheMutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.MemcacheMutex.html)
-is a spinlock implementation which uses the [`Memcache` API](http://php.net/manual/en/book.memcache.php).
-
-Example:
-```php
-$memcache = new \Memcache();
-$memcache->connect("localhost");
-
-$mutex = new MemcacheMutex("balance", $memcache);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;

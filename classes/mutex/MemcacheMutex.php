@@ -10,6 +10,7 @@ use Memcache;
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
+ * @deprecated 1.0.0 Use MemcachedMutex together with ext-memcached.
  */
 class MemcacheMutex extends SpinlockMutex
 {
@@ -40,7 +41,8 @@ class MemcacheMutex extends SpinlockMutex
     public function __construct($name, Memcache $memcache, $timeout = 3)
     {
         parent::__construct($name, $timeout);
-
+        trigger_error("MemcacheMutex has been deprecated in favour of MemcachedMutex.", E_USER_DEPRECATED);
+        
         $this->memcache = $memcache;
     }
     

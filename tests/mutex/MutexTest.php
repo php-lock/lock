@@ -5,7 +5,6 @@ namespace malkusch\lock\mutex;
 use org\bovigo\vfs\vfsStream;
 use Predis\Client;
 use Redis;
-use Memcache;
 use Memcached;
 
 /**
@@ -67,12 +66,6 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         ];
 
         if (getenv("MEMCACHE_HOST")) {
-            $cases["MemcacheMutex"] = [function () {
-                $memcache = new Memcache();
-                $memcache->connect(getenv("MEMCACHE_HOST"));
-                return new MemcacheMutex("test", $memcache);
-            }];
-
             $cases["MemcachedMutex"] = [function () {
                 $memcache = new Memcached();
                 $memcache->addServer(getenv("MEMCACHE_HOST"), 11211);

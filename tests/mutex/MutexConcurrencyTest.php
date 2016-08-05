@@ -219,12 +219,6 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
         ];
             
         if (getenv("MEMCACHE_HOST")) {
-            $cases["memcache"] = [function ($timeout = 3) {
-                $memcache = new \Memcache();
-                $memcache->connect(getenv("MEMCACHE_HOST"));
-                return new MemcacheMutex("test", $memcache, $timeout);
-            }];
-            
             $cases["memcached"] = [function ($timeout = 3) {
                 $memcached = new \Memcached();
                 $memcached->addServer(getenv("MEMCACHE_HOST"), 11211);
