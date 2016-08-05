@@ -16,19 +16,6 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * Tests building the mutex with AUTOCOMMIT fails.
-     *
-     * @test
-     * @expectedException \InvalidArgumentException
-     */
-    public function testAutocommitFails()
-    {
-        $pdo = $this->buildMySqlPdo();
-        $pdo->setAttribute(\PDO::ATTR_AUTOCOMMIT, true);
-        new TransactionalMutex($pdo);
-    }
-
-    /**
      * Tests building the mutex with an invalid error mode.
      *
      * @param int $mode The invalid error mode.
@@ -217,7 +204,6 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
         $pdo = new \PDO($dsn, $user);
         
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        $pdo->setAttribute(\PDO::ATTR_AUTOCOMMIT, false);
         
         return $pdo;
     }

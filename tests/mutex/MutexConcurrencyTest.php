@@ -43,12 +43,6 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
         if (is_null($this->pdo)) {
             $this->pdo = new \PDO($dsn, $user);
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-            try {
-                $this->pdo->setAttribute(\PDO::ATTR_AUTOCOMMIT, false);
-            } catch (\PDOException $e) {
-                // Ignore this for Postgres.
-            }
         }
         return $this->pdo;
     }

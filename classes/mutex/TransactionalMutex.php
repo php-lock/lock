@@ -33,16 +33,40 @@ class TransactionalMutex extends Mutex
     /**
      * Sets the PDO.
      *
+     * The PDO object MUST be configured with {@link PDO::ATTR_ERRMODE}
+     * to throw exceptions on errors.
+     *
+     * As this implementation spans a transation over a unit of work,
+     * {@link PDO::ATTR_AUTOCOMMIT} SHOULD not be enabled.
+     *
      * @param \PDO $pdo     The PDO.
      * @param int  $timeout The timeout in seconds, default is 3.
      *
-     * @throws \InvalidArgumentException PDO must be configured to throw exceptions and AUTOCOMMIT should be disabled.
      * @throws \LengthException The timeout must be greater than 0.
      */
     public function __construct(\PDO $pdo, $timeout = 3)
     {
         if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
             throw new \InvalidArgumentException("The pdo must have PDO::ERRMODE_EXCEPTION set.");
+        }
+        self::checkAutocommit($pdo);
+
+        $this->pdo  = $pdo;
+        $this->loop = new Loop($timeout);
+    }
+    
+    /**
+     * Checks that the AUTOCOMMIT mode is turned off.
+     *
+     * @param \PDO $pdo PDO
+     */
+    private static function checkAutocommit(\PDO $pdo)
+    {
+        $vendor = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        
+        // MySQL turns autocommit off during a transaction.
+        if ($vendor == "mysql") {
+            return;
         }
 
         try {
@@ -55,9 +79,6 @@ class TransactionalMutex extends Mutex
              * unsupported attribute (e.g. Postgres).
              */
         }
-
-        $this->pdo  = $pdo;
-        $this->loop = new Loop($timeout);
     }
     
     /**
