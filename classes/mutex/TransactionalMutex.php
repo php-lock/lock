@@ -33,11 +33,11 @@ class TransactionalMutex extends Mutex
     /**
      * Sets the PDO.
      *
-     * The PDO object MUST be configured with {@link PDO::ATTR_ERRMODE}
+     * The PDO object MUST be configured with PDO::ATTR_ERRMODE
      * to throw exceptions on errors.
      *
      * As this implementation spans a transation over a unit of work,
-     * {@link PDO::ATTR_AUTOCOMMIT} SHOULD not be enabled.
+     * PDO::ATTR_AUTOCOMMIT SHOULD not be enabled.
      *
      * @param \PDO $pdo     The PDO.
      * @param int  $timeout The timeout in seconds, default is 3.
