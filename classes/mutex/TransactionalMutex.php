@@ -101,7 +101,7 @@ class TransactionalMutex extends Mutex
             } catch (\Exception $e) {
                 $this->rollBack($e);
                 
-                if ($this->hasPDOException($e)) {
+                if (self::hasPDOException($e)) {
                     return; // Replay
                 } else {
                     throw $e;
@@ -116,7 +116,7 @@ class TransactionalMutex extends Mutex
      * @param \Exception $exception The exception.
      * @return boolean True if there's a PDOException.
      */
-    private function hasPDOException(\Exception $exception)
+    private static function hasPDOException(\Exception $exception)
     {
         if ($exception instanceof \PDOException) {
             return true;
@@ -124,7 +124,7 @@ class TransactionalMutex extends Mutex
         if ($exception->getPrevious() === null) {
             return false;
         }
-        return $this->hasPDOException($exception->getPrevious());
+        return self::hasPDOException($exception->getPrevious());
     }
     
     /**
