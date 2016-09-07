@@ -6,6 +6,7 @@ use org\bovigo\vfs\vfsStream;
 use Predis\Client;
 use Redis;
 use Memcached;
+use Spork\ProcessManager;
 
 /**
  * Tests for Mutex.
@@ -23,6 +24,8 @@ use Memcached;
 class MutexTest extends \PHPUnit_Framework_TestCase
 {
 
+    const TIMEOUT = 3;
+    
     /**
      * Provides Mutex factories.
      *
@@ -38,7 +41,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             "TransactionalMutex" => [function () {
                 $pdo = new \PDO("sqlite::memory:");
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-                return new TransactionalMutex($pdo);
+                return new TransactionalMutex($pdo, self::TIMEOUT);
             }],
 
             "FlockMutex" => [function () {
@@ -69,7 +72,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             $cases["MemcachedMutex"] = [function () {
                 $memcache = new Memcached();
                 $memcache->addServer(getenv("MEMCACHE_HOST"), 11211);
-                return new MemcachedMutex("test", $memcache);
+                return new MemcachedMutex("test", $memcache, self::TIMEOUT);
             }];
         }
 
@@ -83,7 +86,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                     },
                     $uris
                 );
-                return new PredisMutex($clients, "test");
+                return new PredisMutex($clients, "test", self::TIMEOUT);
             }];
 
             $cases["PHPRedisMutex"] = [function () use ($uris) {
@@ -102,7 +105,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                     },
                     $uris
                 );
-                return new PHPRedisMutex($apis, "test");
+                return new PHPRedisMutex($apis, "test", self::TIMEOUT);
             }];
         }
 
@@ -132,11 +135,36 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      * @test
      * @dataProvider provideMutexFactories
      */
-    public function testLiveness(callable $mutexFactory)
+    public function testRelease(callable $mutexFactory)
     {
         $mutex = call_user_func($mutexFactory);
         $mutex->synchronized(function () {
         });
+        $mutex->synchronized(function () {
+        });
+    }
+    
+    /**
+     * Tests that locks will be released automatically.
+     *
+     * @param callable $mutexFactory The Mutex factory.
+     * @test
+     * @dataProvider provideMutexFactories
+     */
+    public function testLiveness(callable $mutexFactory)
+    {
+        $manager = new ProcessManager();
+        $manager->fork(function () use ($mutexFactory) {
+            $mutex = call_user_func($mutexFactory);
+            $mutex->synchronized(function () {
+                exit;
+            });
+        });
+        $manager->wait();
+        
+        sleep(self::TIMEOUT - 1);
+
+        $mutex = call_user_func($mutexFactory);
         $mutex->synchronized(function () {
         });
     }
