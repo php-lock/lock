@@ -71,8 +71,11 @@ final class PcntlTimeout
             return call_user_func($code);
         } finally {
             pcntl_alarm(0);
-            pcntl_signal_dispatch();
-            pcntl_signal(SIGALRM, SIG_DFL);
+            try {
+                pcntl_signal_dispatch();
+            } finally {
+                pcntl_signal(SIGALRM, SIG_DFL);
+            }
         }
     }
 
