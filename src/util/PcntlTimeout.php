@@ -34,7 +34,7 @@ final class PcntlTimeout
             throw new \RuntimeException("PCNTL module not enabled");
         }
         if ($timeout <= 0) {
-            throw new \InvalidArgumentException("Timeout must be positiv and non zero");
+            throw new \InvalidArgumentException("Timeout must be positive and non zero");
         }
         $this->timeout = $timeout;
     }
@@ -55,13 +55,13 @@ final class PcntlTimeout
      * @throws TimeoutException Running the code timed out
      * @throws LockAcquireException Installing the timeout failed
      */
-    public function timeBoxed($code)
+    public function timeBoxed(callable $code)
     {
-        $signal = pcntl_signal(SIGALRM, function () {
+        $handlerInstalled = pcntl_signal(SIGALRM, function () {
             throw new TimeoutException("Timed out");
         });
-        if (!$signal) {
-            throw new LockAcquireException("Could not install signal");
+        if (!$handlerInstalled) {
+            throw new LockAcquireException("Could not install signal handler");
         }
         $oldAlarm = pcntl_alarm($this->timeout);
         if ($oldAlarm != 0) {
