@@ -18,6 +18,7 @@
     },
     "require": {
         "php": ">=5.6",
+        "paragonie/random_compat": "^1|^2",
         "psr/log": "^1"
     },
     "require-dev": {
