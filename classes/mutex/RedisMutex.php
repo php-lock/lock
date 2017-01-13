@@ -11,9 +11,6 @@ use malkusch\lock\exception\LockReleaseException;
 /**
  * Mutex based on the Redlock algorithm.
  *
- * Note: If you're going to use this mutex in a forked process, you have to call
- * {@link seedRandom()} in each instance.
- *
  * @author Markus Malkusch <markus@malkusch.de>
  * @license WTFPL
  *
@@ -53,7 +50,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 
         $this->redisAPIs = $redisAPIs;
         $this->logger    = new NullLogger();
-        $this->seedRandom();
     }
     
     /**
@@ -72,18 +68,13 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     }
     
     /**
-     * Seeds the random number generator.
-     *
-     * Normally you don't need to seed, as this happens automatically. But
-     * if you experience a {@link LockReleaseException} this might come
-     * from identically created random tokens. In this case you could seed
-     * from /dev/urandom.
+     * This method is no longer needed. It is kept here for backwards compatibility.
      *
      * @param int|null $seed The optional seed.
+     * @deprecated
      */
     public function seedRandom($seed = null)
     {
-        is_null($seed) ? srand() : srand($seed);
     }
     
     /**
@@ -98,7 +89,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         // 2.
         $acquired = 0;
         $errored  = 0;
-        $this->token = rand();
+        $this->token = random_int(0, (1 << 31) - 1);
         $exception   = null;
         foreach ($this->redisAPIs as $redis) {
             try {
