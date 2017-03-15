@@ -59,10 +59,7 @@ class PredisMutex extends RedisMutex
     protected function evalScript($client, $script, $numkeys, array $arguments)
     {
         try {
-            return call_user_func_array(
-                [$client, "eval"],
-                array_merge([$script, $numkeys], $arguments)
-            );
+            return $client->eval(...array_merge([$script, $numkeys], $arguments));
         } catch (PredisException $e) {
             $message = sprintf(
                 "Failed to release lock at %s",

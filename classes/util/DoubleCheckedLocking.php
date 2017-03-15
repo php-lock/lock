@@ -59,7 +59,7 @@ class DoubleCheckedLocking
      * @param callable $code The locked code.
      *
      * @throws \Exception The execution block or the check threw an exception.
-     * @throws LockAcquireException The mutex could not be aquired.
+     * @throws LockAcquireException The mutex could not be acquired.
      * @throws LockReleaseException The mutex could not be released.
      */
     public function then(callable $code)
