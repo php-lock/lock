@@ -10,9 +10,6 @@ use malkusch\lock\exception\LockReleaseException;
 /**
  * Mutex based on the Redlock algorithm using the Predis API.
  *
- * Note: If you're going to use this mutex in a forked process, you have to call
- * {@link seedRandom()} in each instance.
- *
  * @author Markus Malkusch <markus@malkusch.de>
  * @license WTFPL
  *
@@ -21,7 +18,7 @@ use malkusch\lock\exception\LockReleaseException;
  */
 class PredisMutex extends RedisMutex
 {
-    
+
     /**
      * Sets the Redis connections.
      *
@@ -35,7 +32,7 @@ class PredisMutex extends RedisMutex
     {
         parent::__construct($clients, $name, $timeout);
     }
-    
+
     /**
      * @internal
      */
@@ -71,7 +68,7 @@ class PredisMutex extends RedisMutex
             throw new LockReleaseException($message, 0, $e);
         }
     }
-    
+
     /**
      * @internal
      */

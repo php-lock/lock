@@ -12,9 +12,6 @@ use malkusch\lock\exception\LockReleaseException;
  *
  * This implementation requires at least phpredis-2.2.4.
  *
- * Note: If you're going to use this mutex in a forked process, you have to call
- * {@link seedRandom()} in each instance.
- *
  * @author Markus Malkusch <markus@malkusch.de>
  * @license WTFPL
  *
@@ -23,7 +20,7 @@ use malkusch\lock\exception\LockReleaseException;
  */
 class PHPRedisMutex extends RedisMutex
 {
-    
+
     /**
      * Sets the connected Redis APIs.
      *
@@ -40,7 +37,7 @@ class PHPRedisMutex extends RedisMutex
     {
         parent::__construct($redisAPIs, $name, $timeout);
     }
-    
+
     /**
      * @internal
      */
@@ -73,7 +70,7 @@ class PHPRedisMutex extends RedisMutex
             throw new LockReleaseException($message, 0, $e);
         }
     }
-    
+
     /**
      * @internal
      */

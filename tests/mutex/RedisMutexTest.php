@@ -22,11 +22,11 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
 {
 
     use PHPMock;
-    
+
     protected function setUp()
     {
         parent::setUp();
-        
+
         $sleepBuilder = new SleepEnvironmentBuilder();
         $sleepBuilder->addNamespace(__NAMESPACE__);
         $sleepBuilder->addNamespace('malkusch\lock\util');
@@ -39,14 +39,9 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Tests seeding produces different tokens for each process.
-     *
-     * @test
      */
     public function testSeedRandom()
     {
-        $mutex = $this->buildRedisMutex(1);
-        $mutex->seedRandom();
-
         $tokens = [];
         $processManager = new ProcessManager();
         for ($i = 0; $i < 2; $i++) {
@@ -61,7 +56,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                         return true;
                     }
                 );
-                
+
                 $mutex->synchronized(function () {
                 });
 
@@ -72,7 +67,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
             });
         }
     }
-    
+
     /**
      * Builds a testaböe RedisMutex mock.
      *
@@ -92,7 +87,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
 
         return $this->getMockForAbstractClass(RedisMutex::class, [$redisAPIs, "test", $timeout]);
     }
-    
+
     /**
      * Tests acquire() fails because too few servers are available.
      *
@@ -107,7 +102,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
     public function testTooFewServerToAcquire($count, $available)
     {
         $mutex = $this->buildRedisMutex($count);
-        
+
         $i = 0;
         $mutex->expects($this->any())->method("add")->willReturnCallback(
             function () use (&$i, $available) {
@@ -119,12 +114,12 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 }
             }
         );
-        
+
         $mutex->synchronized(function () {
             $this->fail("Code should not be executed");
         });
     }
-    
+
     /**
      * Tests synchronized() does work if the majority of servers is up.
      *
@@ -138,7 +133,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->any())->method("evalScript")->willReturn(true);
-        
+
         $i = 0;
         $mutex->expects($this->any())->method("add")->willReturnCallback(
             function () use (&$i, $available) {
@@ -150,7 +145,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 }
             }
         );
-        
+
         $mutex->synchronized(function () {
         });
     }
@@ -168,7 +163,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
     public function testAcquireTooFewKeys($count, $available)
     {
         $mutex = $this->buildRedisMutex($count);
-        
+
         $i = 0;
         $mutex->expects($this->any())->method("add")->willReturnCallback(
             function () use (&$i, $available) {
@@ -176,7 +171,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 return $i <= $available;
             }
         );
-        
+
         $mutex->synchronized(function () {
             $this->fail("Code should not be executed");
         });
@@ -196,12 +191,12 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
     public function testTimingOut($count, $timeout, $delay)
     {
         $mutex = $this->buildRedisMutex($count, $timeout);
-        
+
         $mutex->expects($this->any())->method("add")->willReturnCallback(function () use ($delay) {
             usleep($delay);
             return true;
         });
-        
+
         $mutex->synchronized(function () {
             $this->fail("Code should not be executed");
         });
@@ -220,7 +215,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
             [2, 1, 1001000],
         ];
     }
-    
+
     /**
      * Tests synchronized() works if the majority of keys was acquired.
      *
@@ -234,7 +229,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->any())->method("evalScript")->willReturn(true);
-        
+
         $i = 0;
         $mutex->expects($this->any())->method("add")->willReturnCallback(
             function () use (&$i, $available) {
@@ -242,7 +237,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 return $i <= $available;
             }
         );
-        
+
         $mutex->synchronized(function () {
         });
     }
@@ -261,7 +256,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->any())->method("add")->willReturn(true);
-        
+
         $i = 0;
         $mutex->expects($this->any())->method("evalScript")->willReturnCallback(
             function () use (&$i, $available) {
@@ -273,7 +268,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 }
             }
         );
-        
+
         $mutex->synchronized(function () {
         });
     }
@@ -292,7 +287,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->any())->method("add")->willReturn(true);
-        
+
         $i = 0;
         $mutex->expects($this->any())->method("evalScript")->willReturnCallback(
             function () use (&$i, $available) {
@@ -300,11 +295,11 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
                 return $i <= $available;
             }
         );
-        
+
         $mutex->synchronized(function () {
         });
     }
-    
+
     /**
      * Provides test cases with too few.
      *
@@ -322,7 +317,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
             [4, 2],
         ];
     }
-    
+
     /**
      * Provides test cases with enough.
      *

@@ -11,9 +11,6 @@ use malkusch\lock\exception\LockReleaseException;
 /**
  * Mutex based on the Redlock algorithm.
  *
- * Note: If you're going to use this mutex in a forked process, you have to call
- * {@link seedRandom()} in each instance.
- *
  * @author Markus Malkusch <markus@malkusch.de>
  * @license WTFPL
  *
@@ -22,17 +19,17 @@ use malkusch\lock\exception\LockReleaseException;
  */
 abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 {
-    
+
     /**
      * @var string The random value token for key identification.
      */
     private $token;
-    
+
     /**
      * @var array The Redis APIs.
      */
     private $redisAPIs;
-    
+
     /**
      * @var LoggerInterface The logger.
      */
@@ -53,9 +50,8 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 
         $this->redisAPIs = $redisAPIs;
         $this->logger    = new NullLogger();
-        $this->seedRandom();
     }
-    
+
     /**
      * Sets a logger instance on the object
      *
@@ -70,22 +66,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     {
         $this->logger = $logger;
     }
-    
-    /**
-     * Seeds the random number generator.
-     *
-     * Normally you don't need to seed, as this happens automatically. But
-     * if you experience a {@link LockReleaseException} this might come
-     * from identically created random tokens. In this case you could seed
-     * from /dev/urandom.
-     *
-     * @param int|null $seed The optional seed.
-     */
-    public function seedRandom($seed = null)
-    {
-        is_null($seed) ? srand() : srand($seed);
-    }
-    
+
     /**
      * @SuppressWarnings(PHPMD)
      * @internal
@@ -94,11 +75,11 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     {
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $time = microtime(true);
-        
+
         // 2.
         $acquired = 0;
         $errored  = 0;
-        $this->token = rand();
+        $this->token = \random_bytes(20);
         $exception   = null;
         foreach ($this->redisAPIs as $redis) {
             try {
@@ -117,18 +98,18 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                 $errored++;
             }
         }
-        
+
         // 3.
         $elapsedTime = microtime(true) - $time;
         $isAcquired  = $this->isMajority($acquired) && $elapsedTime <= $expire;
-        
+
         if ($isAcquired) {
             // 4.
             return true;
         } else {
             // 5.
             $this->release($key);
-            
+
             // In addition to RedLock it's an exception if too many servers fail.
             if (!$this->isMajority(count($this->redisAPIs) - $errored)) {
                 assert(!is_null($exception)); // The last exception for some context.
@@ -142,7 +123,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
             return false;
         }
     }
-    
+
     /**
      * @internal
      */
@@ -179,7 +160,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         }
         return $this->isMajority($released);
     }
-    
+
     /**
      * Returns if a count is the majority of all servers.
      *
@@ -190,7 +171,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     {
         return $count > count($this->redisAPIs) / 2;
     }
-    
+
     /**
      * Sets the key only if such key doesn't exist at the server yet.
      *
@@ -216,7 +197,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * @internal
      */
     abstract protected function evalScript($redisAPI, $script, $numkeys, array $arguments);
-    
+
     /**
      * Returns a string representation of the Redis API.
      *
