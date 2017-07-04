@@ -97,15 +97,16 @@ class TransactionalMutex extends Mutex
      * and won't  be replayed.
      *
      * @param callable $code The synchronized execution block.
+     * @param array $parameters The parameters bound to the execution block.
      * @return mixed The return value of the execution block.
      * @SuppressWarnings(PHPMD)
      *
      * @throws \Exception The execution block threw an exception.
      * @throws LockAcquireException The transaction was not commited.
      */
-    public function synchronized(callable $code)
+    public function synchronized(callable $code, array $parameters = array())
     {
-        return $this->loop->execute(function () use ($code) {
+        return $this->loop->execute(function () use ($code, $parameters) {
             try {
                 // BEGIN
                 $this->pdo->beginTransaction();
@@ -115,7 +116,7 @@ class TransactionalMutex extends Mutex
             
             try {
                 // Unit of work
-                $result = call_user_func($code);
+                $result = call_user_func($code, $parameters);
                 $this->pdo->commit();
                 $this->loop->end();
                 return $result;
