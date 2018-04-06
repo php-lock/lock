@@ -64,6 +64,10 @@ class PHPRedisMutex extends RedisMutex
     protected function evalScript($redis, $script, $numkeys, array $arguments)
     {
         try {
+            for ($i = $numkeys, $iMax = \count($arguments); $i < $iMax; $i++) {
+                $arguments[$i] = $redis->_serialize($arguments[$i]);
+            }
+
             return $redis->eval($script, $arguments, $numkeys);
         } catch (RedisException $e) {
             $message = sprintf(
