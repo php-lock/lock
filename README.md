@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/php-lock/lock.svg?branch=master)](https://travis-ci.org/php-lock/lock)
 
 This library helps executing critical code in concurrent situations.
 
@@ -243,4 +244,4 @@ Responsible for this project is Markus Malkusch markus@malkusch.de.
 If you like this project and feel generous donate a few Bitcoins here:
 [1335STSwu9hST4vcMRppEPgENMHD2r1REK](bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK)
 
-[![Build Status](https://travis-ci.org/malkusch/lock.svg?branch=master)](https://travis-ci.org/malkusch/lock)
+
