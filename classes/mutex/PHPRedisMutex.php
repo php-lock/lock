@@ -12,9 +12,6 @@ use malkusch\lock\exception\LockReleaseException;
  *
  * This implementation requires at least phpredis-2.2.4.
  *
- * Note: If you're going to use this mutex in a forked process, you have to call
- * {@link seedRandom()} in each instance.
- *
  * @author Markus Malkusch <markus@malkusch.de>
  * @license WTFPL
  *

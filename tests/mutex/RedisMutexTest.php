@@ -36,45 +36,8 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
         $this->registerForTearDown($sleep);
     }
 
-
     /**
-     * Tests seeding produces different tokens for each process.
-     *
-     * @test
-     */
-    public function testSeedRandom()
-    {
-        $mutex = $this->buildRedisMutex(1);
-        $mutex->seedRandom();
-
-        $tokens = [];
-        $processManager = new ProcessManager();
-        for ($i = 0; $i < 2; $i++) {
-            $processManager->fork(function () {
-                $mutex = $this->buildRedisMutex(1);
-                $mutex->expects($this->any())->method("evalScript")->willReturn(true);
-
-                $token = null;
-                $mutex->expects($this->any())->method("add")->willReturnCallback(
-                    function ($redisAPI, $key, $value, $expire) use (&$token) {
-                        $token = "$value";
-                        return true;
-                    }
-                );
-                
-                $mutex->synchronized(function () {
-                });
-
-                return $token;
-            })->then(function (Fork $fork) use (&$tokens) {
-                $this->assertArrayNotHasKey($fork->getResult(), $tokens);
-                $tokens[$fork->getResult()] = $fork->getResult();
-            });
-        }
-    }
-    
-    /**
-     * Builds a testaböe RedisMutex mock.
+     * Builds a testable RedisMutex mock.
      *
      * @param int $count The amount of redis apis.
      * @param int $timeout The timeout.

@@ -10,9 +10,6 @@ use malkusch\lock\exception\LockReleaseException;
 /**
  * Mutex based on the Redlock algorithm using the Predis API.
  *
- * Note: If you're going to use this mutex in a forked process, you have to call
- * {@link seedRandom()} in each instance.
- *
  * @author Markus Malkusch <markus@malkusch.de>
  * @license WTFPL
  *

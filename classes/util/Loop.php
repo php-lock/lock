@@ -77,7 +77,7 @@ class Loop
             }
             $min    = $minWait * pow(2, $i);
             $max    = $min * 2;
-            $usleep = rand($min, $max);
+            $usleep = \random_int($min, $max);
             
             usleep($usleep);
         }
