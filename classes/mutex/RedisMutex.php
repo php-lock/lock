@@ -135,6 +135,10 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
          * token, which results in releasing the wrong key.
          */
 
+        /*
+         * All Redis commands must be analyzed before execution to determine which keys the command will operate on. In
+         * order for this to be true for EVAL, keys must be passed explicitly.
+         */
         $script = '
             if redis.call("get",KEYS[1]) == ARGV[1] then
                 return redis.call("del",KEYS[1])

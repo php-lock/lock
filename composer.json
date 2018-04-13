@@ -11,6 +11,11 @@
             "email": "markus@malkusch.de",
             "homepage": "http://markus.malkusch.de",
             "role": "Developer"
+        },
+        {
+            "name": "Willem Stuursma-Ruwen",
+            "email": "willem@stuursma.name",
+            "role": "Developer"
         }
     ],
     "autoload": {

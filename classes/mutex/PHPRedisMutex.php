@@ -20,7 +20,6 @@ use malkusch\lock\exception\LockReleaseException;
  */
 class PHPRedisMutex extends RedisMutex
 {
-    
     /**
      * Sets the connected Redis APIs.
      *
@@ -43,7 +42,9 @@ class PHPRedisMutex extends RedisMutex
      */
     protected function add($redis, $key, $value, $expire)
     {
+        /** @var Redis $redis */
         try {
+            //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
             return $redis->set($key, $value, ["nx", "ex" => $expire]);
         } catch (RedisException $e) {
             $message = sprintf(
@@ -60,6 +61,7 @@ class PHPRedisMutex extends RedisMutex
      */
     protected function evalScript($redis, $script, $numkeys, array $arguments)
     {
+        /** @var Redis $redis */
         try {
             return $redis->eval($script, $arguments, $numkeys);
         } catch (RedisException $e) {
@@ -70,12 +72,13 @@ class PHPRedisMutex extends RedisMutex
             throw new LockReleaseException($message, 0, $e);
         }
     }
-    
+
     /**
      * @internal
      */
     protected function getRedisIdentifier($redis)
     {
+        /** @var Redis $redis */
         return sprintf("redis://%s:%d?database=%s", $redis->getHost(), $redis->getPort(), $redis->getDBNum());
     }
 }
