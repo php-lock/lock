@@ -21,6 +21,9 @@
     "autoload": {
         "psr-4": {"malkusch\\lock\\": "classes/"}
     },
+    "autoload-dev": {
+        "psr-4": {"malkusch\\lock\\tests\\": "tests/"}
+    },
     "require": {
         "php": ">=5.6",
         "psr/log": "^1",

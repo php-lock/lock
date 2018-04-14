@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\tests\classes\PHPRedisMutexWithoutSerialize;
 use Redis;
 
 /**
@@ -47,7 +48,13 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
         } else {
             $this->redis->connect($uri["host"]);
         }
-        
+        if (defined('Redis::SERIALIZER_IGBINARY') && extension_loaded('igbinary')) {
+            $this->redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_IGBINARY);
+        } else {
+            $this->redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
+        }
+        $this->redis->flushAll(); // flush all locks from previously tests
+
         $this->mutex = new PHPRedisMutex([$this->redis], "test");
     }
 
@@ -77,5 +84,40 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
         $this->mutex->synchronized(function () {
             $this->redis->close();
         });
+    }
+
+    public function testSuccessGettingLock()
+    {
+        $executed = null;
+
+        $this->mutex->synchronized(function () use (&$executed) {
+            $executed = true;
+        });
+
+        $this->assertTrue($executed);
+    }
+
+    /**
+     * @expectedException \malkusch\lock\exception\LockReleaseException
+     */
+    public function testFailedReleaseLockWithoutSerialize()
+    {
+        $mutexWithoutSerialize = new PHPRedisMutexWithoutSerialize([$this->redis], 'test');
+        $mutexWithoutSerialize->synchronized(function () {
+            // nothing
+        });
+    }
+
+    public function testSuccessWithoutSerializeOption()
+    {
+        $executed = null;
+
+        $this->redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_NONE);
+        $mutexWithoutSerialize = new PHPRedisMutexWithoutSerialize([$this->redis], 'test');
+        $mutexWithoutSerialize->synchronized(function () use (&$executed) {
+            $executed = true;
+        });
+
+        $this->assertTrue($executed);
     }
 }
