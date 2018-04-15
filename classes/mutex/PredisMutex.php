@@ -2,7 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
-use Predis\Client;
+use Predis\ClientInterface;
 use Predis\PredisException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
@@ -22,7 +22,7 @@ class PredisMutex extends RedisMutex
     /**
      * Sets the Redis connections.
      *
-     * @param Client[] $clients The Redis clients.
+     * @param ClientInterface[] $clients The Redis clients.
      * @param string   $name    The lock name.
      * @param int      $timeout The time in seconds a lock expires, default is 3.
      *
@@ -38,6 +38,7 @@ class PredisMutex extends RedisMutex
      */
     protected function add($client, $key, $value, $expire)
     {
+        /** @var ClientInterface $client */
         try {
             return $client->set($key, $value, "EX", $expire, "NX");
         } catch (PredisException $e) {
@@ -55,6 +56,7 @@ class PredisMutex extends RedisMutex
      */
     protected function evalScript($client, $script, $numkeys, array $arguments)
     {
+        /** @var ClientInterface $client */
         try {
             return $client->eval(...array_merge([$script, $numkeys], $arguments));
         } catch (PredisException $e) {
@@ -71,6 +73,7 @@ class PredisMutex extends RedisMutex
      */
     protected function getRedisIdentifier($client)
     {
+        /** @var ClientInterface $client */
         return (string) $client->getConnection();
     }
 }

@@ -29,8 +29,24 @@ class PredisMutexTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
         
-        $this->client = new Client(getenv("REDIS_URIS") ?: "redis://localhost");
-        $this->client->flushall(); // Clear any existing locks
+        $this->client = new Client($this->getPredisConfig());
+
+        if (count($this->getPredisConfig()) == 1) {
+            $this->client->flushall(); // Clear any existing locks
+        }
+    }
+
+    private function getPredisConfig()
+    {
+        if (getenv("REDIS_URIS") === false) {
+            return null;
+        }
+
+        $servers = explode(",", getenv("REDIS_URIS"));
+
+        return array_map(function($redisUri) {
+            return str_replace("redis://", "tcp://", $redisUri);
+        }, $servers);
     }
 
     /**
