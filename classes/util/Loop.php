@@ -84,16 +84,16 @@ class Loop
             /*
              * Calculate max time remaining, don't sleep any longer than that.
              */
-            $usec_remaining = intval(($timeout - microtime(true))  * 1e6);
+            $usecRemaining = intval(($timeout - microtime(true))  * 1e6);
 
-            if ($usec_remaining <= 0) {
+            if ($usecRemaining <= 0) {
                 /*
                  * We've ran out of time.
                  */
                 throw new TimeoutException("Timeout of $this->timeout seconds exceeded.");
             }
 
-            $usleep = min($usec_remaining, \random_int($min, $max));
+            $usleep = min($usecRemaining, \random_int($min, $max));
 
             usleep($usleep);
         }
