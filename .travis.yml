@@ -36,7 +36,7 @@ before_install:
   - redis-server --port 63791 &
 
 install:
-  - composer require --dev phpmd/phpmd squizlabs/php_codesniffer
+  - composer require --dev squizlabs/php_codesniffer
 
 before_script:
   - mysql -e 'create database test;'
@@ -45,5 +45,4 @@ before_script:
 script:
   - vendor/bin/phpunit
   - vendor/bin/phpcs --standard=PSR2 classes/ tests/
-  - vendor/bin/phpmd classes/ text cleancode,codesize,controversial,design,naming,unusedcode
 
