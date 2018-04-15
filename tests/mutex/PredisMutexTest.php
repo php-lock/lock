@@ -44,7 +44,7 @@ class PredisMutexTest extends \PHPUnit_Framework_TestCase
 
         $servers = explode(",", getenv("REDIS_URIS"));
 
-        return array_map(function($redisUri) {
+        return array_map(function ($redisUri) {
             return str_replace("redis://", "tcp://", $redisUri);
         }, $servers);
     }
