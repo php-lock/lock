@@ -16,7 +16,7 @@ use malkusch\lock\exception\LockReleaseException;
  * @license WTFPL
  *
  * @link http://redis.io/topics/distlock
- * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
+ * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
  */
 class PHPRedisMutex extends RedisMutex
 {

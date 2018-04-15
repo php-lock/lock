@@ -237,11 +237,11 @@ $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
 # License and authors
 
 This project is free and under the WTFPL.
-Responsible for this project is Markus Malkusch markus@malkusch.de.
+Responsible for this project is Willem Stuursma-Ruwen <willem@stuursma.name>.
 
 ## Donations
 
 If you like this project and feel generous donate a few Bitcoins here:
-[1335STSwu9hST4vcMRppEPgENMHD2r1REK](bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK)
+[1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA](bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA)
 
 

@@ -18,7 +18,7 @@ use Spork\ProcessManager;
  * - PGSQL_DSN, PGSQL_USER
  *
  * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
+ * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
  * @license WTFPL
  * @see Mutex
  */
