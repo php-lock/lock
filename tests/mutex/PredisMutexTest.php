@@ -16,6 +16,7 @@ use Predis\ClientInterface;
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
  * @see PredisMutex
+ * @group redis
  */
 class PredisMutexTest extends \PHPUnit_Framework_TestCase
 {
@@ -28,18 +29,8 @@ class PredisMutexTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
         
-        if (!getenv("REDIS_URIS")) {
-             $this->markTestSkipped();
-        }
-
-        $this->client = new Client("redis://example.net");
-    }
-
-    protected function tearDown()
-    {
-        $this->client->flushall();
-
-        parent::tearDown();
+        $this->client = new Client(getenv("REDIS_URIS") ?: "redis://localhost");
+        $this->client->flushall(); // Clear any existing locks
     }
 
     /**
@@ -51,7 +42,9 @@ class PredisMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddFails()
     {
-        $mutex  = new PredisMutex([$this->client], "test");
+        $client = new Client("redis://127.0.0.1:12345");
+
+        $mutex  = new PredisMutex([$client], "test");
         
         $mutex->synchronized(function () {
             $this->fail("Code execution is not expected");

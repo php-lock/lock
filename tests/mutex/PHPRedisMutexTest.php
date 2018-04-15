@@ -3,6 +3,7 @@
 namespace malkusch\lock\mutex;
 
 use Redis;
+use RedisException;
 
 /**
  * Tests for PHPRedisMutex.
@@ -16,10 +17,10 @@ use Redis;
  * @license WTFPL
  * @see PHPRedisMutex
  * @requires redis
+ * @group redis
  */
 class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
 {
-    
     /**
      * @var Redis The Redis API.
      */
@@ -34,13 +35,9 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
         
-        if (!getenv("REDIS_URIS")) {
-             $this->markTestSkipped();
-             return;
-        }
         $this->redis = new Redis();
 
-        $uris = explode(",", getenv("REDIS_URIS"));
+        $uris = explode(",", getenv("REDIS_URIS") ?: "redis://localhost");
         $uri  = parse_url($uris[0]);
         if (!empty($uri["port"])) {
             $this->redis->connect($uri["host"], $uri["port"]);
@@ -48,14 +45,9 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
             $this->redis->connect($uri["host"]);
         }
 
+        $this->redis->flushAll(); // Clear any existing locks.
+
         $this->mutex = new PHPRedisMutex([$this->redis], "test");
-    }
-
-    protected function tearDown()
-    {
-        $this->redis->flushAll();
-
-        parent::tearDown();
     }
 
     /**

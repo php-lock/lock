@@ -17,6 +17,7 @@ use Spork\Fork;
  * @license WTFPL
  *
  * @see RedisMutex
+ * @group redis
  */
 class RedisMutexTest extends \PHPUnit_Framework_TestCase
 {
