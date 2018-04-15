@@ -77,4 +77,25 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
             $this->redis->close();
         });
     }
+
+    /**
+     * @param $serialization
+     * @dataProvider dpSerializationModes
+     */
+    public function testSyncronizedWorks($serialization)
+    {
+        $this->redis->setOption(Redis::OPT_SERIALIZER, $serialization);
+
+        $this->mutex->synchronized(function () {
+            $this->assertTrue(true);
+        });
+    }
+
+    public function dpSerializationModes() {
+        return [
+            [Redis::SERIALIZER_NONE],
+            [Redis::SERIALIZER_PHP],
+            [Redis::SERIALIZER_IGBINARY],
+        ];
+    }
 }

@@ -62,6 +62,17 @@ class PHPRedisMutex extends RedisMutex
     protected function evalScript($redis, $script, $numkeys, array $arguments)
     {
         /** @var Redis $redis */
+
+        /*
+         * If a serializion mode such as "php" or "igbinary" is enabled, the arguments must be serialized but the keys
+         * must not.
+         *
+         * @issue 14
+         */
+        for ($i = $numkeys, $iMax = \count($arguments); $i < $iMax; $i++) {
+            $arguments[$i] = $redis->_serialize($arguments[$i]);
+        }
+
         try {
             return $redis->eval($script, $arguments, $numkeys);
         } catch (RedisException $e) {
