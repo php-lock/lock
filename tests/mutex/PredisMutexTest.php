@@ -3,6 +3,7 @@
 namespace malkusch\lock\mutex;
 
 use Predis\Client;
+use Predis\ClientInterface;
 
 /**
  * Tests for PredisMutex.
@@ -18,7 +19,11 @@ use Predis\Client;
  */
 class PredisMutexTest extends \PHPUnit_Framework_TestCase
 {
-    
+    /**
+     * @var ClientInterface
+     */
+    protected $client;
+
     protected function setUp()
     {
         parent::setUp();
@@ -26,6 +31,15 @@ class PredisMutexTest extends \PHPUnit_Framework_TestCase
         if (!getenv("REDIS_URIS")) {
              $this->markTestSkipped();
         }
+
+        $this->client = new Client("redis://example.net");
+    }
+
+    protected function tearDown()
+    {
+        $this->client->flushall();
+
+        parent::tearDown();
     }
 
     /**
@@ -37,8 +51,7 @@ class PredisMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddFails()
     {
-        $client = new Client("redis://example.net");
-        $mutex  = new PredisMutex([$client], "test");
+        $mutex  = new PredisMutex([$this->client], "test");
         
         $mutex->synchronized(function () {
             $this->fail("Code execution is not expected");

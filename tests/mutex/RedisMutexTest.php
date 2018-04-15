@@ -42,7 +42,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
      * @param int $count The amount of redis apis.
      * @param int $timeout The timeout.
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject The mock.
+     * @return \PHPUnit_Framework_MockObject_MockObject|RedisMutex
      */
     private function buildRedisMutex($count, $timeout = 1)
     {

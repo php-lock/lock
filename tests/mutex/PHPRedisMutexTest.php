@@ -47,8 +47,15 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
         } else {
             $this->redis->connect($uri["host"]);
         }
-        
+
         $this->mutex = new PHPRedisMutex([$this->redis], "test");
+    }
+
+    protected function tearDown()
+    {
+        $this->redis->flushAll();
+
+        parent::tearDown();
     }
 
     /**
