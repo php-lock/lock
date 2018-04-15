@@ -33,7 +33,8 @@
         "predis/predis": "~1.0",
         "ext-redis": "^2.2.4|^3.0|^4.0",
         "zetacomponents/system-information": "~1.1",
-        "kriswallsmith/spork": "^0.3"
+        "kriswallsmith/spork": "^0.3",
+        "ext-sqlite3": "*"
     },
     "archive": {
         "exclude": ["/tests"]
