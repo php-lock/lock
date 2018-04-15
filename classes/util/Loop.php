@@ -23,7 +23,7 @@ class Loop
     /**
      * @var bool True while code should be repeated.
      */
-    private $looping;
+    private $looping = false;
     
     /**
      * Sets the timeout.
@@ -68,17 +68,33 @@ class Loop
     public function execute(callable $code)
     {
         $this->looping = true;
-        $minWait = 100;
-        $timeout = microtime(true) + $this->timeout;
+        $minWait = 100; // microseconds
+        $timeout = microtime(true) + $this->timeout; // At this time, the lock will time out.
+        $result = null;
+
         for ($i = 0; $this->looping && microtime(true) < $timeout; $i++) {
             $result = call_user_func($code);
             if (!$this->looping) {
                 break;
             }
-            $min    = $minWait * pow(2, $i);
+
+            $min    = $minWait * 2 ** $i;
             $max    = $min * 2;
-            $usleep = \random_int($min, $max);
-            
+
+            /*
+             * Calculate max time remaining, don't sleep any longer than that.
+             */
+            $usec_remaining = intval(($timeout - microtime(true))  * 1e6);
+
+            if ($usec_remaining <= 0) {
+                /*
+                 * We've ran out of time.
+                 */
+                throw new TimeoutException("Timeout of $this->timeout seconds exceeded.");
+            }
+
+            $usleep = min($usec_remaining, \random_int($min, $max));
+
             usleep($usleep);
         }
 
