@@ -91,11 +91,17 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
         });
     }
 
-    public function dpSerializationModes() {
-        return [
+    public function dpSerializationModes()
+    {
+        $serializers = [
             [Redis::SERIALIZER_NONE],
             [Redis::SERIALIZER_PHP],
-            [Redis::SERIALIZER_IGBINARY],
         ];
+
+        if (defined("Redis::SERIALIZER_IGBINARY")) {
+            $serializers[] = [constant("Redis::SERIALIZER_IGBINARY")];
+        }
+
+        return $serializers;
     }
 }
