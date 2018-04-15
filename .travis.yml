@@ -36,8 +36,7 @@ before_install:
   - redis-server --port 63791 &
 
 install:
-  - composer require squizlabs/php_codesniffer
-  - composer require phpmd/phpmd
+  - composer require --dev phpmd/phpmd squizlabs/php_codesniffer
 
 before_script:
   - mysql -e 'create database test;'
