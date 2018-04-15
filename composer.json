@@ -27,14 +27,15 @@
         "paragonie/random_compat": "^1|^2"
     },
     "require-dev": {
+        "ext-memcached": "*",
+        "ext-redis": "^2.2.4|^3.0|^4.0",
+        "ext-sqlite3": "*",
+        "kriswallsmith/spork": "^0.3",
+        "mikey179/vfsStream": "^1.5.0",
         "phpunit/phpunit": "^5",
         "php-mock/php-mock-phpunit": "^1",
-        "mikey179/vfsStream": "^1.5.0",
         "predis/predis": "~1.0",
-        "ext-redis": "^2.2.4|^3.0|^4.0",
-        "zetacomponents/system-information": "~1.1",
-        "kriswallsmith/spork": "^0.3",
-        "ext-sqlite3": "*"
+        "zetacomponents/system-information": "~1.1"
     },
     "archive": {
         "exclude": ["/tests"]
