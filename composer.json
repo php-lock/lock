@@ -29,8 +29,8 @@
     "require-dev": {
         "ext-memcached": "*",
         "ext-redis": "^2.2.4|^3.0|^4.0",
-        "ext-pdo_mysql": "^7.2",
-        "ext-pdo_sqlite": "^7.2",
+        "ext-pdo_mysql": "*",
+        "ext-pdo_sqlite": "*",
         "kriswallsmith/spork": "^0.3",
         "mikey179/vfsStream": "^1.5.0",
         "phpunit/phpunit": "^5",

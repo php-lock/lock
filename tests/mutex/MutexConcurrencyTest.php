@@ -20,6 +20,7 @@ use Spork\ProcessManager;
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
  * @license WTFPL
+ * @requires PHP
  * @see Mutex
  */
 class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
@@ -226,7 +227,7 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
             }];
         }
         
-        if (getenv("REDIS_URIS")) {
+        if (getenv("REDIS_URIS") && PHP_VERSION >= "7") {
             $uris = explode(",", getenv("REDIS_URIS"));
 
             $cases["PredisMutex"] = [function ($timeout = 3) use ($uris) {
