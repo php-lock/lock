@@ -7,6 +7,7 @@ use malkusch\lock\exception\LockReleaseException;
 
 /**
  * @author Dmitrii Korotovskii <dmitry@korotovsky.io>
+ * @link https://www.postgresql.org/docs/current/static/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS-TABLE
  * @license WTFPL
  */
 class PgAdvisoryMutex extends LockMutex
@@ -41,7 +42,7 @@ class PgAdvisoryMutex extends LockMutex
     public function __construct(\PDO $pdo, array $map, $resourceType, $resourceId = 0)
     {
         if (!array_key_exists($resourceType, $map)) {
-            throw new \RuntimeException(sprintf('The key "%s" is not found in the map', $name));
+            throw new \RuntimeException(sprintf('The key "%s" is not found in the map', $resourceType));
         }
 
         $this->pdo = $pdo;
@@ -60,11 +61,10 @@ class PgAdvisoryMutex extends LockMutex
      */
     protected function lock()
     {
-        $isLocked = $this->executeFunction('pg_try_advisory_lock');
+        $isLocked = $this->executePgFunction('pg_try_advisory_lock');
         if ($isLocked === false) {
-            throw new LockAcquireException(sprintf('Failed to acquire advisory lock on resource "%s" with 
-                identifier "%s".', $this->resourceType, $this->resourceId)
-            );
+            throw new LockAcquireException(sprintf('Failed to acquire advisory lock on resource "%s" with '
+                . 'identifier "%s".', $this->resourceType, $this->resourceId));
         }
     }
 
@@ -75,11 +75,10 @@ class PgAdvisoryMutex extends LockMutex
      */
     protected function unlock()
     {
-        $isUnLocked = $this->executeFunction('pg_advisory_unlock');
+        $isUnLocked = $this->executePgFunction('pg_advisory_unlock');
         if ($isUnLocked === false) {
-            throw new LockReleaseException(sprintf('Failed to release advisory lock on resource "%s" with 
-                identifier "%s".', $this->resourceType, $this->resourceId)
-            );
+            throw new LockReleaseException(sprintf('Failed to release advisory lock on resource "%s" with '
+                . 'identifier "%s".', $this->resourceType, $this->resourceId));
         }
     }
 
@@ -88,7 +87,7 @@ class PgAdvisoryMutex extends LockMutex
      *
      * @return bool
      */
-    private function executeFunction($fnName)
+    private function executePgFunction($fnName)
     {
         $arguments = [
             (int) $this->map[$this->resourceType],
