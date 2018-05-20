@@ -229,9 +229,8 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
 
         if (getenv("PGSQL_DSN")) {
             $cases["PgAdvisoryMutex"] = [function ($timeout = 3) {
-                $this->pdo = null;
-
-                $pdo = $this->getPDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
+                $pdo = new \PDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
+                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new PgAdvisoryMutex($pdo, ['test' => 100000], 'test', 1);
             }];

@@ -62,7 +62,9 @@ class PgAdvisoryMutex extends LockMutex
     {
         $isLocked = $this->executeFunction('pg_try_advisory_lock');
         if ($isLocked === false) {
-            throw new LockAcquireException(sprintf('Failed to acquire advisory lock on resource "%s" with identifier "%s".', $this->resourceType, $this->resourceId));
+            throw new LockAcquireException(sprintf('Failed to acquire advisory lock on resource "%s" with 
+                identifier "%s".', $this->resourceType, $this->resourceId)
+            );
         }
     }
 
@@ -75,7 +77,9 @@ class PgAdvisoryMutex extends LockMutex
     {
         $isUnLocked = $this->executeFunction('pg_advisory_unlock');
         if ($isUnLocked === false) {
-            throw new LockReleaseException(sprintf('Failed to release advisory lock on resource "%s" with identifier "%s".', $this->resourceType, $this->resourceId));
+            throw new LockReleaseException(sprintf('Failed to release advisory lock on resource "%s" with 
+                identifier "%s".', $this->resourceType, $this->resourceId)
+            );
         }
     }
 
