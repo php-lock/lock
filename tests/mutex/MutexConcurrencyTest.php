@@ -57,9 +57,13 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
     private function fork($concurrency, callable $code)
     {
         $manager = new ProcessManager();
+        $manager->setDebug(true);
+
         for ($i = 0; $i < $concurrency; $i++) {
             $manager->fork($code);
         }
+
+        $manager->check();
     }
     
     /**

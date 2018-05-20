@@ -155,6 +155,8 @@ class MutexTest extends \PHPUnit_Framework_TestCase
     public function testLiveness(callable $mutexFactory)
     {
         $manager = new ProcessManager();
+        $manager->setDebug(true);
+
         $manager->fork(function () use ($mutexFactory) {
             $mutex = call_user_func($mutexFactory);
             $mutex->synchronized(function () {
@@ -168,6 +170,8 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         $mutex = call_user_func($mutexFactory);
         $mutex->synchronized(function () {
         });
+
+        $manager->check();
     }
     
     /**
