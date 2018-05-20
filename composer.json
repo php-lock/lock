@@ -2,7 +2,7 @@
     "name": "malkusch/lock",
     "type": "library",
     "description": "Mutex library for exclusive code execution.",
-    "keywords": ["mutex", "lock", "flock", "semaphore", "redlock", "memcache", "redis", "cas"],
+    "keywords": ["mutex", "lock", "flock", "semaphore", "redlock", "memcache", "redis", "cas", "advisory locks"],
     "homepage": "https://github.com/malkusch/lock",
     "license": "WTFPL",
     "authors": [
@@ -30,6 +30,7 @@
         "ext-memcached": "*",
         "ext-redis": "^2.2.4|^3.0|^4.0",
         "ext-pdo_mysql": "*",
+        "ext-pdo_pgsql": "*",
         "ext-pdo_sqlite": "*",
         "kriswallsmith/spork": "^0.3",
         "mikey179/vfsStream": "^1.5.0",
