@@ -50,7 +50,7 @@ class Loop
     }
     
     /**
-     * Repeats executing a code until it was succesful.
+     * Repeats executing a code until it was successful.
      *
      * The code has to be designed in a way that it can be repeated without any
      * side effects. When execution was successful it should notify that event
