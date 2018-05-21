@@ -62,7 +62,7 @@ class MySQLMutex extends LockMutex
             throw new LockAcquireException("An error occurred while acquiring the lock");
         }
 
-        throw new TimeoutException("The attempt timed out (for example, because another client has previously locked the name)");
+        throw new TimeoutException("Timeout when acquiring lock.");
     }
 
     public function unlock()
