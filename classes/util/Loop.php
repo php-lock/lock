@@ -93,12 +93,12 @@ class Loop
                 throw new TimeoutException("Timeout of $this->timeout seconds exceeded.");
             }
 
-            $usleep = min($usecRemaining, \random_int($min, $max));
+            $usleep = \min($usecRemaining, \random_int($min, $max));
 
-            usleep($usleep);
+            \usleep($usleep);
         }
 
-        if (microtime(true) >= $timeout) {
+        if (\microtime(true) >= $timeout) {
             throw new TimeoutException("Timeout of $this->timeout seconds exceeded.");
         }
 

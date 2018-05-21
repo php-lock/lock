@@ -263,6 +263,15 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                 return new PHPRedisMutex($apis, "test", $timeout);
             }];
         }
+
+        if (getenv("MYSQL_DSN")) {
+            $cases["MySQLMutex"] = [function($timeout = 3) {
+                $pdo = new \PDO(getenv("MYSQL_DSN"), getenv("MYSQL_USER"));
+                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+                return new MySQLMutex($pdo, "test", $timeout);
+            }];
+        }
         
         return $cases;
     }
