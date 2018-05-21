@@ -84,7 +84,7 @@ class Loop
             /*
              * Calculate max time remaining, don't sleep any longer than that.
              */
-            $usecRemaining = intval(($timeout - microtime(true))  * 1e6);
+            $usecRemaining = \intval(($timeout - \microtime(true))  * 1e6);
 
             if ($usecRemaining <= 0) {
                 /*

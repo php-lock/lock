@@ -159,7 +159,6 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      * @param callable $mutexFactory The Mutex factory.
      * @test
      * @dataProvider provideMutexFactories
-     * @requires PHP 7.0
      */
     public function testLiveness(callable $mutexFactory)
     {
@@ -190,7 +189,6 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      * @test
      * @dataProvider provideMutexFactories
      * @expectedException \DomainException
-     * @requires PHP 5.6
      */
     public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)
     {
