@@ -23,8 +23,7 @@ use Spork\ProcessManager;
  */
 class MutexTest extends \PHPUnit_Framework_TestCase
 {
-
-    const TIMEOUT = 3;
+    const TIMEOUT = 4;
     
     /**
      * Provides Mutex factories.
