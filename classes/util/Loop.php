@@ -84,7 +84,7 @@ class Loop
             /*
              * Calculate max time remaining, don't sleep any longer than that.
              */
-            $usecRemaining = \intval(($timeout - \microtime(true))  * 1e6);
+            $usecRemaining = \intval(($timeout - microtime(true))  * 1e6);
 
             if ($usecRemaining <= 0) {
                 /*
@@ -95,10 +95,10 @@ class Loop
 
             $usleep = \min($usecRemaining, \random_int($min, $max));
 
-            \usleep($usleep);
+            usleep($usleep);
         }
 
-        if (\microtime(true) >= $timeout) {
+        if (microtime(true) >= $timeout) {
             throw new TimeoutException("Timeout of $this->timeout seconds exceeded.");
         }
 
