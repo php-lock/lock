@@ -25,12 +25,11 @@ use Spork\ProcessManager;
  */
 class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
 {
-    
     /**
      * @var \PDO The pdo instance.
      */
     private $pdo;
-    
+
     /**
      * Gets a PDO instance.
      *
@@ -103,21 +102,22 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
     {
         $cases = array_map(function (array $mutexFactory) {
             $file = tmpfile();
-            fputs($file, pack("i", 0));
-            fflush($file);
+            fwrite($file, pack("i", 0));
 
             return [
                 function ($increment) use ($file) {
-                    fseek($file, 0);
+                    rewind($file);
+                    flock($file, LOCK_EX);
                     $data = fread($file, 4);
                     $counter = unpack("i", $data)[1];
 
                     $counter += $increment;
                     
-                    fseek($file, 0);
+                    rewind($file);
                     fwrite($file, pack("i", $counter));
-                    fflush($file);
-                    
+
+                    flock($file, LOCK_UN);
+
                     return $counter;
                 },
                 $mutexFactory[0]
@@ -126,15 +126,16 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
         
         $addPDO = function ($dsn, $user, $vendor) use (&$cases) {
             $pdo = $this->getPDO($dsn, $user);
-            $pdo->beginTransaction();
-            
+
             $options = ["mysql" => "engine=InnoDB"];
             $option  = isset($options[$vendor]) ? $options[$vendor] : "";
             $pdo->exec("CREATE TABLE IF NOT EXISTS counter(id INT PRIMARY KEY, counter INT) $option");
-            
+
+            $pdo->beginTransaction();
             $pdo->exec("DELETE FROM counter");
             $pdo->exec("INSERT INTO counter VALUES (1, 0)");
             $pdo->commit();
+
             $this->pdo = null;
 
             $cases[$vendor] = [
@@ -265,7 +266,7 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
         }
 
         if (getenv("MYSQL_DSN")) {
-            $cases["MySQLMutex"] = [function($timeout = 3) {
+            $cases["MySQLMutex"] = [function ($timeout = 3) {
                 $pdo = new \PDO(getenv("MYSQL_DSN"), getenv("MYSQL_USER"));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 

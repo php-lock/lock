@@ -110,7 +110,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         }
 
         if (getenv("MYSQL_DSN")) {
-            $cases["MySQLMutex"] = [function() {
+            $cases["MySQLMutex"] = [function () {
                 $pdo = new \PDO(getenv("MYSQL_DSN"), getenv("MYSQL_USER"));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
