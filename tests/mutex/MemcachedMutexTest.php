@@ -37,7 +37,7 @@ class MemcachedMutexTest extends \PHPUnit_Framework_TestCase
     {
         $mutex = new MemcachedMutex("testFailAcquireLock", $this->memcached, 1);
 
-        $this->memcached->add(MemcachedMutex::PREFIX."testFailAcquireLock", true, 2);
+        $this->memcached->add(MemcachedMutex::PREFIX."testFailAcquireLock", "xxx", 999);
 
         $mutex->synchronized(function () {
             $this->fail("execution is not expected");
