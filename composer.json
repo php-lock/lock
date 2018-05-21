@@ -28,7 +28,8 @@
     },
     "require-dev": {
         "ext-memcached": "*",
-        "ext-redis": "^2.2.4|^3.0|^4.0",
+        "ext-redis": "*",
+        "ext-pcntl": "*",
         "ext-pdo_mysql": "*",
         "ext-pdo_sqlite": "*",
         "kriswallsmith/spork": "^0.3",

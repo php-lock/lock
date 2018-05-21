@@ -3,7 +3,6 @@
 namespace malkusch\lock\mutex;
 
 use Redis;
-use RedisException;
 
 /**
  * Tests for PHPRedisMutex.
@@ -93,6 +92,10 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
 
     public function dpSerializationModes()
     {
+        if (!class_exists(Redis::class)) {
+            return [];
+        }
+
         $serializers = [
             [Redis::SERIALIZER_NONE],
             [Redis::SERIALIZER_PHP],

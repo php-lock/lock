@@ -23,8 +23,7 @@ use Spork\ProcessManager;
  */
 class MutexTest extends \PHPUnit_Framework_TestCase
 {
-
-    const TIMEOUT = 3;
+    const TIMEOUT = 4;
     
     /**
      * Provides Mutex factories.
@@ -109,6 +108,15 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             }];
         }
 
+        if (getenv("MYSQL_DSN")) {
+            $cases["MySQLMutex"] = [function () {
+                $pdo = new \PDO(getenv("MYSQL_DSN"), getenv("MYSQL_USER"));
+                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+                return new MySQLMutex($pdo, "test", self::TIMEOUT);
+            }];
+        }
+
         return $cases;
     }
     
@@ -150,11 +158,12 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      * @param callable $mutexFactory The Mutex factory.
      * @test
      * @dataProvider provideMutexFactories
-     * @requires PHP 7.0
      */
     public function testLiveness(callable $mutexFactory)
     {
         $manager = new ProcessManager();
+        $manager->setDebug(true);
+
         $manager->fork(function () use ($mutexFactory) {
             $mutex = call_user_func($mutexFactory);
             $mutex->synchronized(function () {
@@ -168,6 +177,8 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         $mutex = call_user_func($mutexFactory);
         $mutex->synchronized(function () {
         });
+
+        $manager->check();
     }
     
     /**
@@ -177,7 +188,6 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      * @test
      * @dataProvider provideMutexFactories
      * @expectedException \DomainException
-     * @requires PHP 5.6
      */
     public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)
     {

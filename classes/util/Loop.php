@@ -50,7 +50,7 @@ class Loop
     }
     
     /**
-     * Repeats executing a code until it was succesful.
+     * Repeats executing a code until it was successful.
      *
      * The code has to be designed in a way that it can be repeated without any
      * side effects. When execution was successful it should notify that event
@@ -84,7 +84,7 @@ class Loop
             /*
              * Calculate max time remaining, don't sleep any longer than that.
              */
-            $usecRemaining = intval(($timeout - microtime(true))  * 1e6);
+            $usecRemaining = \intval(($timeout - microtime(true))  * 1e6);
 
             if ($usecRemaining <= 0) {
                 /*
@@ -93,7 +93,7 @@ class Loop
                 throw new TimeoutException("Timeout of $this->timeout seconds exceeded.");
             }
 
-            $usleep = min($usecRemaining, \random_int($min, $max));
+            $usleep = \min($usecRemaining, \random_int($min, $max));
 
             usleep($usleep);
         }
