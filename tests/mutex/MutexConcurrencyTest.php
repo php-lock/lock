@@ -31,6 +31,20 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
     private $pdo;
 
     /**
+     * @var string
+     */
+    private $path;
+
+    protected function tearDown()
+    {
+        if ($this->path) {
+            unlink($this->path);
+        }
+
+        parent::tearDown();
+    }
+
+    /**
      * Gets a PDO instance.
      *
      * @param string $dsn The DSN.
@@ -209,16 +223,16 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
      */
     public function provideMutexFactories()
     {
-        $path = stream_get_meta_data(tmpfile())["uri"];
-        
+        $this->path = tempnam(sys_get_temp_dir(), "mutex-concurrency-test");
+
         $cases = [
-            "flock" => [function ($timeout = 3) use ($path) {
-                $file = fopen($path, "w");
+            "flock" => [function ($timeout = 3) {
+                $file = fopen($this->path, "w");
                 return new FlockMutex($file);
             }],
                     
-            "semaphore" => [function ($timeout = 3) use ($path) {
-                $semaphore = sem_get(ftok($path, "b"));
+            "semaphore" => [function ($timeout = 3) {
+                $semaphore = sem_get(ftok($this->path, "b"));
                 $this->assertTrue(is_resource($semaphore));
                 return new SemaphoreMutex($semaphore);
             }],
@@ -271,6 +285,15 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new MySQLMutex($pdo, "test", $timeout);
+            }];
+        }
+
+        if (getenv("PGSQL_DSN")) {
+            $cases["PgAdvisoryLockMutex"] = [function () {
+                $pdo = new \PDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
+                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+                return new PgAdvisoryLockMutex($pdo, "test" . time());
             }];
         }
         
