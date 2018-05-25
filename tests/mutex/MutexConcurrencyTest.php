@@ -231,6 +231,15 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                 return new MemcachedMutex("test", $memcached, $timeout);
             }];
         }
+
+        if (getenv("PGSQL_DSN")) {
+            $cases["PgAdvisoryMutex"] = [function ($timeout = 3) {
+                $pdo = new \PDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
+                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+                return new PgAdvisoryMutex($pdo, ['test' => 100000], 'test', 1);
+            }];
+        }
         
         if (getenv("REDIS_URIS") && PHP_VERSION >= "7") {
             $uris = explode(",", getenv("REDIS_URIS"));
