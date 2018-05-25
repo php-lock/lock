@@ -68,7 +68,7 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
      * Tests executing code which exceeds the timeout fails.
      *
      * @test
-     * @expectedException malkusch\lock\exception\LockReleaseException
+     * @expectedException malkusch\lock\exception\ExecutionOutsideLockException
      */
     public function testExecuteTooLong()
     {
