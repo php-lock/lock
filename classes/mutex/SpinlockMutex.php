@@ -80,8 +80,8 @@ abstract class SpinlockMutex extends LockMutex
         $elapsed = microtime(true) - $this->acquired;
         if ($elapsed >= $this->timeout) {
             $message = sprintf(
-                "The code executed for %.2f seconds. But the timeout is %d " .
-                "seconds. The last %.2f seconds were executed outside the lock.",
+                "The code executed for %.2F seconds. But the timeout is %d " .
+                "seconds. The last %.2F seconds were executed outside the lock.",
                 $elapsed,
                 $this->timeout,
                 $elapsed - $this->timeout
