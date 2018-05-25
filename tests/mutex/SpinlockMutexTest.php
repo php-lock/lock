@@ -2,9 +2,10 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\ExecutionOutsideLockException;
 use malkusch\lock\exception\LockAcquireException;
-use phpmock\phpunit\PHPMock;
 use phpmock\environment\SleepEnvironmentBuilder;
+use phpmock\phpunit\PHPMock;
 
 /**
  * Tests for SpinlockMutex.
@@ -68,13 +69,18 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
      * Tests executing code which exceeds the timeout fails.
      *
      * @test
-     * @expectedException malkusch\lock\exception\LockReleaseException
      */
     public function testExecuteTooLong()
     {
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test", 1]);
         $mutex->expects($this->any())->method("acquire")->willReturn(true);
         $mutex->expects($this->any())->method("release")->willReturn(true);
+
+        $this->expectException(ExecutionOutsideLockException::class);
+        $this->expectExceptionMessageRegExp(
+            '/The code executed for \d+\.\d+ seconds. But the timeout is 1 ' .
+            'seconds. The last \d+\.\d+ seconds were executed outside the lock./'
+        );
 
         $mutex->synchronized(function () {
             sleep(1);
