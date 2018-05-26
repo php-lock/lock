@@ -116,13 +116,16 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
     {
         $cases = array_map(function (array $mutexFactory) {
             $file = tmpfile();
-            fwrite($file, pack("i", 0));
+            $this->assertEquals(4, fwrite($file, pack("i", 0)));
 
             return [
                 function ($increment) use ($file) {
                     rewind($file);
                     flock($file, LOCK_EX);
                     $data = fread($file, 4);
+
+                    $this->assertEquals(4, strlen($data));
+
                     $counter = unpack("i", $data)[1];
 
                     $counter += $increment;

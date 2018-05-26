@@ -38,7 +38,7 @@ before_install:
   - redis-server --port 63791 &
 
 install:
-  - travis_retry composer install --no-scripts --no-suggest --no-interaction
+  - composer install --no-scripts --no-suggest --no-interaction
 
 before_script:
   - mysql -e 'create database test;'
