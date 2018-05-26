@@ -22,11 +22,20 @@ class PgAdvisoryLockMutex extends LockMutex
      */
     private $key2;
 
+    /**
+     * @throws \RuntimeException
+     */
     public function __construct(\PDO $PDO, $name)
     {
         $this->pdo = $PDO;
 
-        list($bytes1, $bytes2) = str_split(hash("sha256", $name, true), 4);
+        $hashed_name = hash("sha256", $name, true);
+
+        if (false === $hashed_name) {
+            throw new \RuntimeException("Unable to hash the key, sha256 algorithm is not supported.");
+        }
+
+        list($bytes1, $bytes2) = str_split($hashed_name, 4);
 
         $this->key1 = unpack("i", $bytes1)[1];
         $this->key2 = unpack("i", $bytes2)[1];
