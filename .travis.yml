@@ -24,6 +24,8 @@ env:
 
 services:
   - memcached
+  - mysql
+  - postgresql
   - redis-server
 
 matrix:
@@ -36,7 +38,7 @@ before_install:
   - redis-server --port 63791 &
 
 install:
-  - composer require --dev squizlabs/php_codesniffer
+  - travis_retry composer install --no-scripts --no-suggest --no-interaction
 
 before_script:
   - mysql -e 'create database test;'

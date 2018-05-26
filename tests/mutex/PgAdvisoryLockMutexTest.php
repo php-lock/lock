@@ -46,7 +46,7 @@ class PgAdvisoryLockMutexTest extends \PHPUnit_Framework_TestCase
                 $this->logicalAnd(
                     $this->isType("array"),
                     $this->countOf(2),
-                    $this->callback(function(...$arguments) {
+                    $this->callback(function (...$arguments) {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {
@@ -54,8 +54,9 @@ class PgAdvisoryLockMutexTest extends \PHPUnit_Framework_TestCase
                         }
 
                         return true;
-                    } )
-                ));
+                    })
+                )
+            );
 
         $this->mutex->lock();
     }
@@ -75,7 +76,7 @@ class PgAdvisoryLockMutexTest extends \PHPUnit_Framework_TestCase
                 $this->logicalAnd(
                     $this->isType("array"),
                     $this->countOf(2),
-                    $this->callback(function(...$arguments) {
+                    $this->callback(function (...$arguments) {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {
@@ -85,8 +86,9 @@ class PgAdvisoryLockMutexTest extends \PHPUnit_Framework_TestCase
                         }
 
                         return true;
-                    } )
-                ));
+                    })
+                )
+            );
 
         $this->mutex->unlock();
     }
