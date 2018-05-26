@@ -16,7 +16,7 @@ php:
 env: 
   global:
     - MEMCACHE_HOST=localhost
-    - REDIS_URIS=redis://localhost,redis://localhost:63791
+    - REDIS_URIS=redis://localhost,redis://localhost:6379
     - MYSQL_DSN="mysql:host=localhost;dbname=test"
     - MYSQL_USER=travis
     - PGSQL_DSN="pgsql:host=localhost;dbname=test;"
@@ -35,7 +35,6 @@ matrix:
 
 before_install:
   - phpenv config-add tests/php-travis.ini
-  - redis-server --port 63791 &
 
 install:
   - travis_retry composer install --no-scripts --no-suggest --no-interaction
