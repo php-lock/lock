@@ -113,7 +113,16 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 $pdo = new \PDO(getenv("MYSQL_DSN"), getenv("MYSQL_USER"));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new MySQLMutex($pdo, "test", self::TIMEOUT);
+                return new MySQLMutex($pdo, "test" . time(), self::TIMEOUT);
+            }];
+        }
+
+        if (getenv("PGSQL_DSN")) {
+            $cases["PgAdvisoryLockMutex"] = [function () {
+                $pdo = new \PDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
+                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+                return new PgAdvisoryLockMutex($pdo, "test");
             }];
         }
 
@@ -151,36 +160,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         $mutex->synchronized(function () {
         });
     }
-    
-    /**
-     * Tests that locks will be released automatically.
-     *
-     * @param callable $mutexFactory The Mutex factory.
-     * @test
-     * @dataProvider provideMutexFactories
-     */
-    public function testLiveness(callable $mutexFactory)
-    {
-        $manager = new ProcessManager();
-        $manager->setDebug(true);
 
-        $manager->fork(function () use ($mutexFactory) {
-            $mutex = call_user_func($mutexFactory);
-            $mutex->synchronized(function () {
-                exit;
-            });
-        });
-        $manager->wait();
-        
-        sleep(self::TIMEOUT - 1);
-
-        $mutex = call_user_func($mutexFactory);
-        $mutex->synchronized(function () {
-        });
-
-        $manager->check();
-    }
-    
     /**
      * Tests synchronized() rethrows the exception of the code.
      *
