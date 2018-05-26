@@ -122,7 +122,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 $pdo = new \PDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new PgAdvisoryLockMutex($pdo, "test" . time());
+                return new PgAdvisoryLockMutex($pdo, "test");
             }];
         }
 

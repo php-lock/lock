@@ -116,7 +116,7 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
     {
         $cases = array_map(function (array $mutexFactory) {
             $file = tmpfile();
-            $this->assertEquals(4, fwrite($file, pack("i", 0)));
+            $this->assertEquals(4, fwrite($file, pack("i", 0)), "Expected 4 bytes to be written to temporary file.");
 
             return [
                 function ($increment) use ($file) {
@@ -124,7 +124,7 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                     flock($file, LOCK_EX);
                     $data = fread($file, 4);
 
-                    $this->assertEquals(4, strlen($data));
+                    $this->assertEquals(4, strlen($data), "Expected four bytes to be present in temporary file.");
 
                     $counter = unpack("i", $data)[1];
 
@@ -296,7 +296,7 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                 $pdo = new \PDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new PgAdvisoryLockMutex($pdo, "test" . time());
+                return new PgAdvisoryLockMutex($pdo, "test");
             }];
         }
         

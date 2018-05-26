@@ -37,7 +37,10 @@ class PredisMutexTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->client = new Client($config);
-        $this->client->flushall(); // Clear any existing locks
+
+        if (count($config) === 1) {
+            $this->client->flushall(); // Clear any existing locks
+        }
     }
 
     private function getPredisConfig()
