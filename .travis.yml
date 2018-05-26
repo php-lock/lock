@@ -44,6 +44,6 @@ before_script:
   - psql  -c 'create database test;' -U postgres
 
 script:
-  - vendor/bin/phpunit
+  - vendor/bin/phpunit --debug
   - vendor/bin/phpcs --standard=PSR2 classes/ tests/
 
