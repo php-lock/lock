@@ -45,7 +45,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 [`Mutex::check()`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.Mutex.html#_check)
 performs a double-checked locking pattern. I.e. if the check fails, no lock
-was acquired. Else if the check was true, a lock will be acquired and the
+will be acquired. Else if the check was true, a lock will be acquired and the
 check will be perfomed as well together with the critical code.
 
 Example:
@@ -72,6 +72,8 @@ The `Mutex` is an abstract class. You will have to chose an implementation:
 - [`SemaphoreMutex`](#semaphoremutex)
 - [`TransactionalMutex`](#transactionalmutex)
 - [`MySQLMutex`](#mysqlmutex)
+- [`PgAdvisoryLockMutex`](#pgadvisorylockmutex)
+
 
 #### CASMutex
 
@@ -237,7 +239,7 @@ $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
 
 The **MySQLMutex** uses MySQL's 
 [`GET_LOCK`](https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_get-lock)
-function to create lock back end.
+function.
 
 It supports time outs. If the connection to the database server is lost or interrupted, the lock is 
 automatically released. 
@@ -249,6 +251,31 @@ held locks. You should probably refrain from using this mutex on MySQL versions 
 $pdo = new PDO("mysql:host=localhost;dbname=test", "username");
 
 $mutex = new MySQLMutex($pdo, "balance", 15);
+$mutex->synchronized(function () use ($bankAccount, $amount) {
+    $balance = $bankAccount->getBalance();
+    $balance -= $amount;
+    if ($balance < 0) {
+        throw new \DomainException("You have no credit.");
+
+    }
+    $bankAccount->setBalance($balance);
+});
+```
+#### PgAdvisoryLockMutex
+
+The **PgAdvisoryLockMutex** uses PostgreSQL's 
+[advisory locking](https://www.postgresql.org/docs/9.4/static/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS)
+functions.
+
+Named locks are offered. PostgreSQL locking functions require integers but the conversion is handled automatically.
+
+No time outs are supported. If the connection to the database server is lost or interrupted, the lock is 
+automatically released. 
+
+```php
+$pdo = new PDO("pgsql:host=localhost;dbname=test;", "username");
+
+$mutex = new PgAdvisoryLockMutex($pdo, "balance");
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;

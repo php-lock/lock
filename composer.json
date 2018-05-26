@@ -2,7 +2,7 @@
     "name": "malkusch/lock",
     "type": "library",
     "description": "Mutex library for exclusive code execution.",
-    "keywords": ["mutex", "lock", "flock", "semaphore", "redlock", "memcache", "redis", "cas"],
+    "keywords": ["mutex", "lock", "locking", "flock", "semaphore", "redlock", "memcache", "redis", "cas", "advisory locks", "mysql", "postgresql"],
     "homepage": "https://github.com/malkusch/lock",
     "license": "WTFPL",
     "authors": [
