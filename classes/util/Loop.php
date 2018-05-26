@@ -78,7 +78,7 @@ class Loop
                 break;
             }
 
-            $min    = $minWait * 2 ** $i;
+            $min    = (int) $minWait * 1.5 ** $i;
             $max    = $min * 2;
 
             /*

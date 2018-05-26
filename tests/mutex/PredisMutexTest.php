@@ -54,7 +54,8 @@ class PredisMutexTest extends \PHPUnit_Framework_TestCase
         return array_map(
             function ($redisUri) {
                 return str_replace("redis://", "tcp://", $redisUri);
-            }, $servers
+            },
+            $servers
         );
     }
 
