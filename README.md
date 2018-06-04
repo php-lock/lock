@@ -62,7 +62,7 @@ $mutex->check(function () use ($bankAccount, $amount) {
 
 ### Implementations
 
-The `Mutex` is an abstract class. You will have to chose an implementation:
+The `Mutex` is an abstract class. You will have to choose an implementation:
 
 - [`CASMutex`](#casmutex)
 - [`FlockMutex`](#flockmutex)

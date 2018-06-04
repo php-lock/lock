@@ -55,7 +55,7 @@ final class PcntlTimeout
      * @throws TimeoutException Running the code timed out
      * @throws LockAcquireException Installing the timeout failed
      */
-    public function timeBoxed($code)
+    public function timeBoxed(callable $code)
     {
         $signal = pcntl_signal(SIGALRM, function () {
             throw new TimeoutException("Timed out");
@@ -86,6 +86,11 @@ final class PcntlTimeout
      */
     public static function isSupported()
     {
-        return extension_loaded("pcntl");
+        return
+            PHP_SAPI === "cli" &&
+            extension_loaded("pcntl") &&
+            function_exists("pcntl_alarm") &&
+            function_exists("pcntl_signal") &&
+            function_exists("pcntl_signal_dispatch");
     }
 }

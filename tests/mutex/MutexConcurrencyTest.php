@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use Eloquent\Liberator\Liberator;
 use Predis\Client;
 use Redis;
 use ezcSystemInfo;
@@ -87,6 +88,7 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @dataProvider provideTestHighContention
+     * @slowThreshold 1000
      */
     public function testHighContention(callable $code, callable $mutexFactory)
     {
@@ -203,8 +205,9 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
      * @param callable $mutexFactory The Mutex factory.
      * @test
      * @dataProvider provideMutexFactories
+     * @slowThreshold 1000
      */
-    public function testSerialisation(callable $mutexFactory)
+    public function testExecutionIsSerializedWhenLocked(callable $mutexFactory)
     {
         $timestamp = microtime(true);
         
@@ -233,7 +236,23 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
                 $file = fopen($this->path, "w");
                 return new FlockMutex($file);
             }],
-                    
+
+            "flockWithTimoutPcntl" => [function ($timeout = 3) {
+                $file = fopen($this->path, "w");
+                $lock = Liberator::liberate(new FlockMutex($file, $timeout));
+                $lock->stategy = FlockMutex::STRATEGY_PCNTL;
+
+                return $lock;
+            }],
+
+            "flockWithTimoutBusy" => [function ($timeout = 3) {
+                $file = fopen($this->path, "w");
+                $lock = Liberator::liberate(new FlockMutex($file, $timeout));
+                $lock->stategy = FlockMutex::STRATEGY_BUSY;
+
+                return $lock;
+            }],
+
             "semaphore" => [function ($timeout = 3) {
                 $semaphore = sem_get(ftok($this->path, "b"));
                 $this->assertTrue(is_resource($semaphore));

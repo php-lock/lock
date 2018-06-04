@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use Eloquent\Liberator\Liberator;
 use org\bovigo\vfs\vfsStream;
 use Predis\Client;
 use Redis;
@@ -24,7 +25,12 @@ use Spork\ProcessManager;
 class MutexTest extends \PHPUnit_Framework_TestCase
 {
     const TIMEOUT = 4;
-    
+
+    public static function setUpBeforeClass()
+    {
+        vfsStream::setup("test");
+    }
+
     /**
      * Provides Mutex factories.
      *
@@ -44,8 +50,24 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             }],
 
             "FlockMutex" => [function () {
-                vfsStream::setup("test");
-                return new FlockMutex(fopen(vfsStream::url("test/lock"), "w"));
+                $file = fopen(vfsStream::url("test/lock"), "w");
+                return new FlockMutex($file);
+            }],
+
+            "flockWithTimoutPcntl" => [function () {
+                $file = fopen(vfsStream::url("test/lock"), "w");
+                $lock = Liberator::liberate(new FlockMutex($file, 3));
+                $lock->stategy = FlockMutex::STRATEGY_PCNTL;
+
+                return $lock;
+            }],
+
+            "flockWithTimoutBusy" => [function ($timeout = 3) {
+                $file = fopen(vfsStream::url("test/lock"), "w");
+                $lock = Liberator::liberate(new FlockMutex($file, 3));
+                $lock->stategy = FlockMutex::STRATEGY_BUSY;
+
+                return $lock;
             }],
 
             "SemaphoreMutex" => [function () {

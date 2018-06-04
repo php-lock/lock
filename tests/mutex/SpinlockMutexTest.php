@@ -72,6 +72,7 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteTooLong()
     {
+        /** @var SpinlockMutex|\PHPUnit_Framework_MockObject_MockObject $mutex */
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test", 1]);
         $mutex->expects($this->any())->method("acquire")->willReturn(true);
         $mutex->expects($this->any())->method("release")->willReturn(true);
@@ -83,7 +84,7 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
         );
 
         $mutex->synchronized(function () {
-            sleep(1);
+            usleep(1e6 + 1);
         });
     }
     
@@ -107,7 +108,7 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
      * Tests failing to release a lock.
      *
      * @test
-     * @expectedException malkusch\lock\exception\LockReleaseException
+     * @expectedException \malkusch\lock\exception\LockReleaseException
      */
     public function testFailReleasingLock()
     {

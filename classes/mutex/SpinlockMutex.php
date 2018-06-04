@@ -77,16 +77,9 @@ abstract class SpinlockMutex extends LockMutex
 
     protected function unlock()
     {
-        $elapsed = microtime(true) - $this->acquired;
-        if ($elapsed >= $this->timeout) {
-            $message = sprintf(
-                "The code executed for %.2F seconds. But the timeout is %d " .
-                "seconds. The last %.2F seconds were executed outside the lock.",
-                $elapsed,
-                $this->timeout,
-                $elapsed - $this->timeout
-            );
-            throw new ExecutionOutsideLockException($message);
+        $elapsed_time = microtime(true) - $this->acquired;
+        if ($elapsed_time > $this->timeout) {
+            throw ExecutionOutsideLockException::create($elapsed_time, $this->timeout);
         }
 
         /*
