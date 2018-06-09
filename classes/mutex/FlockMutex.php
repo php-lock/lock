@@ -52,11 +52,6 @@ class FlockMutex extends LockMutex
     private $strategy;
 
     /**
-     * @var float|null
-     */
-    private $acquired;
-
-    /**
      * Sets the file handle.
      *
      * @param resource $fileHandle The file handle.
@@ -118,7 +113,6 @@ class FlockMutex extends LockMutex
         $loop = new Loop($this->timeout);
         $loop->execute(function () use ($loop) {
             if ($this->acquireNonBlockingLock()) {
-                $this->acquired = \microtime(true);
                 $loop->end();
             }
         });
@@ -165,19 +159,11 @@ class FlockMutex extends LockMutex
 
     /**
      * @throws LockReleaseException
-     * @throws ExecutionOutsideLockException
      */
     protected function unlock()
     {
         if (!flock($this->fileHandle, LOCK_UN)) {
             throw new LockReleaseException("Failed to unlock the file.");
-        }
-
-        if ($this->acquired !== null) {
-            $elapsed_time = \microtime(true) - $this->acquired;
-            if ($elapsed_time > $this->timeout) {
-                throw ExecutionOutsideLockException::create($elapsed_time, $this->timeout);
-            }
         }
     }
 }

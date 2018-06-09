@@ -3,11 +3,10 @@
 namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
+use Memcached;
 use org\bovigo\vfs\vfsStream;
 use Predis\Client;
 use Redis;
-use Memcached;
-use Spork\ProcessManager;
 
 /**
  * Tests for Mutex.

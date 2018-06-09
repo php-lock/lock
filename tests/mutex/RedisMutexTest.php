@@ -4,10 +4,8 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
-use phpmock\phpunit\PHPMock;
 use phpmock\environment\SleepEnvironmentBuilder;
-use Spork\ProcessManager;
-use Spork\Fork;
+use phpmock\phpunit\PHPMock;
 
 /**
  * Tests for RedisMutex.

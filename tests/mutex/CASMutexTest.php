@@ -2,8 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
-use phpmock\phpunit\PHPMock;
 use phpmock\environment\SleepEnvironmentBuilder;
+use phpmock\phpunit\PHPMock;
 
 /**
  * Tests for CASMutex.

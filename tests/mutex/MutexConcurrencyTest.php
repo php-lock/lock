@@ -3,9 +3,9 @@
 namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
+use ezcSystemInfo;
 use Predis\Client;
 use Redis;
-use ezcSystemInfo;
 use Spork\ProcessManager;
 
 /**
