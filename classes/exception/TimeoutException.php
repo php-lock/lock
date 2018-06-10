@@ -11,5 +11,12 @@ namespace malkusch\lock\exception;
  */
 class TimeoutException extends LockAcquireException
 {
-
+    /**
+     * @param int $timeout
+     * @return TimeoutException
+     */
+    public static function create($timeout)
+    {
+        return new self(sprintf("Timeout of %d seconds exceeded.", $timeout));
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\DeadlineException;
 use malkusch\lock\exception\ExecutionOutsideLockException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
@@ -99,9 +100,15 @@ class FlockMutex extends LockMutex
     {
         $timebox = new PcntlTimeout($this->timeout);
 
-        $timebox->timeBoxed(function () {
-            $this->lockBlocking();
-        });
+        try {
+            $timebox->timeBoxed(
+                function () {
+                    $this->lockBlocking();
+                }
+            );
+        } catch (DeadlineException $e) {
+            throw TimeoutException::create($this->timeout);
+        }
     }
 
     /**

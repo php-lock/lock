@@ -3,6 +3,7 @@
 namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
+use malkusch\lock\util\PcntlTimeout;
 
 /**
  * @author Willem Stuursma-Ruwen <willem@stuursma.name>
@@ -52,6 +53,7 @@ class FlockMutexTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \malkusch\lock\exception\TimeoutException
+     * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      * @dataProvider dpTimeoutableStrategies
      */
     public function testTimeoutOccurs($strategy)
@@ -78,5 +80,23 @@ class FlockMutexTest extends \PHPUnit_Framework_TestCase
             [FlockMutex::STRATEGY_PCNTL],
             [FlockMutex::STRATEGY_BUSY],
         ];
+    }
+
+    /**
+     * @expectedException \malkusch\lock\exception\DeadlineException
+     */
+    public function testNoTimeoutWaitsForever()
+    {
+        $another_resource = fopen($this->file, "r");
+        flock($another_resource, LOCK_EX);
+
+        $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK;
+
+        $timebox = new PcntlTimeout(1);
+        $timebox->timeBoxed(function() {
+            $this->mutex->synchronized(function() {
+                $this->fail("Did not expect code execution.");
+            });
+        });
     }
 }

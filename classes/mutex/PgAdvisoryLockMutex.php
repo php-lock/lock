@@ -2,9 +2,6 @@
 
 namespace malkusch\lock\mutex;
 
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\TimeoutException;
-
 class PgAdvisoryLockMutex extends LockMutex
 {
     /**

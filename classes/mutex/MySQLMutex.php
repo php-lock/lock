@@ -62,7 +62,7 @@ class MySQLMutex extends LockMutex
             throw new LockAcquireException("An error occurred while acquiring the lock");
         }
 
-        throw new TimeoutException("Timeout when acquiring lock.");
+        throw TimeoutException::create($this->timeout);
     }
 
     public function unlock()

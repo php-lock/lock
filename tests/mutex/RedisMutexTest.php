@@ -125,6 +125,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
      *
      * @test
      * @expectedException \malkusch\lock\exception\TimeoutException
+     * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      * @dataProvider provideMinority
      */
     public function testAcquireTooFewKeys($count, $available)

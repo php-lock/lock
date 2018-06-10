@@ -58,8 +58,8 @@ class LoopTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests exceeding the execution timeout.
      *
-     * @test
-     * @expectedException malkusch\lock\exception\TimeoutException
+     * @expectedException \malkusch\lock\exception\TimeoutException
+     * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      */
     public function testExceedTimeout()
     {
@@ -73,8 +73,8 @@ class LoopTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests exceeding the execution timeout without calling end().
      *
-     * @test
-     * @expectedException malkusch\lock\exception\TimeoutException
+     * @expectedException \malkusch\lock\exception\TimeoutException
+     * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      */
     public function testExceedTimeoutWithoutExplicitEnd()
     {

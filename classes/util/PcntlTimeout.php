@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\util;
 
+use malkusch\lock\exception\DeadlineException;
 use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\exception\LockAcquireException;
 
@@ -34,7 +35,7 @@ final class PcntlTimeout
             throw new \RuntimeException("PCNTL module not enabled");
         }
         if ($timeout <= 0) {
-            throw new \InvalidArgumentException("Timeout must be positiv and non zero");
+            throw new \InvalidArgumentException("Timeout must be positive and non zero");
         }
         $this->timeout = $timeout;
     }
@@ -52,13 +53,13 @@ final class PcntlTimeout
      * @param callable $code Executed code block
      * @return mixed Return value of the executed block
      *
-     * @throws TimeoutException Running the code timed out
+     * @throws DeadlineException Running the code hit the deadline
      * @throws LockAcquireException Installing the timeout failed
      */
     public function timeBoxed(callable $code)
     {
         $signal = pcntl_signal(SIGALRM, function () {
-            throw new TimeoutException("Timed out");
+            throw new DeadlineException(sprintf("Timebox hit deadline of %d seconds", $this->timeout));
         });
         if (!$signal) {
             throw new LockAcquireException("Could not install signal");

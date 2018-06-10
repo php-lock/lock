@@ -52,13 +52,15 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests failing to acquire the lock due to a timeout.
      *
-     * @test
-     * @expectedException malkusch\lock\exception\TimeoutException
+     * @expectedException \malkusch\lock\exception\TimeoutException
+     * @expectedExceptionMessage Timeout of 3 seconds exceeded.
      */
     public function testAcquireTimesOut()
     {
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test"]);
-        $mutex->expects($this->any())->method("acquire")->willReturn(false);
+        $mutex->expects($this->atLeastOnce())
+            ->method("acquire")
+            ->willReturn(false);
 
         $mutex->synchronized(function () {
             $this->fail("execution is not expected");

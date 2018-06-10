@@ -13,12 +13,11 @@ namespace malkusch\lock\util;
  */
 class PcntlTimeoutTest extends \PHPUnit_Framework_TestCase
 {
-
     /**
      * A long running system call should be interrupted
      *
      * @test
-     * @expectedException malkusch\lock\exception\TimeoutException
+     * @expectedException \malkusch\lock\exception\DeadlineException
      */
     public function shouldTimeout()
     {
@@ -49,7 +48,7 @@ class PcntlTimeoutTest extends \PHPUnit_Framework_TestCase
      * When a previous scheduled alarm exists, it should fail
      *
      * @test
-     * @expectedException malkusch\lock\exception\LockAcquireException
+     * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function shouldFailOnExistingAlarm()
     {
