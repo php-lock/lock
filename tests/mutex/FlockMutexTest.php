@@ -93,8 +93,8 @@ class FlockMutexTest extends \PHPUnit_Framework_TestCase
         $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK;
 
         $timebox = new PcntlTimeout(1);
-        $timebox->timeBoxed(function() {
-            $this->mutex->synchronized(function() {
+        $timebox->timeBoxed(function () {
+            $this->mutex->synchronized(function () {
                 $this->fail("Did not expect code execution.");
             });
         });

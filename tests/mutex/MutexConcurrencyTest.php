@@ -3,7 +3,6 @@
 namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
-use ezcSystemInfo;
 use Predis\Client;
 use Redis;
 use Spork\ProcessManager;
@@ -92,7 +91,7 @@ class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
      */
     public function testHighContention(callable $code, callable $mutexFactory)
     {
-        $concurrency = max(2, ezcSystemInfo::getInstance()->cpuCount);
+        $concurrency = 2;
         $iterations  = 20000 / $concurrency;
         $timeout = $concurrency * 20;
         
