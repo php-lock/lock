@@ -118,6 +118,9 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
+Timeouts are supported as an optional second argument. This uses the pcntl extension if 
+possible or busy waiting if not.  
+
 #### MemcachedMutex
 
 The **MemcachedMutex**
