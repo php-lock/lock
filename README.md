@@ -150,6 +150,9 @@ which uses the [`phpredis` extension](https://github.com/phpredis/phpredis).
 
 This implementation requires at least `phpredis-2.2.4`.
 
+If used with a cluster of Redis servers, acquiring and releasing locks will continue to function as 
+long as a majority of the servers still works.  
+
 Example:
 ```php
 $redis = new Redis();
