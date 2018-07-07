@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\ExecutionOutsideLockException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\util\DoubleCheckedLocking;
@@ -32,6 +33,7 @@ abstract class Mutex
      * @throws \Exception The execution block threw an exception.
      * @throws LockAcquireException The mutex could not be acquired, no further side effects.
      * @throws LockReleaseException The mutex could not be released, the code was already executed.
+     * @throws ExecutionOutsideLockException Some code was executed outside of the lock.
      */
     abstract public function synchronized(callable $code);
     

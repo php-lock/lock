@@ -56,7 +56,7 @@ class FlockMutex extends LockMutex
      * Sets the file handle.
      *
      * @param resource $fileHandle The file handle.
-     * @throws \InvalidArgumentException The file handle is not a valid resource.
+     * @param int $timeout
      */
     public function __construct($fileHandle, $timeout = self::INFINITE_TIMEOUT)
     {
@@ -131,8 +131,8 @@ class FlockMutex extends LockMutex
      */
     private function acquireNonBlockingLock()
     {
-        if (!flock($this->fileHandle, LOCK_EX | LOCK_NB, $wouldblock)) {
-            if ($wouldblock) {
+        if (!flock($this->fileHandle, LOCK_EX | LOCK_NB, $wouldBlock)) {
+            if ($wouldBlock) {
                 /*
                  * Another process holds the lock.
                  */

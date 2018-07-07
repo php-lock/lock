@@ -39,7 +39,7 @@ class CASMutex extends Mutex
     }
     
     /**
-     * Notifies the Mutex about a successfull CAS operation.
+     * Notifies the Mutex about a successful CAS operation.
      */
     public function notify()
     {
@@ -47,7 +47,7 @@ class CASMutex extends Mutex
     }
     
     /**
-     * Repeats executing a code until a compare-and-swap operation was succesful.
+     * Repeats executing a code until a compare-and-swap operation was successful.
      *
      * The code has to be designed in a way that it can be repeated without any
      * side effects. When the CAS operation was successful it should notify

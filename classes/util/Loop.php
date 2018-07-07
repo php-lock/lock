@@ -68,6 +68,7 @@ class Loop
     public function execute(callable $code)
     {
         $this->looping = true;
+
         $minWait = 100; // microseconds
         $deadline = microtime(true) + $this->timeout; // At this time, the lock will time out.
         $result = null;
@@ -78,8 +79,8 @@ class Loop
                 break;
             }
 
-            $min    = (int) $minWait * 1.5 ** $i;
-            $max    = $min * 2;
+            $min = (int) $minWait * 1.5 ** $i;
+            $max = $min * 2;
 
             /*
              * Calculate max time remaining, don't sleep any longer than that.

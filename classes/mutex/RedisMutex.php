@@ -106,22 +106,22 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         if ($isAcquired) {
             // 4.
             return true;
-        } else {
-            // 5.
-            $this->release($key);
-            
-            // In addition to RedLock it's an exception if too many servers fail.
-            if (!$this->isMajority(count($this->redisAPIs) - $errored)) {
-                assert(!is_null($exception)); // The last exception for some context.
-                throw new LockAcquireException(
-                    "It's not possible to acquire a lock because at least half of the Redis server are not available.",
-                    LockAcquireException::REDIS_NOT_ENOUGH_SERVERS,
-                    $exception
-                );
-            }
-
-            return false;
         }
+
+        // 5.
+        $this->release($key);
+
+        // In addition to RedLock it's an exception if too many servers fail.
+        if (!$this->isMajority(count($this->redisAPIs) - $errored)) {
+            assert(!is_null($exception)); // The last exception for some context.
+            throw new LockAcquireException(
+                "It's not possible to acquire a lock because at least half of the Redis server are not available.",
+                LockAcquireException::REDIS_NOT_ENOUGH_SERVERS,
+                $exception
+            );
+        }
+
+        return false;
     }
     
     /**
@@ -193,7 +193,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     /**
      * @param mixed  $redisAPI The connected Redis API.
      * @param string $script The Lua script.
-     * @param int    $numkeys The number of arguments that represent Redis key names.
+     * @param int    $numkeys The number of values in $arguments that represent Redis key names.
      * @param array  $arguments Keys and values.
      *
      * @return mixed The script result, or false if executing failed.
