@@ -21,10 +21,10 @@ use Redis;
 class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Redis The Redis API.
+     * @var Redis[]
      */
-    private $redis;
-    
+    private $connections = [];
+
     /**
      * @var PHPRedisMutex The SUT.
      */
@@ -34,19 +34,34 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
         
-        $this->redis = new Redis();
-
         $uris = explode(",", getenv("REDIS_URIS") ?: "redis://localhost");
-        $uri  = parse_url($uris[0]);
-        if (!empty($uri["port"])) {
-            $this->redis->connect($uri["host"], $uri["port"]);
-        } else {
-            $this->redis->connect($uri["host"]);
+
+        foreach ($uris as $redisUri) {
+            $uri  = parse_url($redisUri);
+
+            $connection = new Redis();
+
+            if (!empty($uri["port"])) {
+                $connection->connect($uri["host"], $uri["port"]);
+            } else {
+                $connection->connect($uri["host"]);
+            }
+
+            $connection->flushAll(); // Clear any existing locks.
+
+            $this->connections[] = $connection;
         }
 
-        $this->redis->flushAll(); // Clear any existing locks.
+        $this->mutex = new PHPRedisMutex($this->connections, "test");
+    }
 
-        $this->mutex = new PHPRedisMutex([$this->redis], "test");
+    private function closeMajorityConnections()
+    {
+        $numberToClose = ceil(count($this->connections) / 2);
+
+        foreach (array_rand($this->connections, $numberToClose) as $keyToClose) {
+            $this->connections[$keyToClose]->close();
+        }
     }
 
     /**
@@ -58,7 +73,8 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddFails()
     {
-        $this->redis->close();
+        $this->closeMajorityConnections();
+
         $this->mutex->synchronized(function () {
             $this->fail("Code execution is not expected");
         });
@@ -73,7 +89,7 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
     public function testEvalScriptFails()
     {
         $this->mutex->synchronized(function () {
-            $this->redis->close();
+            $this->closeMajorityConnections();
         });
     }
 
@@ -83,7 +99,9 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testSyncronizedWorks($serialization)
     {
-        $this->redis->setOption(Redis::OPT_SERIALIZER, $serialization);
+        foreach ($this->connections as $connection) {
+            $connection->setOption(Redis::OPT_SERIALIZER, $serialization);
+        }
 
         $this->mutex->synchronized(function () {
             $this->assertTrue(true);
