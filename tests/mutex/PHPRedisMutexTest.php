@@ -21,10 +21,10 @@ use Redis;
 class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Redis The Redis API.
+     * @var Redis[]
      */
-    private $redis;
-    
+    private $connections = [];
+
     /**
      * @var PHPRedisMutex The SUT.
      */
@@ -34,31 +34,53 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
         
-        $this->redis = new Redis();
-
         $uris = explode(",", getenv("REDIS_URIS") ?: "redis://localhost");
-        $uri  = parse_url($uris[0]);
-        if (!empty($uri["port"])) {
-            $this->redis->connect($uri["host"], $uri["port"]);
-        } else {
-            $this->redis->connect($uri["host"]);
+
+        foreach ($uris as $redisUri) {
+            $uri  = parse_url($redisUri);
+
+            $connection = new Redis();
+
+            if (!empty($uri["port"])) {
+                $connection->connect($uri["host"], $uri["port"]);
+            } else {
+                $connection->connect($uri["host"]);
+            }
+
+            $connection->flushAll(); // Clear any existing locks.
+
+            $this->connections[] = $connection;
         }
 
-        $this->redis->flushAll(); // Clear any existing locks.
+        $this->mutex = new PHPRedisMutex($this->connections, "test");
+    }
 
-        $this->mutex = new PHPRedisMutex([$this->redis], "test");
+    private function closeMajorityConnections()
+    {
+        $numberToClose = ceil(count($this->connections) / 2);
+
+        foreach (array_rand($this->connections, $numberToClose) as $keyToClose) {
+            $this->connections[$keyToClose]->close();
+        }
+    }
+
+    private function closeMinortyConnections()
+    {
+        $numberToClose = ceil(count($this->connections) / 2) - 1;
+
+        foreach ((array) array_rand($this->connections, $numberToClose) as $keyToClose) {
+            $this->connections[$keyToClose]->close();
+        }
     }
 
     /**
-     * Tests add() fails.
-     *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      * @expectedExceptionCode \malkusch\lock\exception\MutexException::REDIS_NOT_ENOUGH_SERVERS
      */
     public function testAddFails()
     {
-        $this->redis->close();
+        $this->closeMajorityConnections();
+
         $this->mutex->synchronized(function () {
             $this->fail("Code execution is not expected");
         });
@@ -73,7 +95,7 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
     public function testEvalScriptFails()
     {
         $this->mutex->synchronized(function () {
-            $this->redis->close();
+            $this->closeMajorityConnections();
         });
     }
 
@@ -81,13 +103,32 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
      * @param $serialization
      * @dataProvider dpSerializationModes
      */
-    public function testSyncronizedWorks($serialization)
+    public function testSynchronizedWorks($serialization)
     {
-        $this->redis->setOption(Redis::OPT_SERIALIZER, $serialization);
+        foreach ($this->connections as $connection) {
+            $connection->setOption(Redis::OPT_SERIALIZER, $serialization);
+        }
 
-        $this->mutex->synchronized(function () {
-            $this->assertTrue(true);
-        });
+        $this->assertNull($this->mutex->synchronized(function () {
+            return null;
+        }));
+    }
+
+    public function testResistantToPartialClusterFailuresForAcquiringLock()
+    {
+        $this->closeMinortyConnections();
+
+        $this->assertNull($this->mutex->synchronized(function () {
+            return null;
+        }));
+    }
+
+    public function testResistantToPartialClusterFailuresForReleasingLock()
+    {
+        $this->assertNull($this->mutex->synchronized(function () {
+            $this->closeMinortyConnections();
+            return null;
+        }));
     }
 
     public function dpSerializationModes()
