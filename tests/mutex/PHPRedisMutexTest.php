@@ -64,10 +64,16 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    private function closeMinortyConnections()
+    {
+        $numberToClose = ceil(count($this->connections) / 2) - 1;
+
+        foreach ((array) array_rand($this->connections, $numberToClose) as $keyToClose) {
+            $this->connections[$keyToClose]->close();
+        }
+    }
+
     /**
-     * Tests add() fails.
-     *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      * @expectedExceptionCode \malkusch\lock\exception\MutexException::REDIS_NOT_ENOUGH_SERVERS
      */
@@ -97,15 +103,32 @@ class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
      * @param $serialization
      * @dataProvider dpSerializationModes
      */
-    public function testSyncronizedWorks($serialization)
+    public function testSynchronizedWorks($serialization)
     {
         foreach ($this->connections as $connection) {
             $connection->setOption(Redis::OPT_SERIALIZER, $serialization);
         }
 
-        $this->mutex->synchronized(function () {
-            $this->assertTrue(true);
-        });
+        $this->assertNull($this->mutex->synchronized(function () {
+            return null;
+        }));
+    }
+
+    public function testResistantToPartialClusterFailuresForAcquiringLock()
+    {
+        $this->closeMinortyConnections();
+
+        $this->assertNull($this->mutex->synchronized(function () {
+            return null;
+        }));
+    }
+
+    public function testResistantToPartialClusterFailuresForReleasingLock()
+    {
+        $this->assertNull($this->mutex->synchronized(function () {
+            $this->closeMinortyConnections();
+            return null;
+        }));
     }
 
     public function dpSerializationModes()

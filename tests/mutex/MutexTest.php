@@ -110,6 +110,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
             }];
 
             $cases["PHPRedisMutex"] = [function () use ($uris) {
+                /** @var Redis[] $apis */
                 $apis = array_map(
                     function ($uri) {
                         $redis = new Redis();
