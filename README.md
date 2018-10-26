@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/TheLevti/lock.svg?branch=develop)](https://travis-ci.com/TheLevti/lock)
+[![Build Status](https://travis-ci.com/TheLevti/php-lock.svg?branch=develop)](https://travis-ci.com/TheLevti/php-lock)
 
 This library helps executing critical code in concurrent situations.
 
