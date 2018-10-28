@@ -4,6 +4,7 @@ namespace malkusch\lock\util;
 
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for Loop.
@@ -13,9 +14,8 @@ use phpmock\phpunit\PHPMock;
  * @license WTFPL
  * @see Loop
  */
-class LoopTest extends \PHPUnit_Framework_TestCase
+class LoopTest extends TestCase
 {
-
     use PHPMock;
     
     protected function setUp()

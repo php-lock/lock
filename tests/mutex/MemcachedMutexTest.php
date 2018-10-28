@@ -2,6 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for MemcachedMutex.
  *
@@ -13,7 +15,7 @@ namespace malkusch\lock\mutex;
  * @requires extension memcached
  * @see MemcachedMutex
  */
-class MemcachedMutexTest extends \PHPUnit_Framework_TestCase
+class MemcachedMutexTest extends TestCase
 {
     /**
      * @var \Memcached

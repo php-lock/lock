@@ -3,6 +3,7 @@
 namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
+use PHPUnit\Framework\TestCase;
 use Predis\Client;
 use Redis;
 use Spork\ProcessManager;
@@ -23,7 +24,7 @@ use Spork\ProcessManager;
  * @requires PHP
  * @see Mutex
  */
-class MutexConcurrencyTest extends \PHPUnit_Framework_TestCase
+class MutexConcurrencyTest extends TestCase
 {
     /**
      * @var \PDO The pdo instance.

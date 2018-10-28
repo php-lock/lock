@@ -5,6 +5,7 @@ namespace malkusch\lock\mutex;
 use Eloquent\Liberator\Liberator;
 use Memcached;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\TestCase;
 use Predis\Client;
 use Redis;
 
@@ -21,7 +22,7 @@ use Redis;
  * @license WTFPL
  * @see Mutex
  */
-class MutexTest extends \PHPUnit_Framework_TestCase
+class MutexTest extends TestCase
 {
     const TIMEOUT = 4;
 

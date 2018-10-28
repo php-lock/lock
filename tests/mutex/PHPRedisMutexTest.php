@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use PHPUnit\Framework\TestCase;
 use Redis;
 
 /**
@@ -18,7 +19,7 @@ use Redis;
  * @requires redis
  * @group redis
  */
-class PHPRedisMutexTest extends \PHPUnit_Framework_TestCase
+class PHPRedisMutexTest extends TestCase
 {
     /**
      * @var Redis[]

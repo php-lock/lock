@@ -2,6 +2,8 @@
 
 namespace malkusch\lock\util;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for PcntlTimeout
  *
@@ -11,7 +13,7 @@ namespace malkusch\lock\util;
  * @see PcntlTimeout
  * @requires pcntl
  */
-class PcntlTimeoutTest extends \PHPUnit_Framework_TestCase
+class PcntlTimeoutTest extends TestCase
 {
     /**
      * A long running system call should be interrupted

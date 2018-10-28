@@ -3,6 +3,7 @@
 namespace malkusch\lock\util;
 
 use malkusch\lock\mutex\Mutex;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for DoubleCheckedLocking.
@@ -12,11 +13,10 @@ use malkusch\lock\mutex\Mutex;
  * @license WTFPL
  * @see DoubleCheckedLocking
  */
-class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
+class DoubleCheckedLockingTest extends TestCase
 {
-    
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject The Mutex mock.
+     * @var \PHPUnit\Framework\MockObject\MockObject The Mutex mock.
      */
     private $mutex;
     

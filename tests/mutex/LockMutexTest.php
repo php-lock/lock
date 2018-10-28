@@ -4,6 +4,8 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for LockMutex.
@@ -13,11 +15,10 @@ use malkusch\lock\exception\LockReleaseException;
  * @license WTFPL
  * @see LockMutex
  */
-class LockMutexTest extends \PHPUnit_Framework_TestCase
+class LockMutexTest extends TestCase
 {
-    
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject The SUT
+     * @var \PHPUnit\Framework\MockObject\MockObject The SUT
      */
     private $mutex;
     
