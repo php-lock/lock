@@ -64,7 +64,14 @@
       "ext-pnctl": "Enables locking with flock without busy waiting in CLI scripts."
     },
     "archive": {
-        "exclude": ["/tests"]
+        "exclude": [
+            "/tests",
+            "/.gitattributes",
+            "/.gitignore",
+            "/.travis.yml",
+            "/phpunit.xml",
+            "/.github"
+        ]
     },
     "scripts": {
         "fix-cs": "vendor/bin/phpcbf --standard=PSR2 classes/ tests/"
