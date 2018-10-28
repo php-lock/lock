@@ -33,7 +33,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "malkusch\\lock\\": "src/"
+            "malkusch\\lock\\": "classes/"
         }
     },
     "autoload-dev": {
