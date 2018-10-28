@@ -4,6 +4,7 @@ namespace malkusch\lock\mutex;
 
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for CASMutex.
@@ -13,9 +14,8 @@ use phpmock\phpunit\PHPMock;
  * @license WTFPL
  * @see CASMutex
  */
-class CASMutexTest extends \PHPUnit_Framework_TestCase
+class CASMutexTest extends TestCase
 {
-
     use PHPMock;
     
     protected function setUp()

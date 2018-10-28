@@ -2,6 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for TransactionalMutex.
  *
@@ -12,9 +14,8 @@ namespace malkusch\lock\mutex;
  * @license WTFPL
  * @see TransactionalMutex
  */
-class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
+class TransactionalMutexTest extends TestCase
 {
-
     /**
      * Tests building the mutex with an invalid error mode.
      *

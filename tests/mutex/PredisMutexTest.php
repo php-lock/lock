@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use PHPUnit\Framework\TestCase;
 use Predis\Client;
 use Predis\ClientInterface;
 
@@ -18,7 +19,7 @@ use Predis\ClientInterface;
  * @see     PredisMutex
  * @group   redis
  */
-class PredisMutexTest extends \PHPUnit_Framework_TestCase
+class PredisMutexTest extends TestCase
 {
     /**
      * @var ClientInterface

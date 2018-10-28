@@ -4,6 +4,7 @@ namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
 use malkusch\lock\util\PcntlTimeout;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Willem Stuursma-Ruwen <willem@stuursma.name>
@@ -11,7 +12,7 @@ use malkusch\lock\util\PcntlTimeout;
  * @license WTFPL
  * @see CASMutex
  */
-class FlockMutexTest extends \PHPUnit_Framework_TestCase
+class FlockMutexTest extends TestCase
 {
     /**
      * @var FlockMutex

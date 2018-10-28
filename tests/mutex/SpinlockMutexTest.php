@@ -6,6 +6,7 @@ use malkusch\lock\exception\ExecutionOutsideLockException;
 use malkusch\lock\exception\LockAcquireException;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for SpinlockMutex.
@@ -15,9 +16,8 @@ use phpmock\phpunit\PHPMock;
  * @license WTFPL
  * @see SpinlockMutex
  */
-class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
+class SpinlockMutexTest extends TestCase
 {
-    
     use PHPMock;
     
     protected function setUp()
@@ -74,7 +74,7 @@ class SpinlockMutexTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteTooLong()
     {
-        /** @var SpinlockMutex|\PHPUnit_Framework_MockObject_MockObject $mutex */
+        /** @var SpinlockMutex|\PHPUnit\Framework\MockObject\MockObject $mutex */
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ["test", 1]);
         $mutex->expects($this->any())->method("acquire")->willReturn(true);
         $mutex->expects($this->any())->method("release")->willReturn(true);

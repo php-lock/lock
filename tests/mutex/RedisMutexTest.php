@@ -6,6 +6,7 @@ use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for RedisMutex.
@@ -17,9 +18,8 @@ use phpmock\phpunit\PHPMock;
  * @see RedisMutex
  * @group redis
  */
-class RedisMutexTest extends \PHPUnit_Framework_TestCase
+class RedisMutexTest extends TestCase
 {
-
     use PHPMock;
     
     protected function setUp()
@@ -41,7 +41,7 @@ class RedisMutexTest extends \PHPUnit_Framework_TestCase
      * @param int $count The amount of redis apis.
      * @param int $timeout The timeout.
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject|RedisMutex
+     * @return \PHPUnit\Framework\MockObject\MockObject|RedisMutex
      */
     private function buildRedisMutex($count, $timeout = 1)
     {
