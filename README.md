@@ -1,13 +1,3 @@
-**[Requirements](#requirements)** |
-**[Installation](#installation)** |
-**[Usage](#usage)** |
-**[Plugins](#plugins)** |
-**[Events](#events)** |
-**[Features](#features)** |
-**[Suggestions](#suggestions)** |
-**[Contributing](#contributing)** |
-**[License](#license)**
-
 # malkusch/lock
 
 [![Latest Stable Version](https://poser.pugx.org/malkusch/lock/version)](https://packagist.org/packages/malkusch/lock)
@@ -15,9 +5,6 @@
 [![Latest Unstable Version](https://poser.pugx.org/malkusch/lock/v/unstable)](//packagist.org/packages/malkusch/lock)
 [![Build Status](https://travis-ci.com/TheLevti/lock.svg?branch=develop)](https://travis-ci.com/TheLevti/lock)
 [![License](https://poser.pugx.org/malkusch/lock/license)](https://packagist.org/packages/malkusch/lock)
-[![Monthly Downloads](https://poser.pugx.org/malkusch/lock/d/monthly)](https://packagist.org/packages/malkusch/lock)
-[![Daily Downloads](https://poser.pugx.org/malkusch/lock/d/daily)](https://packagist.org/packages/malkusch/lock)
-[![composer.lock available](https://poser.pugx.org/malkusch/lock/composerlock)](https://packagist.org/packages/malkusch/lock)
 
 This library helps executing critical code in concurrent situations.
 
