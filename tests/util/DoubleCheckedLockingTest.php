@@ -44,9 +44,12 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
         $this->checkedLocking->setCheck(function () {
             return false;
         });
-        $this->checkedLocking->then(function () {
+        $result = $this->checkedLocking->then(function () {
             $this->fail();
         });
+
+        // Failed check should return false.
+        $this->assertFalse($result);
     }
     
     /**
@@ -63,8 +66,10 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
                 ->method("synchronized")
                 ->willReturnCallback(function (callable $block) use (&$lock) {
                     $lock++;
-                    call_user_func($block);
+                    $result = call_user_func($block);
                     $lock++;
+
+                    return $result;
                 });
         
         $this->checkedLocking->setCheck(function () use (&$lock, &$check) {
@@ -72,14 +77,20 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
                 $this->assertEquals(1, $lock);
             }
             $check++;
+
             return true;
         });
 
-        $this->checkedLocking->then(function () use (&$lock) {
+        $result = $this->checkedLocking->then(function () use (&$lock) {
             $this->assertEquals(1, $lock);
+
+            return 'test';
         });
 
         $this->assertEquals(2, $check);
+
+        // Synchronized code should return a test string.
+        $this->assertEquals('test', $result);
     }
     
     /**
@@ -98,9 +109,12 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
                 });
                 
         $this->checkedLocking->setCheck($check);
-        $this->checkedLocking->then(function () {
+        $result = $this->checkedLocking->then(function () {
             $this->fail();
         });
+
+        // Each failed check should return false.
+        $this->assertFalse($result);
     }
     
     /**
@@ -142,9 +156,13 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
         });
 
         $executed = false;
-        $this->checkedLocking->then(function () use (&$executed) {
+        $result = $this->checkedLocking->then(function () use (&$executed) {
             $executed = true;
+
+            return 'test';
         });
+
         $this->assertTrue($executed);
+        $this->assertEquals('test', $result);
     }
 }
