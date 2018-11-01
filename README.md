@@ -1,8 +1,29 @@
+**[Requirements](#requirements)** |
+**[Installation](#installation)** |
+**[Usage](#usage)** |
+**[Plugins](#plugins)** |
+**[Events](#events)** |
+**[Features](#features)** |
+**[Suggestions](#suggestions)** |
+**[Contributing](#contributing)** |
+**[License](#license)**
+
+# malkusch/lock
+
+[![Latest Stable Version](https://poser.pugx.org/malkusch/lock/version)](https://packagist.org/packages/malkusch/lock)
+[![Total Downloads](https://poser.pugx.org/malkusch/lock/downloads)](https://packagist.org/packages/malkusch/lock)
+[![Latest Unstable Version](https://poser.pugx.org/malkusch/lock/v/unstable)](//packagist.org/packages/malkusch/lock)
 [![Build Status](https://travis-ci.com/TheLevti/lock.svg?branch=develop)](https://travis-ci.com/TheLevti/lock)
+[![License](https://poser.pugx.org/malkusch/lock/license)](https://packagist.org/packages/malkusch/lock)
+[![Monthly Downloads](https://poser.pugx.org/malkusch/lock/d/monthly)](https://packagist.org/packages/malkusch/lock)
+[![Daily Downloads](https://poser.pugx.org/malkusch/lock/d/daily)](https://packagist.org/packages/malkusch/lock)
+[![composer.lock available](https://poser.pugx.org/malkusch/lock/composerlock)](https://packagist.org/packages/malkusch/lock)
 
 This library helps executing critical code in concurrent situations.
 
-# Installation
+----
+
+## Installation
 
 Use [Composer](https://getcomposer.org/):
 
@@ -10,18 +31,18 @@ Use [Composer](https://getcomposer.org/):
 composer require malkusch/lock
 ```
 
-# Usage
+## Usage
 
 The package is in the namespace
 [`malkusch\lock`](http://malkusch.github.io/lock/api/namespace-malkusch.lock.html).
 
-## Mutex
+### Mutex
 
 The
 [`Mutex`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.Mutex.html)
 provides the API for this library.
 
-### Mutex::synchronized()
+#### Mutex::synchronized()
 
 [`Mutex::synchronized()`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.Mutex.html#_synchronized)
 executes code exclusively. This method guarantees that the code is only executed
@@ -41,7 +62,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-### Mutex::check()
+#### Mutex::check()
 
 [`Mutex::check()`](http://malkusch.github.io/lock/api/class-malkusch.lock.mutex.Mutex.html#_check)
 performs a double-checked locking pattern. I.e. if the check fails, no lock
@@ -60,7 +81,7 @@ $mutex->check(function () use ($bankAccount, $amount) {
 });
 ```
 
-### Implementations
+#### Implementations
 
 The `Mutex` is an abstract class. You will have to choose an implementation:
 
@@ -75,7 +96,7 @@ The `Mutex` is an abstract class. You will have to choose an implementation:
 - [`PgAdvisoryLockMutex`](#pgadvisorylockmutex)
 
 
-#### CASMutex
+##### CASMutex
 
 The **CASMutex**
 has to be used with a [Compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap) operation.
@@ -100,7 +121,7 @@ $mutex->synchronized(function () use ($memcached, $mutex, $amount) {
 });
 ```
 
-#### FlockMutex
+##### FlockMutex
 
 The **FlockMutex** is a lock implementation based on [`flock()`](http://php.net/manual/en/function.flock.php).
 
@@ -121,7 +142,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 Timeouts are supported as an optional second argument. This uses the pcntl extension if 
 possible or busy waiting if not.  
 
-#### MemcachedMutex
+##### MemcachedMutex
 
 The **MemcachedMutex**
 is a spinlock implementation which uses the [`Memcached` API](http://php.net/manual/en/book.memcached.php).
@@ -143,7 +164,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-#### PHPRedisMutex
+##### PHPRedisMutex
 
 The **PHPRedisMutex** is the distributed lock implementation of [RedLock](http://redis.io/topics/distlock)
 which uses the [`phpredis` extension](https://github.com/phpredis/phpredis).
@@ -170,7 +191,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-#### PredisMutex
+##### PredisMutex
 
 The **PredisMutex** is the distributed lock implementation of [RedLock](http://redis.io/topics/distlock)
 which uses the [`Predis` API](https://github.com/nrk/predis).
@@ -191,7 +212,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-#### SemaphoreMutex
+##### SemaphoreMutex
 
 The **SemaphoreMutex**
 is a lock implementation based on [Semaphore](http://php.net/manual/en/ref.sem.php).
@@ -211,7 +232,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-#### TransactionalMutex
+##### TransactionalMutex
 
 The **TransactionalMutex**
 delegates the serialization to the DBS. The exclusive code is executed within
@@ -241,7 +262,7 @@ $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
 ```
 
 
-#### MySQLMutex
+##### MySQLMutex
 
 The **MySQLMutex** uses MySQL's 
 [`GET_LOCK`](https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_get-lock)
@@ -267,7 +288,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $bankAccount->setBalance($balance);
 });
 ```
-#### PgAdvisoryLockMutex
+##### PgAdvisoryLockMutex
 
 The **PgAdvisoryLockMutex** uses PostgreSQL's 
 [advisory locking](https://www.postgresql.org/docs/9.4/static/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS)
@@ -295,14 +316,12 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 
 
-# License and authors
+## License and authors
 
 This project is free and under the WTFPL.
 Responsible for this project is Willem Stuursma-Ruwen <willem@stuursma.name>.
 
-## Donations
+### Donations
 
 If you like this project and feel generous donate a few Bitcoins here:
 [1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA](bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA)
-
-
