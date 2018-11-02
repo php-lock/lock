@@ -56,7 +56,14 @@ class DoubleCheckedLocking
      * Both the check and the code execution are locked by a mutex.
      * Only if the check fails the method returns before acquiring a lock.
      *
-     * @param callable $code The locked code.
+     * If then returns boolean FALSE, the check did not pass before or after
+     * acquiring the lock. A boolean FALSE can also be returned from the
+     * synchronized code to indicate that processing did not occure or has
+     * failed. It is up to the user to decide.
+     *
+     * @param  callable $code The locked code.
+     * @return mixed Boolean FALSE if check did not pass or mixed for what ever
+     *               the synchronized code returns.
      *
      * @throws \Exception The execution block or the check threw an exception.
      * @throws LockAcquireException The mutex could not be acquired.
@@ -65,12 +72,15 @@ class DoubleCheckedLocking
     public function then(callable $code)
     {
         if (!call_user_func($this->check)) {
-            return;
+            return false;
         }
-        $this->mutex->synchronized(function () use ($code) {
-            if (call_user_func($this->check)) {
-                call_user_func($code);
+
+        return $this->mutex->synchronized(function () use ($code) {
+            if (!call_user_func($this->check)) {
+                return false;
             }
+
+            return call_user_func($code);
         });
     }
 }
