@@ -43,8 +43,7 @@
     },
     "require": {
         "php": ">=7.1",
-        "psr/log": "^1.0.2",
-        "predis/predis": "^1.1.1"
+        "psr/log": "^1"
     },
     "require-dev": {
         "ext-memcached": "*",
@@ -52,16 +51,18 @@
         "ext-pdo_mysql": "*",
         "ext-pdo_sqlite": "*",
         "ext-redis": "*",
-        "eloquent/liberator": "^2.0.0",
-        "johnkary/phpunit-speedtrap": "^3.0.0",
+        "eloquent/liberator": "^2.0",
+        "johnkary/phpunit-speedtrap": "^3.0",
         "kriswallsmith/spork": "^0.3",
-        "mikey179/vfsStream": "^1.6.5",
-        "php-mock/php-mock-phpunit": "^2.1.2",
-        "phpunit/phpunit": "^7.4.3",
-        "squizlabs/php_codesniffer": "^3.3.2"
+        "mikey179/vfsStream": "^1.6",
+        "php-mock/php-mock-phpunit": "^2.1",
+        "phpunit/phpunit": "^7.4",
+        "predis/predis": "^1",
+        "squizlabs/php_codesniffer": "^3.3"
     },
     "suggest": {
-      "ext-pnctl": "Enables locking with flock without busy waiting in CLI scripts."
+        "ext-pnctl": "Enables locking with flock without busy waiting in CLI scripts.",
+        "predis/predis": "To use this library with predis."
     },
     "archive": {
         "exclude": [
