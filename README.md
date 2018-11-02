@@ -1,4 +1,8 @@
-# malkusch/lock
+**[Requirements](#requirements)** |
+**[Installation](#installation)** |
+**[Usage](#usage)**
+
+# php-lock/lock
 
 [![Latest Stable Version](https://poser.pugx.org/malkusch/lock/version)](https://packagist.org/packages/malkusch/lock)
 [![Total Downloads](https://poser.pugx.org/malkusch/lock/downloads)](https://packagist.org/packages/malkusch/lock)
@@ -8,6 +12,15 @@
 
 This library helps executing critical code in concurrent situations.
 
+php-lock/lock follows semantic versioning. Read more on [semver.org][1].
+
+----
+
+## Requirements
+ - PHP 7.1 or above
+ - Optionally [nrk/predis](https://github.com/nrk/predis) to use the predis locks.
+ - Optionally the [php-pcntl](http://php.net/manual/en/book.pcntl.php) extension to enables locking with flock without busy waiting in CLI scripts.
+
 ----
 
 ## Installation
@@ -15,7 +28,7 @@ This library helps executing critical code in concurrent situations.
 Use [Composer](https://getcomposer.org/):
 
 ```sh
-composer require malkusch/lock
+composer require "malkusch/lock"
 ```
 
 ## Usage
@@ -248,7 +261,6 @@ $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
 });
 ```
 
-
 ##### MySQLMutex
 
 The **MySQLMutex** uses MySQL's 
@@ -275,6 +287,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $bankAccount->setBalance($balance);
 });
 ```
+
 ##### PgAdvisoryLockMutex
 
 The **PgAdvisoryLockMutex** uses PostgreSQL's 
@@ -301,14 +314,14 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-
-
 ## License and authors
 
 This project is free and under the WTFPL.
 Responsible for this project is Willem Stuursma-Ruwen <willem@stuursma.name>.
 
-### Donations
+## Donations
 
 If you like this project and feel generous donate a few Bitcoins here:
 [1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA](bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA)
+
+[1]: http://semver.org/
