@@ -58,7 +58,9 @@ final class PcntlTimeout
      */
     public function timeBoxed(callable $code)
     {
-        $signal = pcntl_signal(SIGALRM, function () {
+        $existingHandler = pcntl_signal_get_handler(SIGALRM);
+
+        $signal = pcntl_signal(SIGALRM, function (): void {
             throw new DeadlineException(sprintf("Timebox hit deadline of %d seconds", $this->timeout));
         });
         if (!$signal) {
@@ -73,7 +75,7 @@ final class PcntlTimeout
         } finally {
             pcntl_alarm(0);
             pcntl_signal_dispatch();
-            pcntl_signal(SIGALRM, SIG_DFL);
+            pcntl_signal(SIGALRM, $existingHandler);
         }
     }
 
