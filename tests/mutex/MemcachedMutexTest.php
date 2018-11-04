@@ -2,6 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
+use phpmock\environment\SleepEnvironmentBuilder;
+use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  * @requires extension memcached
  * @see MemcachedMutex
  */
-class MemcachedMutexUnitTest extends TestCase
+class MemcachedMutexTest extends TestCase
 {
     /**
      * @var \Memcached|MockObject
