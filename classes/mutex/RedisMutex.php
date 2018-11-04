@@ -44,7 +44,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $redisAPIs, $name, $timeout = 3)
+    public function __construct(array $redisAPIs, string $name, int $timeout = 3)
     {
         parent::__construct($name, $timeout);
 
@@ -69,9 +69,8 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     
     /**
      * @SuppressWarnings(PHPMD)
-     * @internal
      */
-    protected function acquire($key, $expire)
+    protected function acquire(string $key, int $expire): bool
     {
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $time = microtime(true);
@@ -87,6 +86,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                     $acquired++;
                 }
             } catch (LockAcquireException $exception) {
+                // todo if there is only one redis server, throw immediately.
                 $context = [
                     "key"       => $key,
                     "token"     => $this->token,
@@ -124,10 +124,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         return false;
     }
     
-    /**
-     * @internal
-     */
-    protected function release($key)
+    protected function release(string $key): bool
     {
         /*
          * Question for Redis: Why do I have to try to delete also keys
@@ -153,6 +150,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                     $released++;
                 }
             } catch (LockReleaseException $e) {
+                // todo throw if there is only one redis server
                 $context = [
                     "key"       => $key,
                     "token"     => $this->token,
@@ -171,7 +169,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * @param int $count The count.
      * @return bool True if the count is the majority.
      */
-    private function isMajority($count)
+    private function isMajority(int $count): bool
     {
         return $count > count($this->redisAPIs) / 2;
     }
@@ -188,7 +186,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * @throws LockAcquireException An unexpected error happened.
      * @internal
      */
-    abstract protected function add($redisAPI, $key, $value, $expire);
+    abstract protected function add($redisAPI, string $key, string $value, int $expire): bool;
 
     /**
      * @param mixed  $redisAPI The connected Redis API.
@@ -200,7 +198,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * @throws LockReleaseException An unexpected error happened.
      * @internal
      */
-    abstract protected function evalScript($redisAPI, $script, $numkeys, array $arguments);
+    abstract protected function evalScript($redisAPI, string $script, int $numkeys, array $arguments);
     
     /**
      * Returns a string representation of the Redis API.

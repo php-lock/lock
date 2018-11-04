@@ -32,15 +32,12 @@ class PHPRedisMutex extends RedisMutex
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $redisAPIs, $name, $timeout = 3)
+    public function __construct(array $redisAPIs, string $name, int $timeout = 3)
     {
         parent::__construct($redisAPIs, $name, $timeout);
     }
     
-    /**
-     * @internal
-     */
-    protected function add($redis, $key, $value, $expire)
+    protected function add($redis, string $key, string $value, int $expire): bool
     {
         /** @var Redis $redis */
         try {
@@ -56,10 +53,7 @@ class PHPRedisMutex extends RedisMutex
         }
     }
 
-    /**
-     * @internal
-     */
-    protected function evalScript($redis, $script, $numkeys, array $arguments)
+    protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
         /** @var Redis $redis */
 

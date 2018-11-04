@@ -60,13 +60,17 @@ class PHPRedisMutexTest extends TestCase
     {
         $numberToClose = ceil(count($this->connections) / 2);
 
-        foreach (array_rand($this->connections, $numberToClose) as $keyToClose) {
+        foreach ((array) array_rand($this->connections, $numberToClose) as $keyToClose) {
             $this->connections[$keyToClose]->close();
         }
     }
 
     private function closeMinortyConnections()
     {
+        if (count($this->connections) === 1) {
+            $this->markTestSkipped("Cannot test this with only a single Redis server");
+        }
+
         $numberToClose = ceil(count($this->connections) / 2) - 1;
 
         foreach ((array) array_rand($this->connections, $numberToClose) as $keyToClose) {
@@ -82,7 +86,7 @@ class PHPRedisMutexTest extends TestCase
     {
         $this->closeMajorityConnections();
 
-        $this->mutex->synchronized(function () {
+        $this->mutex->synchronized(function (): void {
             $this->fail("Code execution is not expected");
         });
     }
@@ -90,12 +94,11 @@ class PHPRedisMutexTest extends TestCase
     /**
      * Tests evalScript() fails.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockReleaseException
      */
     public function testEvalScriptFails()
     {
-        $this->mutex->synchronized(function () {
+        $this->mutex->synchronized(function (): void {
             $this->closeMajorityConnections();
         });
     }
@@ -110,8 +113,8 @@ class PHPRedisMutexTest extends TestCase
             $connection->setOption(Redis::OPT_SERIALIZER, $serialization);
         }
 
-        $this->assertNull($this->mutex->synchronized(function () {
-            return null;
+        $this->assertSame("test", $this->mutex->synchronized(function (): string {
+            return "test";
         }));
     }
 
@@ -119,8 +122,8 @@ class PHPRedisMutexTest extends TestCase
     {
         $this->closeMinortyConnections();
 
-        $this->assertNull($this->mutex->synchronized(function () {
-            return null;
+        $this->assertSame("test", $this->mutex->synchronized(function (): string {
+            return "test";
         }));
     }
 

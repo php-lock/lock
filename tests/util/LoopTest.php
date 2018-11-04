@@ -32,8 +32,6 @@ class LoopTest extends TestCase
 
     /**
      * Test an invalid timeout.
-     *
-     * @test
      * @expectedException \LengthException
      */
     public function testInvalidTimeout()
@@ -43,11 +41,11 @@ class LoopTest extends TestCase
     
     /**
      * Tests execution within the timeout.
-     *
-     * @test
      */
     public function testExecutionWithinTimeout()
     {
+        $this->expectNotToPerformAssertions();
+
         $loop = new Loop(1);
         $loop->execute(function () use ($loop) {
             usleep(999999);
@@ -87,7 +85,6 @@ class LoopTest extends TestCase
     /**
      * Tests that an exception would stop any further iteration.
      *
-     * @test
      * @expectedException \DomainException
      */
     public function testExceptionStopsIteration()
@@ -100,8 +97,6 @@ class LoopTest extends TestCase
 
     /**
      * Tests end() will stop the iteration and return the result.
-     *
-     * @test
      */
     public function testEnd()
     {
@@ -116,19 +111,17 @@ class LoopTest extends TestCase
 
     /**
      * Tests that the code is executed more times.
-     *
-     * @test
      */
     public function testIteration()
     {
         $i    = 0;
         $loop = new Loop();
-        $loop->execute(function () use ($loop, &$i) {
+        $loop->execute(function () use ($loop, &$i): void {
             $i++;
             if ($i > 1) {
                 $loop->end();
             }
         });
-        $this->assertEquals(2, $i);
+        $this->assertSame(2, $i);
     }
 }

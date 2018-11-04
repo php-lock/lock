@@ -36,7 +36,6 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests failing to acquire the lock.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testFailAcquireLock()
@@ -70,7 +69,6 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests executing code which exceeds the timeout fails.
      *
-     * @test
      */
     public function testExecuteTooLong()
     {
@@ -93,7 +91,6 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests executing code which barely doesn't hit the timeout.
      *
-     * @test
      */
     public function testExecuteBarelySucceeds()
     {
@@ -109,7 +106,6 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests failing to release a lock.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockReleaseException
      */
     public function testFailReleasingLock()
@@ -125,7 +121,6 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests executing exactly unitl the timeout will leave the key one more second.
      *
-     * @test
      */
     public function testExecuteTimeoutLeavesOneSecondForKeyToExpire()
     {

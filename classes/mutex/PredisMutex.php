@@ -28,19 +28,16 @@ class PredisMutex extends RedisMutex
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $clients, $name, $timeout = 3)
+    public function __construct(array $clients, string $name, int $timeout = 3)
     {
         parent::__construct($clients, $name, $timeout);
     }
     
-    /**
-     * @internal
-     */
-    protected function add($client, $key, $value, $expire)
+    protected function add($client, string $key, string $value, int $expire): bool
     {
         /** @var ClientInterface $client */
         try {
-            return $client->set($key, $value, "EX", $expire, "NX");
+            return $client->set($key, $value, "EX", $expire, "NX") !== null;
         } catch (PredisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s' at %s",
@@ -51,10 +48,7 @@ class PredisMutex extends RedisMutex
         }
     }
 
-    /**
-     * @internal
-     */
-    protected function evalScript($client, $script, $numkeys, array $arguments)
+    protected function evalScript($client, string $script, int $numkeys, array $arguments)
     {
         /** @var ClientInterface $client */
         try {

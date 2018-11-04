@@ -28,25 +28,9 @@ class DoubleCheckedLocking
      */
     private $check;
 
-    /**
-     * Sets the mutex.
-     *
-     * @param Mutex $mutex The mutex.
-     * @internal
-     */
-    public function __construct(Mutex $mutex)
+    public function __construct(Mutex $mutex, callable $check)
     {
         $this->mutex = $mutex;
-    }
-    
-    /**
-     * Sets the check.
-     *
-     * @param callable $check The check.
-     * @internal
-     */
-    public function setCheck(callable $check)
-    {
         $this->check = $check;
     }
     
@@ -80,7 +64,7 @@ class DoubleCheckedLocking
                 return false;
             }
 
-            return call_user_func($code);
+            return $code();
         });
     }
 }

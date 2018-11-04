@@ -32,14 +32,9 @@ class PredisMutexTest extends TestCase
 
         $config = $this->getPredisConfig();
 
-        if (null === $config) {
-            $this->markTestSkipped();
-            return;
-        }
-
         $this->client = new Client($config);
 
-        if (count($config) === 1) {
+        if (is_string($config)) {
             $this->client->flushall(); // Clear any existing locks
         }
     }
@@ -47,7 +42,7 @@ class PredisMutexTest extends TestCase
     private function getPredisConfig()
     {
         if (getenv("REDIS_URIS") === false) {
-            return null;
+            return "redis://localhost:6379";
         }
 
         $servers = explode(",", getenv("REDIS_URIS"));
@@ -63,9 +58,7 @@ class PredisMutexTest extends TestCase
     /**
      * Tests add() fails.
      *
-     * @test
-     * @expectedException     \malkusch\lock\exception\LockAcquireException
-     * @expectedExceptionCode \malkusch\lock\exception\MutexException::REDIS_NOT_ENOUGH_SERVERS
+     * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testAddFails()
     {
@@ -80,10 +73,18 @@ class PredisMutexTest extends TestCase
         );
     }
 
+    public function testWorksNormally()
+    {
+        $mutex = new PredisMutex([$this->client], "test");
+
+        $mutex->synchronized(function(): void {
+            $this->expectNotToPerformAssertions();
+        });
+    }
+
     /**
      * Tests evalScript() fails.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockReleaseException
      */
     public function testEvalScriptFails()

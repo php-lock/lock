@@ -29,7 +29,7 @@ final class PcntlTimeout
      *
      * @param int $timeout Timeout in seconds
      */
-    public function __construct($timeout)
+    public function __construct(int $timeout)
     {
         if (!self::isSupported()) {
             throw new \RuntimeException("PCNTL module not enabled");
@@ -69,7 +69,7 @@ final class PcntlTimeout
             throw new LockAcquireException("Existing alarm was not expected");
         }
         try {
-            return call_user_func($code);
+            return $code();
         } finally {
             pcntl_alarm(0);
             pcntl_signal_dispatch();
@@ -85,7 +85,7 @@ final class PcntlTimeout
      *
      * @return bool TRUE if this class is supported by the PHP runtime.
      */
-    public static function isSupported()
+    public static function isSupported(): bool
     {
         return
             PHP_SAPI === "cli" &&

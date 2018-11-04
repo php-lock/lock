@@ -21,7 +21,6 @@ class TransactionalMutexTest extends TestCase
      *
      * @param int $mode The invalid error mode.
      * @dataProvider provideTestInvalidErrorMode
-     * @test
      * @expectedException \InvalidArgumentException
      */
     public function testInvalidErrorMode($mode)
@@ -47,7 +46,6 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests BEGIN fails.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      * @expectedExceptionMessage Could not begin transaction.
      */
@@ -67,7 +65,6 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests that an exception in the critical code causes a ROLLBACK.
      *
-     * @test
      */
     public function testExceptionRollsback()
     {
@@ -96,7 +93,6 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests that a ROLLBACK caused by an exception fails.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testFailExceptionRollsback()
@@ -117,7 +113,6 @@ class TransactionalMutexTest extends TestCase
      * Tests replaying the transaction.
      *
      * @param \Exception $exception The thrown exception.
-     * @test
      * @dataProvider provideTestReplayTransaction
      */
     public function testReplayTransaction(\Exception $exception)
@@ -168,7 +163,6 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests failing a ROLLBACK after the failed COMMIT.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      * @expectedExceptionMessage Could not roll back transaction:
      */

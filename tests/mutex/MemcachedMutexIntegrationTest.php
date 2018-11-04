@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
  * @requires extension memcached
  * @see MemcachedMutex
  */
-class MemcachedMutexTest extends TestCase
+class MemcachedMutexIntegrationTest extends TestCase
 {
     /**
      * @var \Memcached
@@ -32,7 +32,6 @@ class MemcachedMutexTest extends TestCase
     /**
      * Tests failing to acquire the lock.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\TimeoutException
      */
     public function testFailAcquireLock()
@@ -41,7 +40,7 @@ class MemcachedMutexTest extends TestCase
 
         $this->memcached->add(MemcachedMutex::PREFIX."testFailAcquireLock", "xxx", 999);
 
-        $mutex->synchronized(function () {
+        $mutex->synchronized(function (): void {
             $this->fail("execution is not expected");
         });
     }
@@ -49,13 +48,12 @@ class MemcachedMutexTest extends TestCase
     /**
      * Tests failing to release a lock.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockReleaseException
      */
     public function testFailReleasingLock()
     {
         $mutex = new MemcachedMutex("testFailReleasingLock", $this->memcached, 1);
-        $mutex->synchronized(function () {
+        $mutex->synchronized(function (): void {
             $this->memcached->delete(MemcachedMutex::PREFIX."testFailReleasingLock");
         });
     }

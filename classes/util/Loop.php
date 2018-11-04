@@ -33,7 +33,7 @@ class Loop
      * @param int $timeout The timeout in seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct($timeout = 3)
+    public function __construct(int $timeout = 3)
     {
         if ($timeout <= 0) {
             throw new \LengthException("The timeout must be greater than 0. '$timeout' was given");
@@ -44,7 +44,7 @@ class Loop
     /**
      * Notifies that this was the last iteration.
      */
-    public function end()
+    public function end(): void
     {
         $this->looping = false;
     }
@@ -74,7 +74,7 @@ class Loop
         $result = null;
 
         for ($i = 0; $this->looping && microtime(true) < $deadline; $i++) {
-            $result = call_user_func($code);
+            $result = $code();
             if (!$this->looping) {
                 break;
             }

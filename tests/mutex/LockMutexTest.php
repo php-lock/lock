@@ -32,12 +32,11 @@ class LockMutexTest extends TestCase
     /**
      * Tests lock() fails and the code is not executed.
      *
-     * @test
      * @expectedException malkusch\lock\exception\LockAcquireException
      */
     public function testLockFails()
     {
-        $this->mutex->expects($this->any())
+        $this->mutex->expects($this->once())
             ->method("lock")
             ->willThrowException(new LockAcquireException());
         
@@ -49,43 +48,40 @@ class LockMutexTest extends TestCase
     /**
      * Tests unlock() is called after the code was executed.
      *
-     * @test
      */
     public function testUnlockAfterCode()
     {
-        $this->mutex->expects($this->once())->method("unlock");
+        $this->mutex->expects($this->once())
+            ->method("unlock");
         
-        $this->mutex->synchronized(function () {
+        $this->mutex->synchronized(function (): void {
         });
     }
     
     /**
      * Tests unlock() is called after an exception.
      *
-     * @test
      */
     public function testUnlockAfterException()
     {
-        $this->mutex->expects($this->once())->method("unlock");
+        $this->mutex->expects($this->once())
+            ->method("unlock");
         
-        try {
-            $this->mutex->synchronized(function () {
-                throw new \DomainException();
-            });
-        } catch (\DomainException $e) {
-            // expected
-        }
+
+        $this->expectException(\DomainException::class);
+        $this->mutex->synchronized(function () {
+            throw new \DomainException();
+        });
     }
     
     /**
      * Tests unlock() fails after the code was executed.
      *
-     * @test
      * @expectedException malkusch\lock\exception\LockReleaseException
      */
     public function testUnlockFailsAfterCode()
     {
-        $this->mutex->expects($this->any())
+        $this->mutex->expects($this->once())
             ->method("unlock")
             ->willThrowException(new LockReleaseException());
         
@@ -98,7 +94,6 @@ class LockMutexTest extends TestCase
      *
      * The previous exception should be the code's exception.
      *
-     * @test
      * @expectedException malkusch\lock\exception\LockReleaseException
      */
     public function testUnlockFailsAfterException()

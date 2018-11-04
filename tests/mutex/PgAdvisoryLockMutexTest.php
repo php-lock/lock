@@ -75,7 +75,7 @@ class PgAdvisoryLockMutexTest extends TestCase
                 $this->logicalAnd(
                     $this->isType("array"),
                     $this->countOf(2),
-                    $this->callback(function (...$arguments) {
+                    $this->callback(function (...$arguments): bool {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {

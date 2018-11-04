@@ -51,6 +51,7 @@
         "ext-pdo_mysql": "*",
         "ext-pdo_sqlite": "*",
         "ext-redis": "*",
+        "ext-sysvsem": "*",
         "eloquent/liberator": "^2.0",
         "johnkary/phpunit-speedtrap": "^3.0",
         "kriswallsmith/spork": "^0.3",
@@ -62,6 +63,7 @@
     },
     "suggest": {
         "ext-pnctl": "Enables locking with flock without busy waiting in CLI scripts.",
+        "ext-sysvsem": "Enables locking using semaphores",
         "predis/predis": "To use this library with predis."
     },
     "archive": {

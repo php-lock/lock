@@ -37,25 +37,19 @@ class MemcachedMutex extends SpinlockMutex
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct($name, Memcached $memcache, $timeout = 3)
+    public function __construct(string $name, Memcached $memcache, int $timeout = 3)
     {
         parent::__construct($name, $timeout);
         
         $this->memcache = $memcache;
     }
 
-    /**
-     * @internal
-     */
-    protected function acquire($key, $expire)
+    protected function acquire(string $key, int $expire): bool
     {
         return $this->memcache->add($key, true, $expire);
     }
 
-    /**
-     * @internal
-     */
-    protected function release($key)
+    protected function release(string $key): bool
     {
         return $this->memcache->delete($key);
     }
