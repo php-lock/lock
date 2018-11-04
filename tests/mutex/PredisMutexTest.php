@@ -42,7 +42,7 @@ class PredisMutexTest extends TestCase
     private function getPredisConfig()
     {
         if (getenv("REDIS_URIS") === false) {
-            return "redis://localhost:6379";
+            return "tcp://localhost:6379";
         }
 
         $servers = explode(",", getenv("REDIS_URIS"));
@@ -77,7 +77,7 @@ class PredisMutexTest extends TestCase
     {
         $mutex = new PredisMutex([$this->client], "test");
 
-        $mutex->synchronized(function(): void {
+        $mutex->synchronized(function (): void {
             $this->expectNotToPerformAssertions();
         });
     }
