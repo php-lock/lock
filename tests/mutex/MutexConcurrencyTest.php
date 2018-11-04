@@ -268,39 +268,37 @@ class MutexConcurrencyTest extends TestCase
             }];
         }
         
-        if (getenv("REDIS_URIS") && PHP_VERSION >= "7") {
-            $uris = explode(",", getenv("REDIS_URIS"));
+        $uris = getenv("REDIS_URIS") !== false ? explode(",", getenv("REDIS_URIS")) : ["redis://localhost:6379"];
 
-            $cases["PredisMutex"] = [function ($timeout = 3) use ($uris): Mutex {
-                $clients = array_map(
-                    function ($uri) {
-                        return new Client($uri);
-                    },
-                    $uris
-                );
-                return new PredisMutex($clients, "test", $timeout);
-            }];
+        $cases["PredisMutex"] = [function ($timeout = 3) use ($uris): Mutex {
+            $clients = array_map(
+                function ($uri) {
+                    return new Client($uri);
+                },
+                $uris
+            );
+            return new PredisMutex($clients, "test", $timeout);
+        }];
 
-            $cases["PHPRedisMutex"] = [function ($timeout = 3) use ($uris): Mutex {
-                /** @var Redis[] $apis */
-                $apis = array_map(
-                    function (string $uri): Redis {
-                        $redis = new Redis();
-                        
-                        $uri = parse_url($uri);
-                        if (!empty($uri["port"])) {
-                            $redis->connect($uri["host"], $uri["port"]);
-                        } else {
-                            $redis->connect($uri["host"]);
-                        }
-                        
-                        return $redis;
-                    },
-                    $uris
-                );
-                return new PHPRedisMutex($apis, "test", $timeout);
-            }];
-        }
+        $cases["PHPRedisMutex"] = [function ($timeout = 3) use ($uris): Mutex {
+            /** @var Redis[] $apis */
+            $apis = array_map(
+                function (string $uri): Redis {
+                    $redis = new Redis();
+
+                    $uri = parse_url($uri);
+                    if (!empty($uri["port"])) {
+                        $redis->connect($uri["host"], $uri["port"]);
+                    } else {
+                        $redis->connect($uri["host"]);
+                    }
+
+                    return $redis;
+                },
+                $uris
+            );
+            return new PHPRedisMutex($apis, "test", $timeout);
+        }];
 
         if (getenv("MYSQL_DSN")) {
             $cases["MySQLMutex"] = [function ($timeout = 3): Mutex {

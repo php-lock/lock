@@ -37,7 +37,7 @@ class PHPRedisMutex extends RedisMutex
         parent::__construct($redisAPIs, $name, $timeout);
     }
     
-    protected function add($redis, string $key, string $value, int $expire): bool
+    protected function add($redis, string $key, int $value, int $expire): bool
     {
         /** @var Redis $redis */
         try {

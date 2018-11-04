@@ -33,7 +33,7 @@ class PredisMutex extends RedisMutex
         parent::__construct($clients, $name, $timeout);
     }
     
-    protected function add($client, string $key, string $value, int $expire): bool
+    protected function add($client, string $key, int $value, int $expire): bool
     {
         /** @var ClientInterface $client */
         try {
@@ -61,7 +61,7 @@ class PredisMutex extends RedisMutex
             throw new LockReleaseException($message, 0, $e);
         }
     }
-    
+
     /**
      * @internal
      */

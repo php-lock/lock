@@ -186,7 +186,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * @throws LockAcquireException An unexpected error happened.
      * @internal
      */
-    abstract protected function add($redisAPI, string $key, string $value, int $expire): bool;
+    abstract protected function add($redisAPI, string $key, int $value, int $expire): bool;
 
     /**
      * @param mixed  $redisAPI The connected Redis API.
