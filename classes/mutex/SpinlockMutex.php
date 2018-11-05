@@ -41,7 +41,7 @@ abstract class SpinlockMutex extends LockMutex
     /**
      * The prefix for the lock key.
      */
-    const PREFIX = "lock_";
+    private const PREFIX = "lock_";
     
     /**
      * Sets the timeout.
@@ -54,7 +54,7 @@ abstract class SpinlockMutex extends LockMutex
     {
         $this->timeout = $timeout;
         $this->loop    = new Loop($this->timeout);
-        $this->key     = static::PREFIX.$name;
+        $this->key     = self::PREFIX.$name;
     }
     
     protected function lock(): void

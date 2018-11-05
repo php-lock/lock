@@ -20,12 +20,6 @@ class MemcachedMutex extends SpinlockMutex
     private $memcache;
     
     /**
-     * The memcache key prefix.
-     * @internal
-     */
-    const PREFIX = "lockd_";
-    
-    /**
      * Sets the lock's name and the connected Memcached API.
      *
      * The Memcached API needs to have at least one server in its pool. I.e.
