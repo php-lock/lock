@@ -2,18 +2,14 @@
 
 namespace malkusch\lock\mutex;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Predis\Client;
 use Predis\ClientInterface;
+use Predis\PredisException;
 
 /**
  * Tests for PredisMutex.
  *
- * These tests require the environment variable:
- *
- * REDIS_URIS - a comma separated list of redis:// URIs.
- *
- * @author  Markus Malkusch <markus@malkusch.de>
  * @link    bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
  * @license WTFPL
  * @see     PredisMutex
@@ -22,37 +18,24 @@ use Predis\ClientInterface;
 class PredisMutexTest extends TestCase
 {
     /**
-     * @var ClientInterface
+     * @var ClientInterface|MockObject
      */
-    protected $client;
+    private $client;
+
+    /**
+     * @var PredisMutex
+     */
+    private $mutex;
 
     protected function setUp()
     {
         parent::setUp();
 
-        $config = $this->getPredisConfig();
+        $this->client = $this->getMockBuilder(ClientInterface::class)
+            ->setMethods(array_merge(get_class_methods(ClientInterface::class), ["set", "eval"]))
+            ->getMock();
 
-        $this->client = new Client($config);
-
-        if (is_string($config)) {
-            $this->client->flushall(); // Clear any existing locks
-        }
-    }
-
-    private function getPredisConfig()
-    {
-        if (getenv("REDIS_URIS") === false) {
-            return "tcp://localhost:6379";
-        }
-
-        $servers = explode(",", getenv("REDIS_URIS"));
-
-        return array_map(
-            function ($redisUri) {
-                return str_replace("redis://", "tcp://", $redisUri);
-            },
-            $servers
-        );
+        $this->mutex = new PredisMutex([$this->client], "test");
     }
 
     /**
@@ -60,13 +43,33 @@ class PredisMutexTest extends TestCase
      *
      * @expectedException \malkusch\lock\exception\LockAcquireException
      */
-    public function testAddFails()
+    public function testAddFailsToSetKey()
     {
-        $client = new Client("redis://127.0.0.1:12345");
+        $this->client->expects($this->atLeastOnce())
+            ->method("set")
+            ->with("lock_test", $this->isType("integer"), "EX", 4, "NX")
+            ->willReturn(null);
 
-        $mutex  = new PredisMutex([$client], "test");
+        $this->mutex->synchronized(
+            function () {
+                $this->fail("Code execution is not expected");
+            }
+        );
+    }
 
-        $mutex->synchronized(
+    /**
+     * Tests add() errors.
+     *
+     * @expectedException \malkusch\lock\exception\LockAcquireException
+     */
+    public function testAddErrors()
+    {
+        $this->client->expects($this->atLeastOnce())
+            ->method("set")
+            ->with("lock_test", $this->isType("integer"), "EX", 4, "NX")
+            ->willThrowException($this->createMock(PredisException::class));
+
+        $this->mutex->synchronized(
             function () {
                 $this->fail("Code execution is not expected");
             }
@@ -75,11 +78,23 @@ class PredisMutexTest extends TestCase
 
     public function testWorksNormally()
     {
-        $mutex = new PredisMutex([$this->client], "test");
+        $this->client->expects($this->atLeastOnce())
+            ->method("set")
+            ->with("lock_test", $this->isType("integer"), "EX", 4, "NX")
+            ->willReturnSelf();
 
-        $mutex->synchronized(function (): void {
-            $this->expectNotToPerformAssertions();
+        $this->client->expects($this->once())
+            ->method("eval")
+            ->with($this->anything(), 1, "lock_test", $this->isType("integer"))
+            ->willReturn(true);
+
+        $executed = false;
+
+        $this->mutex->synchronized(function () use (&$executed): void {
+            $executed = true;
         });
+
+        $this->assertTrue($executed);
     }
 
     /**
@@ -89,6 +104,22 @@ class PredisMutexTest extends TestCase
      */
     public function testEvalScriptFails()
     {
-        $this->markTestIncomplete();
+        $this->client->expects($this->atLeastOnce())
+            ->method("set")
+            ->with("lock_test", $this->isType("integer"), "EX", 4, "NX")
+            ->willReturnSelf();
+
+        $this->client->expects($this->once())
+            ->method("eval")
+            ->with($this->anything(), 1, "lock_test", $this->isType("integer"))
+            ->willThrowException($this->createMock(PredisException::class));
+
+        $executed = false;
+
+        $this->mutex->synchronized(function () use (&$executed): void {
+            $executed = true;
+        });
+
+        $this->assertTrue($executed);
     }
 }
