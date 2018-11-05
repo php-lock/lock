@@ -20,7 +20,7 @@ use malkusch\lock\util\PcntlTimeout;
  */
 class FlockMutex extends LockMutex
 {
-    const INFINITE_TIMEOUT = -1;
+    public const INFINITE_TIMEOUT = -1;
 
     /**
      * @internal

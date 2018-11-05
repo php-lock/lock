@@ -52,7 +52,7 @@ class PredisMutex extends RedisMutex
     {
         /** @var ClientInterface $client */
         try {
-            return $client->eval(...array_merge([$script, $numkeys], $arguments));
+            return $client->eval($script, $numkeys, ...$arguments);
         } catch (PredisException $e) {
             $message = sprintf(
                 "Failed to release lock at %s",

@@ -127,17 +127,12 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     protected function release(string $key): bool
     {
         /*
-         * Question for Redis: Why do I have to try to delete also keys
-         * which I haven't acquired? I do observe collisions of the random
-         * token, which results in releasing the wrong key.
-         */
-
-        /*
          * All Redis commands must be analyzed before execution to determine which keys the command will operate on. In
          * order for this to be true for EVAL, keys must be passed explicitly.
+         *
+         * @link https://redis.io/commands/set
          */
-        $script = '
-            if redis.call("get",KEYS[1]) == ARGV[1] then
+        $script = 'if redis.call("get",KEYS[1]) == ARGV[1] then
                 return redis.call("del",KEYS[1])
             else
                 return 0

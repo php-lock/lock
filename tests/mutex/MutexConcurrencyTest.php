@@ -53,7 +53,7 @@ class MutexConcurrencyTest extends TestCase
      *
      * @return \PDO The PDO.
      */
-    private function getPDO($dsn, $user): \PDO
+    private function getPDO(string $dsn, string $user): \PDO
     {
         if ($this->pdo === null) {
             $this->pdo = new \PDO($dsn, $user);
