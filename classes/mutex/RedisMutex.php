@@ -77,7 +77,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         $errored  = 0;
         $this->token = \random_bytes(16);
         $exception   = null;
-        foreach ($this->redisAPIs as $redis) {
+        foreach ($this->redisAPIs as $index => $redis) {
             try {
                 if ($this->add($redis, $key, $this->token, $expire)) {
                     $acquired++;
@@ -87,10 +87,9 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                 $context = [
                     "key"       => $key,
                     "token"     => $this->token,
-                    "redis"     => $this->getRedisIdentifier($redis),
                     "exception" => $exception
                 ];
-                $this->logger->warning("Could not set {key} = {token} at {redis}.", $context);
+                $this->logger->warning("Could not set {key} = {token} at server #{index}.", $context);
 
                 $errored++;
             }
@@ -146,10 +145,9 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                 $context = [
                     "key"       => $key,
                     "token"     => $this->token,
-                    "redis"     => $this->getRedisIdentifier($redis),
                     "exception" => $e
                 ];
-                $this->logger->warning("Could not unset {key} = {token} at {redis}.", $context);
+                $this->logger->warning("Could not unset {key} = {token} at server #{index}.", $context);
             }
         }
         return $this->isMajority($released);
@@ -188,13 +186,4 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * @throws LockReleaseException An unexpected error happened.
      */
     abstract protected function evalScript($redisAPI, string $script, int $numkeys, array $arguments);
-    
-    /**
-     * Returns a string representation of the Redis API.
-     *
-     * @param mixed  $redisAPI The connected Redis API.
-     * @return string The identifier.
-     * @internal
-     */
-    abstract protected function getRedisIdentifier($redisAPI);
 }

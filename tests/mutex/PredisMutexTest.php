@@ -6,6 +6,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface;
 use Predis\PredisException;
+use Psr\Log\LoggerInterface;
 
 /**
  * Tests for PredisMutex.
@@ -27,6 +28,11 @@ class PredisMutexTest extends TestCase
      */
     private $mutex;
 
+    /**
+     * @var LoggerInterface|MockObject
+     */
+    private $logger;
+
     protected function setUp()
     {
         parent::setUp();
@@ -36,6 +42,9 @@ class PredisMutexTest extends TestCase
             ->getMock();
 
         $this->mutex = new PredisMutex([$this->client], "test");
+
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->mutex->setLogger($this->logger);
     }
 
     /**
@@ -49,6 +58,9 @@ class PredisMutexTest extends TestCase
             ->method("set")
             ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
             ->willReturn(null);
+
+        $this->logger->expects($this->never())
+            ->method("warning");
 
         $this->mutex->synchronized(
             function () {
@@ -68,6 +80,10 @@ class PredisMutexTest extends TestCase
             ->method("set")
             ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
             ->willThrowException($this->createMock(PredisException::class));
+
+        $this->logger->expects($this->once())
+            ->method("warning")
+            ->with("Could not set {key} = {token} at server #{index}.", $this->anything());
 
         $this->mutex->synchronized(
             function () {
@@ -113,6 +129,10 @@ class PredisMutexTest extends TestCase
             ->method("eval")
             ->with($this->anything(), 1, "lock_test", $this->isType("string"))
             ->willThrowException($this->createMock(PredisException::class));
+
+        $this->logger->expects($this->once())
+            ->method("warning")
+            ->with("Could not unset {key} = {token} at server #{index}.", $this->anything());
 
         $executed = false;
 

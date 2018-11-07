@@ -48,9 +48,8 @@ class PHPRedisMutex extends RedisMutex
             return $redisAPI->set($key, $value, ["nx", "ex" => $expire]);
         } catch (RedisException $e) {
             $message = sprintf(
-                "Failed to acquire lock for key '%s' at %s",
-                $key,
-                $this->getRedisIdentifier($redisAPI)
+                "Failed to acquire lock for key '%s'",
+                $key
             );
             throw new LockAcquireException($message, 0, $e);
         }
@@ -73,20 +72,7 @@ class PHPRedisMutex extends RedisMutex
         try {
             return $redis->eval($script, $arguments, $numkeys);
         } catch (RedisException $e) {
-            $message = sprintf(
-                "Failed to release lock at %s",
-                $this->getRedisIdentifier($redis)
-            );
-            throw new LockReleaseException($message, 0, $e);
+            throw new LockReleaseException("Failed to release lock", 0, $e);
         }
-    }
-
-    /**
-     * @internal
-     */
-    protected function getRedisIdentifier($redis)
-    {
-        /** @var Redis $redis */
-        return sprintf("redis://%s:%d?database=%s", $redis->getHost(), $redis->getPort(), $redis->getDBNum());
     }
 }
