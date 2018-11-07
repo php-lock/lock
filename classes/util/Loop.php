@@ -14,6 +14,20 @@ use malkusch\lock\exception\TimeoutException;
  */
 class Loop
 {
+
+    /**
+     * Minimum time that we want to wait, between lock checks.
+     *
+     * In micro seconds.
+     */
+    private const MINIMUM_WAIT_US = 1e4;
+
+    /**
+     * Maximum time that we want to wait, between lock checks.
+     *
+     * In micro seconds.
+     */
+    private const MAXIMUM_WAIT_US = 1e6;
     
     /**
      * @var int The timeout in seconds.
@@ -69,7 +83,6 @@ class Loop
     {
         $this->looping = true;
 
-        $minWait = 100; // microseconds
         $deadline = microtime(true) + $this->timeout; // At this time, the lock will time out.
         $result = null;
 
@@ -78,9 +91,6 @@ class Loop
             if (!$this->looping) {
                 break;
             }
-
-            $min = (int) $minWait * 1.5 ** $i;
-            $max = $min * 2;
 
             /*
              * Calculate max time remaining, don't sleep any longer than that.
@@ -94,9 +104,12 @@ class Loop
                 throw TimeoutException::create($this->timeout);
             }
 
-            $usleep = \min($usecRemaining, \random_int($min, $max));
+            $min = min((int) self::MINIMUM_WAIT_US * 1.5 ** $i, self::MAXIMUM_WAIT_US);
+            $max = min($min * 2, self::MAXIMUM_WAIT_US);
 
-            usleep($usleep);
+            $usecToSleep = \min($usecRemaining, \random_int($min, $max));
+
+            usleep($usecToSleep);
         }
 
         if (microtime(true) >= $deadline) {
