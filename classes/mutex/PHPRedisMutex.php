@@ -36,18 +36,21 @@ class PHPRedisMutex extends RedisMutex
     {
         parent::__construct($redisAPIs, $name, $timeout);
     }
-    
-    protected function add($redis, string $key, int $value, int $expire): bool
+
+    /**
+     * @throws LockAcquireException
+     */
+    protected function add($redisAPI, string $key, string $value, int $expire): bool
     {
-        /** @var Redis $redis */
+        /** @var Redis $redisAPI */
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-            return $redis->set($key, $value, ["nx", "ex" => $expire]);
+            return $redisAPI->set($key, $value, ["nx", "ex" => $expire]);
         } catch (RedisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s' at %s",
                 $key,
-                $this->getRedisIdentifier($redis)
+                $this->getRedisIdentifier($redisAPI)
             );
             throw new LockAcquireException($message, 0, $e);
         }

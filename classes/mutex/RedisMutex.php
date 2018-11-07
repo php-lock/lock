@@ -67,9 +67,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         $this->logger = $logger;
     }
     
-    /**
-     * @SuppressWarnings(PHPMD)
-     */
     protected function acquire(string $key, int $expire): bool
     {
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
@@ -78,7 +75,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         // 2.
         $acquired = 0;
         $errored  = 0;
-        $this->token = \random_int(0, 2147483647);
+        $this->token = \random_bytes(16);
         $exception   = null;
         foreach ($this->redisAPIs as $redis) {
             try {
@@ -168,20 +165,18 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     {
         return $count > count($this->redisAPIs) / 2;
     }
-    
+
     /**
      * Sets the key only if such key doesn't exist at the server yet.
      *
-     * @param mixed  $redisAPI The connected Redis API.
+     * @param mixed $redisAPI The connected Redis API.
      * @param string $key The key.
      * @param string $value The value.
-     * @param int    $expire The TTL seconds.
+     * @param int $expire The TTL seconds.
      *
      * @return bool True, if the key was set.
-     * @throws LockAcquireException An unexpected error happened.
-     * @internal
      */
-    abstract protected function add($redisAPI, string $key, int $value, int $expire): bool;
+    abstract protected function add($redisAPI, string $key, string $value, int $expire): bool;
 
     /**
      * @param mixed  $redisAPI The connected Redis API.
@@ -191,7 +186,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      *
      * @return mixed The script result, or false if executing failed.
      * @throws LockReleaseException An unexpected error happened.
-     * @internal
      */
     abstract protected function evalScript($redisAPI, string $script, int $numkeys, array $arguments);
     

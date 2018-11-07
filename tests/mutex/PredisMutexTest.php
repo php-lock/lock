@@ -47,7 +47,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects($this->atLeastOnce())
             ->method("set")
-            ->with("lock_test", $this->isType("integer"), "EX", 4, "NX")
+            ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
             ->willReturn(null);
 
         $this->mutex->synchronized(
@@ -66,7 +66,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects($this->atLeastOnce())
             ->method("set")
-            ->with("lock_test", $this->isType("integer"), "EX", 4, "NX")
+            ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->mutex->synchronized(
@@ -80,12 +80,12 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects($this->atLeastOnce())
             ->method("set")
-            ->with("lock_test", $this->isType("integer"), "EX", 4, "NX")
+            ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
             ->willReturnSelf();
 
         $this->client->expects($this->once())
             ->method("eval")
-            ->with($this->anything(), 1, "lock_test", $this->isType("integer"))
+            ->with($this->anything(), 1, "lock_test", $this->isType("string"))
             ->willReturn(true);
 
         $executed = false;
@@ -106,12 +106,12 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects($this->atLeastOnce())
             ->method("set")
-            ->with("lock_test", $this->isType("integer"), "EX", 4, "NX")
+            ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
             ->willReturnSelf();
 
         $this->client->expects($this->once())
             ->method("eval")
-            ->with($this->anything(), 1, "lock_test", $this->isType("integer"))
+            ->with($this->anything(), 1, "lock_test", $this->isType("string"))
             ->willThrowException($this->createMock(PredisException::class));
 
         $executed = false;

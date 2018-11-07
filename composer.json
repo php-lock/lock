@@ -63,7 +63,8 @@
     },
     "suggest": {
         "ext-pnctl": "Enables locking with flock without busy waiting in CLI scripts.",
-        "ext-sysvsem": "Enables locking using semaphores",
+        "ext-sysvsem": "Enables locking using semaphores.",
+        "ext-redis": "To use this library with the PHP Redis extension.",
         "predis/predis": "To use this library with predis."
     },
     "archive": {

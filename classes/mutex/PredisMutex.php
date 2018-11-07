@@ -32,17 +32,20 @@ class PredisMutex extends RedisMutex
     {
         parent::__construct($clients, $name, $timeout);
     }
-    
-    protected function add($client, string $key, int $value, int $expire): bool
+
+    /**
+     * @throws LockAcquireException
+     */
+    protected function add($redisAPI, string $key, string $value, int $expire): bool
     {
-        /** @var ClientInterface $client */
+        /** @var ClientInterface $redisAPI */
         try {
-            return $client->set($key, $value, "EX", $expire, "NX") !== null;
+            return $redisAPI->set($key, $value, "EX", $expire, "NX") !== null;
         } catch (PredisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s' at %s",
                 $key,
-                $this->getRedisIdentifier($client)
+                $this->getRedisIdentifier($redisAPI)
             );
             throw new LockAcquireException($message, 0, $e);
         }
@@ -68,6 +71,14 @@ class PredisMutex extends RedisMutex
     protected function getRedisIdentifier($client)
     {
         /** @var ClientInterface $client */
+
+        /*
+         * Note that there is no __toString() on the \Predis\Connection\ConnectionInterface
+         * class. Some classes such as \Predis\Connection\Aggregate\SentinelReplication don't
+         * have a __toString() method.
+         *
+         * todo fix this
+         */
         return (string) $client->getConnection();
     }
 }
