@@ -45,7 +45,7 @@ class SemaphoreMutex extends LockMutex
     /**
      * @internal
      */
-    protected function lock()
+    protected function lock(): void
     {
         if (!sem_acquire($this->semaphore)) {
             throw new LockAcquireException("Failed to acquire the Semaphore.");
@@ -55,7 +55,7 @@ class SemaphoreMutex extends LockMutex
     /**
      * @internal
      */
-    protected function unlock()
+    protected function unlock(): void
     {
         if (!sem_release($this->semaphore)) {
             throw new LockReleaseException("Failed to release the Semaphore.");

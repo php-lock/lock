@@ -21,7 +21,7 @@ class MySQLMutex extends LockMutex
      */
     private $timeout;
 
-    public function __construct(\PDO $PDO, $name, $timeout = 0)
+    public function __construct(\PDO $PDO, string $name, int $timeout = 0)
     {
         $this->pdo = $PDO;
 
@@ -36,7 +36,7 @@ class MySQLMutex extends LockMutex
     /**
      * @throws LockAcquireException
      */
-    public function lock()
+    public function lock(): void
     {
         $statement = $this->pdo->prepare("SELECT GET_LOCK(?,?)");
 
@@ -65,7 +65,7 @@ class MySQLMutex extends LockMutex
         throw TimeoutException::create($this->timeout);
     }
 
-    public function unlock()
+    public function unlock(): void
     {
         $statement = $this->pdo->prepare("DO RELEASE_LOCK(?)");
         $statement->execute([

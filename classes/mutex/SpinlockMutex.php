@@ -41,7 +41,7 @@ abstract class SpinlockMutex extends LockMutex
     /**
      * The prefix for the lock key.
      */
-    const PREFIX = "lock_";
+    private const PREFIX = "lock_";
     
     /**
      * Sets the timeout.
@@ -50,16 +50,16 @@ abstract class SpinlockMutex extends LockMutex
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct($name, $timeout = 3)
+    public function __construct(string $name, int $timeout = 3)
     {
         $this->timeout = $timeout;
         $this->loop    = new Loop($this->timeout);
-        $this->key     = static::PREFIX.$name;
+        $this->key     = self::PREFIX.$name;
     }
     
-    protected function lock()
+    protected function lock(): void
     {
-        $this->loop->execute(function () {
+        $this->loop->execute(function (): void {
             $this->acquired = microtime(true);
             
             /*
@@ -75,7 +75,7 @@ abstract class SpinlockMutex extends LockMutex
         });
     }
 
-    protected function unlock()
+    protected function unlock(): void
     {
         $elapsed_time = microtime(true) - $this->acquired;
         if ($elapsed_time > $this->timeout) {
@@ -100,7 +100,7 @@ abstract class SpinlockMutex extends LockMutex
      * @return bool True, if the lock could be acquired.
      * @throws LockAcquireException An unexpected error happened.
      */
-    abstract protected function acquire($key, $expire);
+    abstract protected function acquire(string $key, int $expire): bool;
 
     /**
      * Tries to release a lock.
@@ -108,5 +108,5 @@ abstract class SpinlockMutex extends LockMutex
      * @param string $key The lock key.
      * @return bool True, if the lock could be released.
      */
-    abstract protected function release($key);
+    abstract protected function release(string $key): bool;
 }

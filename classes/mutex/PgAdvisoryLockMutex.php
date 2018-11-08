@@ -22,7 +22,7 @@ class PgAdvisoryLockMutex extends LockMutex
     /**
      * @throws \RuntimeException
      */
-    public function __construct(\PDO $PDO, $name)
+    public function __construct(\PDO $PDO, string $name)
     {
         $this->pdo = $PDO;
 
@@ -38,7 +38,7 @@ class PgAdvisoryLockMutex extends LockMutex
         $this->key2 = unpack("i", $bytes2)[1];
     }
 
-    public function lock()
+    public function lock(): void
     {
         $statement = $this->pdo->prepare("SELECT pg_advisory_lock(?,?)");
 
@@ -48,7 +48,7 @@ class PgAdvisoryLockMutex extends LockMutex
         ]);
     }
 
-    public function unlock()
+    public function unlock(): void
     {
         $statement = $this->pdo->prepare("SELECT pg_advisory_unlock(?,?)");
         $statement->execute([

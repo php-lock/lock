@@ -14,6 +14,20 @@ use malkusch\lock\exception\TimeoutException;
  */
 class Loop
 {
+
+    /**
+     * Minimum time that we want to wait, between lock checks.
+     *
+     * In micro seconds.
+     */
+    private const MINIMUM_WAIT_US = 1e4;
+
+    /**
+     * Maximum time that we want to wait, between lock checks.
+     *
+     * In micro seconds.
+     */
+    private const MAXIMUM_WAIT_US = 1e6;
     
     /**
      * @var int The timeout in seconds.
@@ -33,7 +47,7 @@ class Loop
      * @param int $timeout The timeout in seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct($timeout = 3)
+    public function __construct(int $timeout = 3)
     {
         if ($timeout <= 0) {
             throw new \LengthException("The timeout must be greater than 0. '$timeout' was given");
@@ -44,7 +58,7 @@ class Loop
     /**
      * Notifies that this was the last iteration.
      */
-    public function end()
+    public function end(): void
     {
         $this->looping = false;
     }
@@ -69,18 +83,14 @@ class Loop
     {
         $this->looping = true;
 
-        $minWait = 100; // microseconds
         $deadline = microtime(true) + $this->timeout; // At this time, the lock will time out.
         $result = null;
 
         for ($i = 0; $this->looping && microtime(true) < $deadline; $i++) {
-            $result = call_user_func($code);
+            $result = $code();
             if (!$this->looping) {
                 break;
             }
-
-            $min = (int) $minWait * 1.5 ** $i;
-            $max = $min * 2;
 
             /*
              * Calculate max time remaining, don't sleep any longer than that.
@@ -94,9 +104,12 @@ class Loop
                 throw TimeoutException::create($this->timeout);
             }
 
-            $usleep = \min($usecRemaining, \random_int($min, $max));
+            $min = min((int) self::MINIMUM_WAIT_US * 1.5 ** $i, self::MAXIMUM_WAIT_US);
+            $max = min($min * 2, self::MAXIMUM_WAIT_US);
 
-            usleep($usleep);
+            $usecToSleep = \min($usecRemaining, \random_int($min, $max));
+
+            usleep($usecToSleep);
         }
 
         if (microtime(true) >= $deadline) {

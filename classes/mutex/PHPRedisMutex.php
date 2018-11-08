@@ -32,34 +32,30 @@ class PHPRedisMutex extends RedisMutex
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $redisAPIs, $name, $timeout = 3)
+    public function __construct(array $redisAPIs, string $name, int $timeout = 3)
     {
         parent::__construct($redisAPIs, $name, $timeout);
     }
-    
+
     /**
-     * @internal
+     * @throws LockAcquireException
      */
-    protected function add($redis, $key, $value, $expire)
+    protected function add($redisAPI, string $key, string $value, int $expire): bool
     {
-        /** @var Redis $redis */
+        /** @var Redis $redisAPI */
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-            return $redis->set($key, $value, ["nx", "ex" => $expire]);
+            return $redisAPI->set($key, $value, ["nx", "ex" => $expire]);
         } catch (RedisException $e) {
             $message = sprintf(
-                "Failed to acquire lock for key '%s' at %s",
-                $key,
-                $this->getRedisIdentifier($redis)
+                "Failed to acquire lock for key '%s'",
+                $key
             );
             throw new LockAcquireException($message, 0, $e);
         }
     }
 
-    /**
-     * @internal
-     */
-    protected function evalScript($redis, $script, $numkeys, array $arguments)
+    protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
         /** @var Redis $redis */
 
@@ -76,20 +72,7 @@ class PHPRedisMutex extends RedisMutex
         try {
             return $redis->eval($script, $arguments, $numkeys);
         } catch (RedisException $e) {
-            $message = sprintf(
-                "Failed to release lock at %s",
-                $this->getRedisIdentifier($redis)
-            );
-            throw new LockReleaseException($message, 0, $e);
+            throw new LockReleaseException("Failed to release lock", 0, $e);
         }
-    }
-
-    /**
-     * @internal
-     */
-    protected function getRedisIdentifier($redis)
-    {
-        /** @var Redis $redis */
-        return sprintf("redis://%s:%d?database=%s", $redis->getHost(), $redis->getPort(), $redis->getDBNum());
     }
 }

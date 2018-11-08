@@ -44,7 +44,7 @@ class TransactionalMutex extends Mutex
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(\PDO $pdo, $timeout = 3)
+    public function __construct(\PDO $pdo, int $timeout = 3)
     {
         if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
             throw new \InvalidArgumentException("The pdo must have PDO::ERRMODE_EXCEPTION set.");
@@ -60,7 +60,7 @@ class TransactionalMutex extends Mutex
      *
      * @param \PDO $pdo PDO
      */
-    private static function checkAutocommit(\PDO $pdo)
+    private static function checkAutocommit(\PDO $pdo): void
     {
         $vendor = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
         
@@ -115,7 +115,7 @@ class TransactionalMutex extends Mutex
             
             try {
                 // Unit of work
-                $result = call_user_func($code);
+                $result = $code();
                 $this->pdo->commit();
                 $this->loop->end();
                 return $result;

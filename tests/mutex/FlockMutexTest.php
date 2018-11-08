@@ -4,6 +4,7 @@ namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
 use malkusch\lock\util\PcntlTimeout;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Willem Stuursma-Ruwen <willem@stuursma.name>
@@ -11,7 +12,7 @@ use malkusch\lock\util\PcntlTimeout;
  * @license WTFPL
  * @see CASMutex
  */
-class FlockMutexTest extends \PHPUnit_Framework_TestCase
+class FlockMutexTest extends TestCase
 {
     /**
      * @var FlockMutex
@@ -41,11 +42,11 @@ class FlockMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider dpTimeoutableStrategies
      */
-    public function testCodeExecutedOutsideLockIsNotThrown($strategy)
+    public function testCodeExecutedOutsideLockIsNotThrown(int $strategy)
     {
         $this->mutex->strategy = $strategy;
 
-        $this->assertTrue($this->mutex->synchronized(function () {
+        $this->assertTrue($this->mutex->synchronized(function (): bool {
             usleep(1.1e6);
             return true;
         }));
@@ -56,7 +57,7 @@ class FlockMutexTest extends \PHPUnit_Framework_TestCase
      * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      * @dataProvider dpTimeoutableStrategies
      */
-    public function testTimeoutOccurs($strategy)
+    public function testTimeoutOccurs(int $strategy)
     {
         $another_resource = fopen($this->file, "r");
         flock($another_resource, LOCK_EX);

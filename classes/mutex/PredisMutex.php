@@ -28,52 +28,38 @@ class PredisMutex extends RedisMutex
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $clients, $name, $timeout = 3)
+    public function __construct(array $clients, string $name, int $timeout = 3)
     {
         parent::__construct($clients, $name, $timeout);
     }
-    
+
     /**
-     * @internal
+     * @throws LockAcquireException
      */
-    protected function add($client, $key, $value, $expire)
+    protected function add($redisAPI, string $key, string $value, int $expire): bool
     {
-        /** @var ClientInterface $client */
+        /** @var ClientInterface $redisAPI */
         try {
-            return $client->set($key, $value, "EX", $expire, "NX");
+            return $redisAPI->set($key, $value, "EX", $expire, "NX") !== null;
         } catch (PredisException $e) {
             $message = sprintf(
-                "Failed to acquire lock for key '%s' at %s",
-                $key,
-                $this->getRedisIdentifier($client)
+                "Failed to acquire lock for key '%s'",
+                $key
             );
             throw new LockAcquireException($message, 0, $e);
         }
     }
 
     /**
-     * @internal
+     * @throws LockReleaseException
      */
-    protected function evalScript($client, $script, $numkeys, array $arguments)
+    protected function evalScript($client, string $script, int $numkeys, array $arguments)
     {
         /** @var ClientInterface $client */
         try {
-            return $client->eval(...array_merge([$script, $numkeys], $arguments));
+            return $client->eval($script, $numkeys, ...$arguments);
         } catch (PredisException $e) {
-            $message = sprintf(
-                "Failed to release lock at %s",
-                $this->getRedisIdentifier($client)
-            );
-            throw new LockReleaseException($message, 0, $e);
+            throw new LockReleaseException("Failed to release lock", 0, $e);
         }
-    }
-    
-    /**
-     * @internal
-     */
-    protected function getRedisIdentifier($client)
-    {
-        /** @var ClientInterface $client */
-        return (string) $client->getConnection();
     }
 }

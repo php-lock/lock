@@ -2,6 +2,11 @@
 
 namespace malkusch\lock\mutex;
 
+use phpmock\environment\SleepEnvironmentBuilder;
+use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for MemcachedMutex.
  *
@@ -13,33 +18,37 @@ namespace malkusch\lock\mutex;
  * @requires extension memcached
  * @see MemcachedMutex
  */
-class MemcachedMutexTest extends \PHPUnit_Framework_TestCase
+class MemcachedMutexTest extends TestCase
 {
     /**
-     * @var \Memcached
+     * @var \Memcached|MockObject
      */
     protected $memcached;
 
+    /**
+     * @var MemcachedMutex
+     */
+    private $mutex;
+
     protected function setUp()
     {
-        $this->memcached = new \Memcached();
-        $this->memcached->addServer(getenv("MEMCACHE_HOST") ?: "localhost", 11211);
-        $this->memcached->flush();
+        $this->memcached = $this->createMock(\Memcached::class);
+        $this->mutex = new MemcachedMutex("test", $this->memcached, 1);
     }
 
     /**
-     * Tests failing to acquire the lock.
+     * Tests failing to acquire the lock within the timeout.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\TimeoutException
      */
     public function testFailAcquireLock()
     {
-        $mutex = new MemcachedMutex("testFailAcquireLock", $this->memcached, 1);
+        $this->memcached->expects($this->atLeastOnce())
+            ->method("add")
+            ->with("lock_test", true, 2)
+            ->willReturn(false);
 
-        $this->memcached->add(MemcachedMutex::PREFIX."testFailAcquireLock", "xxx", 999);
-
-        $mutex->synchronized(function () {
+        $this->mutex->synchronized(function (): void {
             $this->fail("execution is not expected");
         });
     }
@@ -47,14 +56,21 @@ class MemcachedMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests failing to release a lock.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockReleaseException
      */
     public function testFailReleasingLock()
     {
-        $mutex = new MemcachedMutex("testFailReleasingLock", $this->memcached, 1);
-        $mutex->synchronized(function () {
-            $this->memcached->delete(MemcachedMutex::PREFIX."testFailReleasingLock");
+        $this->memcached->expects($this->once())
+            ->method("add")
+            ->with("lock_test", true, 2)
+            ->willReturn(true);
+
+        $this->memcached->expects($this->once())
+            ->method("delete")
+            ->with("lock_test")
+            ->willReturn(false);
+
+        $this->mutex->synchronized(function (): void {
         });
     }
 }
