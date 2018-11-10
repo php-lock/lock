@@ -5,6 +5,7 @@ namespace malkusch\lock\mutex;
 use Eloquent\Liberator\Liberator;
 use Memcached;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\TestCase;
 use Predis\Client;
 use Redis;
 
@@ -21,7 +22,7 @@ use Redis;
  * @license WTFPL
  * @see Mutex
  */
-class MutexTest extends \PHPUnit_Framework_TestCase
+class MutexTest extends TestCase
 {
     const TIMEOUT = 4;
 
@@ -38,58 +39,69 @@ class MutexTest extends \PHPUnit_Framework_TestCase
     public function provideMutexFactories()
     {
         $cases = [
-            "NoMutex" => [function () {
+            "NoMutex" => [function (): Mutex {
                 return new NoMutex();
             }],
 
-            "TransactionalMutex" => [function () {
+            "TransactionalMutex" => [function (): Mutex {
                 $pdo = new \PDO("sqlite::memory:");
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
                 return new TransactionalMutex($pdo, self::TIMEOUT);
             }],
 
-            "FlockMutex" => [function () {
+            "FlockMutex" => [function (): Mutex {
                 $file = fopen(vfsStream::url("test/lock"), "w");
                 return new FlockMutex($file);
             }],
 
-            "flockWithTimoutPcntl" => [function () {
+            "flockWithTimoutPcntl" => [function (): Mutex {
                 $file = fopen(vfsStream::url("test/lock"), "w");
                 $lock = Liberator::liberate(new FlockMutex($file, 3));
                 $lock->stategy = FlockMutex::STRATEGY_PCNTL;
 
-                return $lock;
+                return $lock->popsValue();
             }],
 
-            "flockWithTimoutBusy" => [function ($timeout = 3) {
+            "flockWithTimoutBusy" => [function ($timeout = 3): Mutex {
                 $file = fopen(vfsStream::url("test/lock"), "w");
                 $lock = Liberator::liberate(new FlockMutex($file, 3));
                 $lock->stategy = FlockMutex::STRATEGY_BUSY;
 
-                return $lock;
+                return $lock->popsValue();
             }],
 
-            "SemaphoreMutex" => [function () {
+            "SemaphoreMutex" => [function (): Mutex {
                 return new SemaphoreMutex(sem_get(ftok(__FILE__, "a")));
             }],
 
-            "SpinlockMutex" => [function () {
+            "SpinlockMutex" => [function (): Mutex {
                 $mock = $this->getMockForAbstractClass(SpinlockMutex::class, ["test"]);
-                $mock->expects($this->any())->method("acquire")->willReturn(true);
-                $mock->expects($this->any())->method("release")->willReturn(true);
+                $mock->expects($this->atLeastOnce())
+                    ->method("acquire")
+                    ->willReturn(true);
+
+                $mock->expects($this->atLeastOnce())
+                    ->method("release")
+                    ->willReturn(true);
                 return $mock;
             }],
 
-            "LockMutex" => [function () {
+            "LockMutex" => [function (): Mutex {
                 $mock = $this->getMockForAbstractClass(LockMutex::class);
-                $mock->expects($this->any())->method("lock")->willReturn(true);
-                $mock->expects($this->any())->method("unlock")->willReturn(true);
+                $mock->expects($this->atLeastOnce())
+                    ->method("lock")
+                    ->willReturn(true);
+
+                $mock->expects($this->atLeastOnce())
+                    ->method("unlock")
+                    ->willReturn(true);
+
                 return $mock;
             }],
         ];
 
         if (getenv("MEMCACHE_HOST")) {
-            $cases["MemcachedMutex"] = [function () {
+            $cases["MemcachedMutex"] = [function (): Mutex {
                 $memcache = new Memcached();
                 $memcache->addServer(getenv("MEMCACHE_HOST"), 11211);
                 return new MemcachedMutex("test", $memcache, self::TIMEOUT);
@@ -99,7 +111,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         if (getenv("REDIS_URIS")) {
             $uris = explode(",", getenv("REDIS_URIS"));
 
-            $cases["PredisMutex"] = [function () use ($uris) {
+            $cases["PredisMutex"] = [function () use ($uris): Mutex {
                 $clients = array_map(
                     function ($uri) {
                         return new Client($uri);
@@ -109,7 +121,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
                 return new PredisMutex($clients, "test", self::TIMEOUT);
             }];
 
-            $cases["PHPRedisMutex"] = [function () use ($uris) {
+            $cases["PHPRedisMutex"] = [function () use ($uris): Mutex {
                 /** @var Redis[] $apis */
                 $apis = array_map(
                     function ($uri) {
@@ -131,7 +143,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         }
 
         if (getenv("MYSQL_DSN")) {
-            $cases["MySQLMutex"] = [function () {
+            $cases["MySQLMutex"] = [function (): Mutex {
                 $pdo = new \PDO(getenv("MYSQL_DSN"), getenv("MYSQL_USER"));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -140,7 +152,7 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         }
 
         if (getenv("PGSQL_DSN")) {
-            $cases["PgAdvisoryLockMutex"] = [function () {
+            $cases["PgAdvisoryLockMutex"] = [function (): Mutex {
                 $pdo = new \PDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -155,23 +167,22 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      * Tests synchronized() executes the code and returns its result.
      *
      * @param callable $mutexFactory The Mutex factory.
-     * @test
      * @dataProvider provideMutexFactories
      */
     public function testSynchronizedDelegates(callable $mutexFactory)
     {
-        $mutex  = call_user_func($mutexFactory);
+        /** @var Mutex $mutex */
+        $mutex  = $mutexFactory();
         $result = $mutex->synchronized(function () {
             return "test";
         });
-        $this->assertEquals("test", $result);
+        $this->assertSame("test", $result);
     }
     
     /**
      * Tests that synchronized() released the lock.
      *
      * @param callable $mutexFactory The Mutex factory.
-     * @test
      * @dataProvider provideMutexFactories
      */
     public function testRelease(callable $mutexFactory)
@@ -179,6 +190,8 @@ class MutexTest extends \PHPUnit_Framework_TestCase
         $mutex = call_user_func($mutexFactory);
         $mutex->synchronized(function () {
         });
+
+        $this->expectNotToPerformAssertions();
         $mutex->synchronized(function () {
         });
     }
@@ -187,13 +200,13 @@ class MutexTest extends \PHPUnit_Framework_TestCase
      * Tests synchronized() rethrows the exception of the code.
      *
      * @param callable $mutexFactory The Mutex factory.
-     * @test
      * @dataProvider provideMutexFactories
      * @expectedException \DomainException
      */
     public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)
     {
-        $mutex = call_user_func($mutexFactory);
+        /** @var Mutex $mutex */
+        $mutex = $mutexFactory();
         $mutex->synchronized(function () {
             throw new \DomainException();
         });

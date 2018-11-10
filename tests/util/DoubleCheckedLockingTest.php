@@ -3,6 +3,8 @@
 namespace malkusch\lock\util;
 
 use malkusch\lock\mutex\Mutex;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for DoubleCheckedLocking.
@@ -12,39 +14,32 @@ use malkusch\lock\mutex\Mutex;
  * @license WTFPL
  * @see DoubleCheckedLocking
  */
-class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
+class DoubleCheckedLockingTest extends TestCase
 {
-    
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject The Mutex mock.
+     * @var Mutex|MockObject The Mutex mock.
      */
     private $mutex;
-    
-    /**
-     * @var DoubleCheckedLocking The SUT.
-     */
-    private $checkedLocking;
     
     protected function setUp()
     {
         parent::setUp();
         
-        $this->mutex          = $this->createMock(Mutex::class);
-        $this->checkedLocking = new DoubleCheckedLocking($this->mutex);
+        $this->mutex = $this->createMock(Mutex::class);
     }
 
     /**
      * Tests that the lock will not be acquired for a failing test.
-     *
-     * @test
      */
     public function testCheckFailsAcquiresNoLock()
     {
         $this->mutex->expects($this->never())->method("synchronized");
-        $this->checkedLocking->setCheck(function () {
+
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, function (): bool {
             return false;
         });
-        $result = $this->checkedLocking->then(function () {
+
+        $result = $checkedLocking->then(function (): void {
             $this->fail();
         });
 
@@ -55,7 +50,6 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests that the check and execution are in the same lock.
      *
-     * @test
      */
     public function testLockedCheckAndExecution()
     {
@@ -66,38 +60,37 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
                 ->method("synchronized")
                 ->willReturnCallback(function (callable $block) use (&$lock) {
                     $lock++;
-                    $result = call_user_func($block);
+                    $result = $block();
                     $lock++;
 
                     return $result;
                 });
-        
-        $this->checkedLocking->setCheck(function () use (&$lock, &$check) {
+
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, function () use (&$lock, &$check): bool {
             if ($check == 1) {
-                $this->assertEquals(1, $lock);
+                $this->assertSame(1, $lock);
             }
             $check++;
 
             return true;
         });
 
-        $result = $this->checkedLocking->then(function () use (&$lock) {
-            $this->assertEquals(1, $lock);
+        $result = $checkedLocking->then(function () use (&$lock) {
+            $this->assertSame(1, $lock);
 
             return 'test';
         });
 
-        $this->assertEquals(2, $check);
+        $this->assertSame(2, $check);
 
         // Synchronized code should return a test string.
-        $this->assertEquals('test', $result);
+        $this->assertSame('test', $result);
     }
     
     /**
      * Tests that the code is not executed if the first or second check fails.
      *
      * @param callable $check The check.
-     * @test
      * @dataProvider provideTestCodeNotExecuted
      */
     public function testCodeNotExecuted(callable $check)
@@ -105,11 +98,11 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
         $this->mutex->expects($this->any())
                 ->method("synchronized")
                 ->willReturnCallback(function (callable $block) {
-                    return call_user_func($block);
+                    return $block();
                 });
-                
-        $this->checkedLocking->setCheck($check);
-        $result = $this->checkedLocking->then(function () {
+
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, $check);
+        $result = $checkedLocking->then(function (): void {
             $this->fail();
         });
 
@@ -126,11 +119,11 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
     {
         $checkCounter = 0;
         return [
-            [function () {
+            [function (): bool {
                 return false;
             }],
 
-            [function () use (&$checkCounter) {
+            [function () use (&$checkCounter): bool {
                 $result = $checkCounter == 0;
                 $checkCounter++;
                 return $result;
@@ -140,23 +133,21 @@ class DoubleCheckedLockingTest extends \PHPUnit_Framework_TestCase
     
     /**
      * Tests that the code executed if the checks are true.
-     *
-     * @test
      */
     public function testCodeExecuted()
     {
         $this->mutex->expects($this->once())
                 ->method("synchronized")
                 ->willReturnCallback(function (callable $block) {
-                    return call_user_func($block);
+                    return $block();
                 });
-                
-        $this->checkedLocking->setCheck(function () {
+
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, function (): bool {
             return true;
         });
 
         $executed = false;
-        $result = $this->checkedLocking->then(function () use (&$executed) {
+        $result = $checkedLocking->then(function () use (&$executed) {
             $executed = true;
 
             return 'test';

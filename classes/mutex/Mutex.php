@@ -54,10 +54,8 @@ abstract class Mutex
      *
      * @return DoubleCheckedLocking The double-checked locking pattern.
      */
-    public function check(callable $check)
+    public function check(callable $check): DoubleCheckedLocking
     {
-        $doubleCheckedLocking = new DoubleCheckedLocking($this);
-        $doubleCheckedLocking->setCheck($check);
-        return $doubleCheckedLocking;
+        return new DoubleCheckedLocking($this, $check);
     }
 }

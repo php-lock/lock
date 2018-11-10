@@ -2,6 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for TransactionalMutex.
  *
@@ -12,15 +14,13 @@ namespace malkusch\lock\mutex;
  * @license WTFPL
  * @see TransactionalMutex
  */
-class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
+class TransactionalMutexTest extends TestCase
 {
-
     /**
      * Tests building the mutex with an invalid error mode.
      *
      * @param int $mode The invalid error mode.
      * @dataProvider provideTestInvalidErrorMode
-     * @test
      * @expectedException \InvalidArgumentException
      */
     public function testInvalidErrorMode($mode)
@@ -46,7 +46,6 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests BEGIN fails.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      * @expectedExceptionMessage Could not begin transaction.
      */
@@ -66,7 +65,6 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests that an exception in the critical code causes a ROLLBACK.
      *
-     * @test
      */
     public function testExceptionRollsback()
     {
@@ -95,7 +93,6 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests that a ROLLBACK caused by an exception fails.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testFailExceptionRollsback()
@@ -116,7 +113,6 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
      * Tests replaying the transaction.
      *
      * @param \Exception $exception The thrown exception.
-     * @test
      * @dataProvider provideTestReplayTransaction
      */
     public function testReplayTransaction(\Exception $exception)
@@ -167,7 +163,6 @@ class TransactionalMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests failing a ROLLBACK after the failed COMMIT.
      *
-     * @test
      * @expectedException \malkusch\lock\exception\LockAcquireException
      * @expectedExceptionMessage Could not roll back transaction:
      */

@@ -14,9 +14,9 @@ namespace malkusch\lock\mutex;
  */
 class NoMutex extends Mutex
 {
-    
+
     public function synchronized(callable $code)
     {
-        return call_user_func($code);
+        return $code();
     }
 }

@@ -33,7 +33,7 @@ class CASMutex extends Mutex
      * @param int $timeout The timeout in seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct($timeout = 3)
+    public function __construct(int $timeout = 3)
     {
         $this->loop = new Loop($timeout);
     }
@@ -41,7 +41,7 @@ class CASMutex extends Mutex
     /**
      * Notifies the Mutex about a successful CAS operation.
      */
-    public function notify()
+    public function notify(): void
     {
         $this->loop->end();
     }

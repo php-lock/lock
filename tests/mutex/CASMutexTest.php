@@ -4,6 +4,7 @@ namespace malkusch\lock\mutex;
 
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for CASMutex.
@@ -13,9 +14,8 @@ use phpmock\phpunit\PHPMock;
  * @license WTFPL
  * @see CASMutex
  */
-class CASMutexTest extends \PHPUnit_Framework_TestCase
+class CASMutexTest extends TestCase
 {
-
     use PHPMock;
     
     protected function setUp()
@@ -34,13 +34,12 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests exceeding the execution timeout.
      *
-     * @test
      * @expectedException malkusch\lock\exception\LockAcquireException
      */
     public function testExceedTimeout()
     {
         $mutex = new CASMutex(1);
-        $mutex->synchronized(function () {
+        $mutex->synchronized(function (): void {
             sleep(2);
         });
     }
@@ -48,7 +47,6 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests that an exception would stop any further iteration.
      *
-     * @test
      * @expectedException \DomainException
      */
     public function testExceptionStopsIteration()
@@ -62,7 +60,6 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests notify() will stop the iteration and return the result.
      *
-     * @test
      */
     public function testNotify()
     {
@@ -78,13 +75,12 @@ class CASMutexTest extends \PHPUnit_Framework_TestCase
     /**
      * Tests that the code is executed more times.
      *
-     * @test
      */
     public function testIteration()
     {
         $i     = 0;
         $mutex = new CASMutex();
-        $mutex->synchronized(function () use ($mutex, &$i) {
+        $mutex->synchronized(function () use ($mutex, &$i): void {
             $i++;
             if ($i > 1) {
                 $mutex->notify();

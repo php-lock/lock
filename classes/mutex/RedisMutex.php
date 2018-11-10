@@ -44,7 +44,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $redisAPIs, $name, $timeout = 3)
+    public function __construct(array $redisAPIs, string $name, int $timeout = 3)
     {
         parent::__construct($name, $timeout);
 
@@ -67,11 +67,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         $this->logger = $logger;
     }
     
-    /**
-     * @SuppressWarnings(PHPMD)
-     * @internal
-     */
-    protected function acquire($key, $expire)
+    protected function acquire(string $key, int $expire): bool
     {
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $time = microtime(true);
@@ -79,21 +75,21 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         // 2.
         $acquired = 0;
         $errored  = 0;
-        $this->token = \random_int(0, 2147483647);
+        $this->token = \random_bytes(16);
         $exception   = null;
-        foreach ($this->redisAPIs as $redis) {
+        foreach ($this->redisAPIs as $index => $redisAPI) {
             try {
-                if ($this->add($redis, $key, $this->token, $expire)) {
+                if ($this->add($redisAPI, $key, $this->token, $expire)) {
                     $acquired++;
                 }
             } catch (LockAcquireException $exception) {
+                // todo if there is only one redis server, throw immediately.
                 $context = [
                     "key"       => $key,
                     "token"     => $this->token,
-                    "redis"     => $this->getRedisIdentifier($redis),
                     "exception" => $exception
                 ];
-                $this->logger->warning("Could not set {key} = {token} at {redis}.", $context);
+                $this->logger->warning("Could not set {key} = {token} at server #{index}.", $context);
 
                 $errored++;
             }
@@ -124,42 +120,35 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         return false;
     }
     
-    /**
-     * @internal
-     */
-    protected function release($key)
+    protected function release(string $key): bool
     {
-        /*
-         * Question for Redis: Why do I have to try to delete also keys
-         * which I haven't acquired? I do observe collisions of the random
-         * token, which results in releasing the wrong key.
-         */
-
         /*
          * All Redis commands must be analyzed before execution to determine which keys the command will operate on. In
          * order for this to be true for EVAL, keys must be passed explicitly.
+         *
+         * @link https://redis.io/commands/set
          */
-        $script = '
-            if redis.call("get",KEYS[1]) == ARGV[1] then
+        $script = 'if redis.call("get",KEYS[1]) == ARGV[1] then
                 return redis.call("del",KEYS[1])
             else
                 return 0
             end
         ';
         $released = 0;
-        foreach ($this->redisAPIs as $redis) {
+        foreach ($this->redisAPIs as $index => $redisAPI) {
             try {
-                if ($this->evalScript($redis, $script, 1, [$key, $this->token])) {
+                if ($this->evalScript($redisAPI, $script, 1, [$key, $this->token])) {
                     $released++;
                 }
             } catch (LockReleaseException $e) {
+                // todo throw if there is only one redis server
                 $context = [
                     "key"       => $key,
+                    "index"     => $index,
                     "token"     => $this->token,
-                    "redis"     => $this->getRedisIdentifier($redis),
                     "exception" => $e
                 ];
-                $this->logger->warning("Could not unset {key} = {token} at {redis}.", $context);
+                $this->logger->warning("Could not unset {key} = {token} at server #{index}.", $context);
             }
         }
         return $this->isMajority($released);
@@ -171,24 +160,22 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * @param int $count The count.
      * @return bool True if the count is the majority.
      */
-    private function isMajority($count)
+    private function isMajority(int $count): bool
     {
         return $count > count($this->redisAPIs) / 2;
     }
-    
+
     /**
      * Sets the key only if such key doesn't exist at the server yet.
      *
-     * @param mixed  $redisAPI The connected Redis API.
+     * @param mixed $redisAPI The connected Redis API.
      * @param string $key The key.
      * @param string $value The value.
-     * @param int    $expire The TTL seconds.
+     * @param int $expire The TTL seconds.
      *
      * @return bool True, if the key was set.
-     * @throws LockAcquireException An unexpected error happened.
-     * @internal
      */
-    abstract protected function add($redisAPI, $key, $value, $expire);
+    abstract protected function add($redisAPI, string $key, string $value, int $expire): bool;
 
     /**
      * @param mixed  $redisAPI The connected Redis API.
@@ -198,16 +185,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      *
      * @return mixed The script result, or false if executing failed.
      * @throws LockReleaseException An unexpected error happened.
-     * @internal
      */
-    abstract protected function evalScript($redisAPI, $script, $numkeys, array $arguments);
-    
-    /**
-     * Returns a string representation of the Redis API.
-     *
-     * @param mixed  $redisAPI The connected Redis API.
-     * @return string The identifier.
-     * @internal
-     */
-    abstract protected function getRedisIdentifier($redisAPI);
+    abstract protected function evalScript($redisAPI, string $script, int $numkeys, array $arguments);
 }

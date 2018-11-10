@@ -23,20 +23,20 @@ abstract class LockMutex extends Mutex
      *
      * @throws LockAcquireException The lock could not be acquired.
      */
-    abstract protected function lock();
+    abstract protected function lock(): void;
 
     /**
      * Releases the lock.
      *
      * @throws LockReleaseException The lock could not be released.
      */
-    abstract protected function unlock();
+    abstract protected function unlock(): void;
     
     public function synchronized(callable $code)
     {
         $this->lock();
         try {
-            return call_user_func($code);
+            return $code();
         } finally {
             $this->unlock();
         }
