@@ -21,9 +21,10 @@ php-lock/lock follows semantic versioning. Read more on [semver.org][1].
 ## Requirements
 
  - PHP 7.1 or above
- - Optionally [nrk/predis][2] to use the predis locks.
- - Optionally the [php-pcntl][3] extension to enable locking with flock without
+ - Optionally [nrk/predis][2] to use the Predis locks.
+ - Optionally the [php-pcntl][3] extension to enable locking with `flock()` without
    busy waiting in CLI scripts.
+ - Optionally `flock()`, `ext-redis`, `ext-pdo_mysql`, `ext-pdo_sqlite`, `ext-pdo_pgsql` or `ext-memcached` can be used as a backend for locks. See examples below.
 
 ----
 
@@ -36,27 +37,6 @@ inside your repository's root folder.
 
 ```sh
 composer require "malkusch/lock"
-```
-
-As an alternative, you can directly add this library to your `composer.json`.
-
-``` json
-{
-    "require": {
-        "malkusch/lock": "^1.4"
-    }
-}
-```
-
-To use the newest (maybe unstable) version, use `dev-master` as the version in
-your `composer.json`.
-
-``` json
-{
-    "require": {
-        "malkusch/lock": "dev-master"
-    }
-}
 ```
 
 ## Usage
@@ -82,7 +62,7 @@ return value `false` or `null` should be seen as a failed action.
 Example:
 
 ```php
-$newBalance = $mutex->synchronized(function () use ($bankAccount, $amount) {
+$newBalance = $mutex->synchronized(function () use ($bankAccount, $amount): int {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
@@ -122,9 +102,9 @@ this return value will not be checked by the library.
 Example:
 
 ```php
-$newBalance = $mutex->check(function () use ($bankAccount, $amount) {
+$newBalance = $mutex->check(function () use ($bankAccount, $amount): bool {
     return $bankAccount->getBalance() >= $amount;
-})->then(function () use ($bankAccount, $amount) {
+})->then(function () use ($bankAccount, $amount): int {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     $bankAccount->setBalance($balance);
@@ -169,7 +149,7 @@ Example:
 
 ```php
 $mutex = new CASMutex();
-$mutex->synchronized(function () use ($memcached, $mutex, $amount) {
+$mutex->synchronized(function () use ($memcached, $mutex, $amount): void {
     $balance = $memcached->get("balance", null, $casToken);
     $balance -= $amount;
     if (!$memcached->cas($casToken, "balance", $balance)) {
@@ -198,7 +178,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-Timeouts are supported as an optional second argument. This uses the pcntl
+Timeouts are supported as an optional second argument. This uses the `ext-pcntl`
 extension if possible or busy waiting if not.  
 
 #### MemcachedMutex
