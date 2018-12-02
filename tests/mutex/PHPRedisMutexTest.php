@@ -30,17 +30,45 @@ class PHPRedisMutexTest extends TestCase
      * @var PHPRedisMutex The SUT.
      */
     private $mutex;
-    
+
     protected function setUp()
     {
         parent::setUp();
-        
+
         $uris = explode(",", getenv("REDIS_URIS") ?: "redis://localhost");
 
         foreach ($uris as $redisUri) {
             $uri  = parse_url($redisUri);
 
-            $connection = new Redis();
+            // original Redis::set and Redis::eval calls will reopen the connection
+            $connection = new class extends Redis
+            {
+                private $is_closed = false;
+
+                public function close()
+                {
+                    parent::close();
+                    $this->is_closed = true;
+                }
+
+                public function set($key, $value, $timeout = 0)
+                {
+                    if ($this->is_closed) {
+                        throw new \RedisException('Connection is closed');
+                    }
+
+                    return parent::set($key, $value, $timeout);
+                }
+
+                public function eval($script, $args = array(), $numKeys = 0)
+                {
+                    if ($this->is_closed) {
+                        throw new \RedisException('Connection is closed');
+                    }
+
+                    return parent::eval($script, $args, $numKeys);
+                }
+            };
 
             if (!empty($uri["port"])) {
                 $connection->connect($uri["host"], $uri["port"]);
@@ -65,7 +93,7 @@ class PHPRedisMutexTest extends TestCase
         }
     }
 
-    private function closeMinortyConnections()
+    private function closeMinorityConnections()
     {
         if (count($this->connections) === 1) {
             $this->markTestSkipped("Cannot test this with only a single Redis server");
@@ -120,7 +148,7 @@ class PHPRedisMutexTest extends TestCase
 
     public function testResistantToPartialClusterFailuresForAcquiringLock()
     {
-        $this->closeMinortyConnections();
+        $this->closeMinorityConnections();
 
         $this->assertSame("test", $this->mutex->synchronized(function (): string {
             return "test";
@@ -130,7 +158,7 @@ class PHPRedisMutexTest extends TestCase
     public function testResistantToPartialClusterFailuresForReleasingLock()
     {
         $this->assertNull($this->mutex->synchronized(function () {
-            $this->closeMinortyConnections();
+            $this->closeMinorityConnections();
             return null;
         }));
     }
