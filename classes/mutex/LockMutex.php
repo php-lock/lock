@@ -2,8 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
-use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 
 /**
  * Locking mutex.
@@ -31,14 +31,32 @@ abstract class LockMutex extends Mutex
      * @throws LockReleaseException The lock could not be released.
      */
     abstract protected function unlock(): void;
-    
+
     public function synchronized(callable $code)
     {
         $this->lock();
+
+        $code_result = null;
+        $code_exception = null;
         try {
-            return $code();
+            $code_result = $code();
+        } catch (\Throwable $exception) {
+            $code_exception = $exception;
+
+            throw $exception;
         } finally {
-            $this->unlock();
+            try {
+                $this->unlock();
+            } catch (LockReleaseException $lock_exception) {
+                $lock_exception->setCodeResult($code_result);
+                if ($code_exception !== null) {
+                    $lock_exception->setCodeException($code_exception);
+                }
+
+                throw $lock_exception;
+            }
         }
+
+        return $code_result;
     }
 }
