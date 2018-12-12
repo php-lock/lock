@@ -28,8 +28,8 @@ class FlockMutexTest extends TestCase
     {
         parent::setUp();
 
-        $this->file = tempnam(sys_get_temp_dir(), "flock-");
-        $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, "r"), 1));
+        $this->file = tempnam(sys_get_temp_dir(), 'flock-');
+        $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, 'r'), 1));
     }
 
     protected function tearDown()
@@ -48,6 +48,7 @@ class FlockMutexTest extends TestCase
 
         $this->assertTrue($this->mutex->synchronized(function (): bool {
             usleep(1.1e6);
+
             return true;
         }));
     }
@@ -59,7 +60,7 @@ class FlockMutexTest extends TestCase
      */
     public function testTimeoutOccurs(int $strategy)
     {
-        $another_resource = fopen($this->file, "r");
+        $another_resource = fopen($this->file, 'r');
         flock($another_resource, LOCK_EX);
 
         $this->mutex->strategy = $strategy;
@@ -67,7 +68,7 @@ class FlockMutexTest extends TestCase
         try {
             $this->mutex->synchronized(
                 function () {
-                    $this->fail("Did not expect code to be executed");
+                    $this->fail('Did not expect code to be executed');
                 }
             );
         } finally {
@@ -88,7 +89,7 @@ class FlockMutexTest extends TestCase
      */
     public function testNoTimeoutWaitsForever()
     {
-        $another_resource = fopen($this->file, "r");
+        $another_resource = fopen($this->file, 'r');
         flock($another_resource, LOCK_EX);
 
         $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK;
@@ -96,7 +97,7 @@ class FlockMutexTest extends TestCase
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {
             $this->mutex->synchronized(function () {
-                $this->fail("Did not expect code execution.");
+                $this->fail('Did not expect code execution.');
             });
         });
     }

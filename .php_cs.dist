@@ -1,0 +1,60 @@
+<?php
+
+$finder = PhpCsFixer\Finder::create()
+    ->notPath('vendor')
+    ->in(__DIR__)
+    ->name('*.php')
+    ->ignoreDotFiles(true)
+    ->ignoreVCS(true);
+
+return PhpCsFixer\Config::create()
+    ->setUsingCache(false)
+    ->setRiskyAllowed(true)
+    ->setRules([
+        '@PSR2' => true,
+        'psr4' => true,
+        'binary_operator_spaces' => false,
+        'array_syntax' => ['syntax' => 'short'],
+        'linebreak_after_opening_tag' => true,
+        'not_operator_with_successor_space' => true,
+        'no_unused_imports' => true,
+        'not_operator_with_successor_space' => false,
+        'object_operator_without_whitespace' => true,
+        'ordered_imports' => true,
+        'phpdoc_order' => true,
+        'blank_line_before_return' => true,
+        'single_quote' => true,
+        'blank_line_after_opening_tag' => true,
+        'no_extra_blank_lines' => [
+            'extra',
+            'continue',
+            'curly_brace_block',
+            'parenthesis_brace_block',
+            'return',
+            'square_brace_block',
+            'throw',
+            'use',
+            'use_trait',
+            'switch',
+            'case',
+            'default',
+        ],
+        'no_whitespace_in_blank_line' => true,
+        'no_blank_lines_after_class_opening' => true,
+        'return_type_declaration' => [
+            'space_before' => 'none',
+        ],
+        'concat_space' => [
+            'spacing' => 'one',
+        ],
+        'compact_nullable_typehint' => true,
+        'ternary_operator_spaces' => true,
+        'unary_operator_spaces' => true,
+        'binary_operator_spaces' => [
+            'default' => 'single_space',
+            'operators' => [
+                '|' => 'no_space',
+            ]
+        ]
+    ])
+    ->setFinder($finder);

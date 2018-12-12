@@ -20,14 +20,14 @@ class PgAdvisoryLockMutexTest extends TestCase
      * @var PgAdvisoryLockMutex
      */
     private $mutex;
-    
+
     protected function setUp()
     {
         parent::setUp();
 
         $this->pdo = $this->createMock(\PDO::class);
 
-        $this->mutex = new PgAdvisoryLockMutex($this->pdo, "test" . uniqid());
+        $this->mutex = new PgAdvisoryLockMutex($this->pdo, 'test' . uniqid());
     }
 
     public function testAcquireLock()
@@ -35,21 +35,21 @@ class PgAdvisoryLockMutexTest extends TestCase
         $statement = $this->createMock(\PDOStatement::class);
 
         $this->pdo->expects($this->once())
-            ->method("prepare")
-            ->with("SELECT pg_advisory_lock(?,?)")
+            ->method('prepare')
+            ->with('SELECT pg_advisory_lock(?,?)')
             ->willReturn($statement);
 
         $statement->expects($this->once())
-            ->method("execute")
+            ->method('execute')
             ->with(
                 $this->logicalAnd(
-                    $this->isType("array"),
+                    $this->isType('array'),
                     $this->countOf(2),
                     $this->callback(function (...$arguments) {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {
-                            $this->assertInternalType("integer", $each);
+                            $this->assertInternalType('integer', $each);
                         }
 
                         return true;
@@ -65,15 +65,15 @@ class PgAdvisoryLockMutexTest extends TestCase
         $statement = $this->createMock(\PDOStatement::class);
 
         $this->pdo->expects($this->once())
-            ->method("prepare")
-            ->with("SELECT pg_advisory_unlock(?,?)")
+            ->method('prepare')
+            ->with('SELECT pg_advisory_unlock(?,?)')
             ->willReturn($statement);
 
         $statement->expects($this->once())
-            ->method("execute")
+            ->method('execute')
             ->with(
                 $this->logicalAnd(
-                    $this->isType("array"),
+                    $this->isType('array'),
                     $this->countOf(2),
                     $this->callback(function (...$arguments): bool {
                         $integers = $arguments[0];
@@ -81,7 +81,7 @@ class PgAdvisoryLockMutexTest extends TestCase
                         foreach ($integers as $each) {
                             $this->assertLessThan(1 << 32, $each);
                             $this->assertGreaterThan(-(1 << 32), $each);
-                            $this->assertInternalType("integer", $each);
+                            $this->assertInternalType('integer', $each);
                         }
 
                         return true;

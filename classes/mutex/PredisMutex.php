@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\mutex;
 
-use Predis\ClientInterface;
-use Predis\PredisException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use Predis\ClientInterface;
+use Predis\PredisException;
 
 /**
  * Mutex based on the Redlock algorithm using the Predis API.
@@ -18,7 +20,6 @@ use malkusch\lock\exception\LockReleaseException;
  */
 class PredisMutex extends RedisMutex
 {
-    
     /**
      * Sets the Redis connections.
      *
@@ -40,7 +41,7 @@ class PredisMutex extends RedisMutex
     {
         /** @var ClientInterface $redisAPI */
         try {
-            return $redisAPI->set($key, $value, "EX", $expire, "NX") !== null;
+            return $redisAPI->set($key, $value, 'EX', $expire, 'NX') !== null;
         } catch (PredisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s'",
@@ -59,7 +60,7 @@ class PredisMutex extends RedisMutex
         try {
             return $client->eval($script, $numkeys, ...$arguments);
         } catch (PredisException $e) {
-            throw new LockReleaseException("Failed to release lock", 0, $e);
+            throw new LockReleaseException('Failed to release lock', 0, $e);
         }
     }
 }

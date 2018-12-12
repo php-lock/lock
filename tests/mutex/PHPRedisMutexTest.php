@@ -35,10 +35,10 @@ class PHPRedisMutexTest extends TestCase
     {
         parent::setUp();
 
-        $uris = explode(",", getenv("REDIS_URIS") ?: "redis://localhost");
+        $uris = explode(',', getenv('REDIS_URIS') ?: 'redis://localhost');
 
         foreach ($uris as $redisUri) {
-            $uri  = parse_url($redisUri);
+            $uri = parse_url($redisUri);
 
             // original Redis::set and Redis::eval calls will reopen the connection
             $connection = new class extends Redis {
@@ -59,7 +59,7 @@ class PHPRedisMutexTest extends TestCase
                     return parent::set($key, $value, $timeout);
                 }
 
-                public function eval($script, $args = array(), $numKeys = 0)
+                public function eval($script, $args = [], $numKeys = 0)
                 {
                     if ($this->is_closed) {
                         throw new \RedisException('Connection is closed');
@@ -69,10 +69,10 @@ class PHPRedisMutexTest extends TestCase
                 }
             };
 
-            if (!empty($uri["port"])) {
-                $connection->connect($uri["host"], $uri["port"]);
+            if (!empty($uri['port'])) {
+                $connection->connect($uri['host'], $uri['port']);
             } else {
-                $connection->connect($uri["host"]);
+                $connection->connect($uri['host']);
             }
 
             $connection->flushAll(); // Clear any existing locks.
@@ -80,7 +80,7 @@ class PHPRedisMutexTest extends TestCase
             $this->connections[] = $connection;
         }
 
-        $this->mutex = new PHPRedisMutex($this->connections, "test");
+        $this->mutex = new PHPRedisMutex($this->connections, 'test');
     }
 
     private function closeMajorityConnections()
@@ -95,7 +95,7 @@ class PHPRedisMutexTest extends TestCase
     private function closeMinorityConnections()
     {
         if (count($this->connections) === 1) {
-            $this->markTestSkipped("Cannot test this with only a single Redis server");
+            $this->markTestSkipped('Cannot test this with only a single Redis server');
         }
 
         $numberToClose = ceil(count($this->connections) / 2) - 1;
@@ -117,7 +117,7 @@ class PHPRedisMutexTest extends TestCase
         $this->closeMajorityConnections();
 
         $this->mutex->synchronized(function (): void {
-            $this->fail("Code execution is not expected");
+            $this->fail('Code execution is not expected');
         });
     }
 
@@ -135,9 +135,6 @@ class PHPRedisMutexTest extends TestCase
 
     /**
      * @dataProvider serializationAndCompressionModes
-     *
-     * @param array $serializer Serializer to test.
-     * @param array $compressor Compressor to test.
      */
     public function testSerializersAndCompressors($serializer, $compressor)
     {
@@ -146,30 +143,25 @@ class PHPRedisMutexTest extends TestCase
             $connection->setOption(Redis::OPT_COMPRESSION, $compressor);
         }
 
-        $this->assertSame(
-            "test",
-            $this->mutex->synchronized(function (): string {
-                return "test";
-            })
-        );
+        $this->assertSame('test', $this->mutex->synchronized(function (): string {
+            return 'test';
+        }));
     }
 
     public function testResistantToPartialClusterFailuresForAcquiringLock()
     {
         $this->closeMinorityConnections();
 
-        $this->assertSame(
-            "test",
-            $this->mutex->synchronized(function (): string {
-                return "test";
-            })
-        );
+        $this->assertSame('test', $this->mutex->synchronized(function (): string {
+            return 'test';
+        }));
     }
 
     public function testResistantToPartialClusterFailuresForReleasingLock()
     {
         $this->assertNull($this->mutex->synchronized(function () {
             $this->closeMinorityConnections();
+
             return null;
         }));
     }
@@ -185,27 +177,27 @@ class PHPRedisMutexTest extends TestCase
             [Redis::SERIALIZER_PHP, Redis::COMPRESSION_NONE],
         ];
 
-        if (defined("Redis::SERIALIZER_IGBINARY")) {
+        if (defined('Redis::SERIALIZER_IGBINARY')) {
             $options[] = [
-                constant("Redis::SERIALIZER_IGBINARY"),
+                constant('Redis::SERIALIZER_IGBINARY'),
                 Redis::COMPRESSION_NONE
             ];
         }
 
-        if (defined("Redis::COMPRESSION_LZF")) {
+        if (defined('Redis::COMPRESSION_LZF')) {
             $options[] = [
                 Redis::SERIALIZER_NONE,
-                constant("Redis::COMPRESSION_LZF")
+                constant('Redis::COMPRESSION_LZF')
             ];
             $options[] = [
                 Redis::SERIALIZER_PHP,
-                constant("Redis::COMPRESSION_LZF")
+                constant('Redis::COMPRESSION_LZF')
             ];
 
-            if (defined("Redis::SERIALIZER_IGBINARY")) {
+            if (defined('Redis::SERIALIZER_IGBINARY')) {
                 $options[] = [
-                    constant("Redis::SERIALIZER_IGBINARY"),
-                    constant("Redis::COMPRESSION_LZF")
+                    constant('Redis::SERIALIZER_IGBINARY'),
+                    constant('Redis::COMPRESSION_LZF')
                 ];
             }
         }
