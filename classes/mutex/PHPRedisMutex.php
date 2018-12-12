@@ -2,10 +2,9 @@
 
 namespace malkusch\lock\mutex;
 
-use Redis;
-use RedisException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use RedisException;
 
 /**
  * Mutex based on the Redlock algorithm using the phpredis extension.
@@ -26,9 +25,10 @@ class PHPRedisMutex extends RedisMutex
      * The Redis APIs needs to be connected yet. I.e. Redis::connect() was
      * called already.
      *
-     * @param Redis[] $redisAPIs The Redis connections.
-     * @param string  $name      The lock name.
-     * @param int     $timeout   The time in seconds a lock expires, default is 3.
+     * @param array<\Redis|\RedisCluster> $redisAPIs The Redis connections.
+     * @param string                      $name      The lock name.
+     * @param int                         $timeout   The time in seconds a lock expires after.
+     *                                               Default is 3.
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
@@ -38,11 +38,13 @@ class PHPRedisMutex extends RedisMutex
     }
 
     /**
-     * @throws LockAcquireException
+     * {@inheritDoc}
+     *
+     * @throws \malkusch\lock\exception\LockAcquireException
      */
     protected function add($redisAPI, string $key, string $value, int $expire): bool
     {
-        /** @var Redis $redisAPI */
+        /** @var \Redis $redisAPI */
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
             return $redisAPI->set($key, $value, ["nx", "ex" => $expire]);
@@ -55,18 +57,34 @@ class PHPRedisMutex extends RedisMutex
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param \Redis|\RedisCluster $redis The Redis or RedisCluster connection.
+     */
     protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
-        /** @var Redis $redis */
+        // Determine if we need to compress eval arguments.
+        $lzfCompression = false;
+        if (\defined(\Redis::class . '::COMPRESSION_LZF') &&
+            \Redis::COMPRESSION_LZF === $redis->getOption(\Redis::OPT_COMPRESSION) &&
+            \function_exists('\lzf_compress')
+        ) {
+            $lzfCompression = true;
+        }
 
-        /*
-         * If a serializion mode such as "php" or "igbinary" is enabled, the arguments must be serialized but the keys
-         * must not.
-         *
-         * @issue 14
-         */
         for ($i = $numkeys, $iMax = \count($arguments); $i < $iMax; $i++) {
+            /* If a serializion mode such as "php" or "igbinary" is enabled, the arguments must be
+             * serialized by us, because phpredis does not do this for the eval command.
+             */
             $arguments[$i] = $redis->_serialize($arguments[$i]);
+
+            /* If LZF compression is enabled for the redis connection and the runtime has the LZF
+             * extension installed, compress the arguments as the final step.
+             */
+            if ($lzfCompression) {
+                $arguments[$i] = \lzf_compress($arguments[$i]);
+            }
         }
 
         try {
