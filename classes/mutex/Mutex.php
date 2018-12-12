@@ -1,10 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\mutex;
 
-use malkusch\lock\exception\ExecutionOutsideLockException;
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\util\DoubleCheckedLocking;
 
 /**
@@ -16,7 +15,6 @@ use malkusch\lock\util\DoubleCheckedLocking;
  */
 abstract class Mutex
 {
-    
     /**
      * Executes a block of code exclusively.
      *
@@ -27,32 +25,38 @@ abstract class Mutex
      * The code block may throw an exception. In this case the lock will be
      * released as well.
      *
-     * @param callable $code The synchronized execution block.
-     * @return mixed The return value of the execution block.
-     *
-     * @throws \Exception The execution block threw an exception.
-     * @throws LockAcquireException The mutex could not be acquired, no further side effects.
-     * @throws LockReleaseException The mutex could not be released, the code was already executed.
-     * @throws ExecutionOutsideLockException Some code was executed outside of the lock.
+     * @param callable $code The synchronized execution callback.
+     * @throws \Exception The execution callback threw an exception.
+     * @throws \malkusch\lock\exception\LockAcquireException The mutex could not
+     * be acquired, no further side effects.
+     * @throws \malkusch\lock\exception\LockReleaseException The mutex could not
+     * be released, the code was already executed.
+     * @throws \malkusch\lock\exception\ExecutionOutsideLockException Some code
+     * has been executed outside of the lock.
+     * @return mixed The return value of the execution callback.
      */
     abstract public function synchronized(callable $code);
-    
+
     /**
      * Performs a double-checked locking pattern.
      *
-     * Call {@link DoubleCheckedLocking::then()} on the returned object.
+     * Call {@link \malkusch\lock\util\DoubleCheckedLocking::then()} on the
+     * returned object.
      *
      * Example:
      * <code>
-     * $mutex->check(function () use ($bankAccount, $amount) {
+     * $result = $mutex->check(function () use ($bankAccount, $amount) {
      *     return $bankAccount->getBalance() >= $amount;
-     *
      * })->then(function () use ($bankAccount, $amount) {
-     *     $bankAccount->withdraw($amount);
+     *     return $bankAccount->withdraw($amount);
      * });
      * </code>
      *
-     * @return DoubleCheckedLocking The double-checked locking pattern.
+     * @param callable $check Callback that decides if the lock should be
+     * acquired and if the synchronized callback should be executed after
+     * acquiring the lock.
+     * @return \malkusch\lock\util\DoubleCheckedLocking The double-checked
+     * locking pattern.
      */
     public function check(callable $check): DoubleCheckedLocking
     {

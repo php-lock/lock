@@ -25,11 +25,11 @@ class TransactionalMutexTest extends TestCase
      */
     public function testInvalidErrorMode($mode)
     {
-        $pdo = new \PDO("sqlite::memory:");
+        $pdo = new \PDO('sqlite::memory:');
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, $mode);
         new TransactionalMutex($pdo);
     }
-    
+
     /**
      * Returns test cases for testInvalidErrorMode().
      *
@@ -54,9 +54,9 @@ class TransactionalMutexTest extends TestCase
         $pdo = $this->buildMySqlPdo();
         $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
-        $stmt = $pdo->prepare("SELECT 1 FROM DUAL");
+        $stmt = $pdo->prepare('SELECT 1 FROM DUAL');
         $stmt->execute();
-        
+
         $mutex = new TransactionalMutex($pdo);
         $mutex->synchronized(function () {
         });
@@ -68,25 +68,25 @@ class TransactionalMutexTest extends TestCase
      */
     public function testExceptionRollsback()
     {
-        $pdo   = $this->buildMySqlPdo();
+        $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
-        
-        $pdo->exec("
+
+        $pdo->exec('
             CREATE TEMPORARY TABLE testExceptionRollsback(
                 id int primary key
             ) engine=innodb
-        ");
-        
+        ');
+
         try {
             $mutex->synchronized(function () use ($pdo) {
-                $pdo->exec("INSERT INTO testExceptionRollsback VALUES(1)");
+                $pdo->exec('INSERT INTO testExceptionRollsback VALUES(1)');
                 throw new \DomainException();
             });
         } catch (\DomainException $e) {
             // expected
         }
-        
-        $count = $pdo->query("SELECT count(*) FROM testExceptionRollsback")->fetchColumn();
+
+        $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
         $this->assertEquals(0, $count);
     }
 
@@ -97,18 +97,17 @@ class TransactionalMutexTest extends TestCase
      */
     public function testFailExceptionRollsback()
     {
-        $pdo   = $this->buildMySqlPdo();
+        $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
-        
-        $mutex->synchronized(function () use ($pdo) {
 
+        $mutex->synchronized(function () use ($pdo) {
             // This will provoke the mutex' rollback to fail.
             $pdo->rollBack();
 
             throw new \DomainException();
         });
     }
-    
+
     /**
      * Tests replaying the transaction.
      *
@@ -117,36 +116,36 @@ class TransactionalMutexTest extends TestCase
      */
     public function testReplayTransaction(\Exception $exception)
     {
-        $pdo   = $this->buildMySqlPdo();
+        $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
-        
-        $pdo->exec("
+
+        $pdo->exec('
             CREATE TEMPORARY TABLE testExceptionRollsback(
                 id int primary key
             ) engine=innodb
-        ");
-        
+        ');
+
         $i = 0;
         $mutex->synchronized(function () use ($pdo, &$i, $exception) {
             $i++;
 
-            $count = $pdo->query("SELECT count(*) FROM testExceptionRollsback")->fetchColumn();
+            $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
             $this->assertEquals(0, $count);
-            
-            $pdo->exec("INSERT INTO testExceptionRollsback VALUES(1)");
-            
+
+            $pdo->exec('INSERT INTO testExceptionRollsback VALUES(1)');
+
             // this provokes the replay
             if ($i < 5) {
                 throw $exception;
             }
         });
 
-        $count = $pdo->query("SELECT count(*) FROM testExceptionRollsback")->fetchColumn();
+        $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
         $this->assertEquals(1, $count);
-        
+
         $this->assertEquals(5, $i);
     }
-    
+
     /**
      * Returns test cases for testReplayTransaction().
      *
@@ -156,10 +155,10 @@ class TransactionalMutexTest extends TestCase
     {
         return [
             [new \PDOException()],
-            [new \Exception("", 0, new \PDOException())],
+            [new \Exception('', 0, new \PDOException())],
         ];
     }
-    
+
     /**
      * Tests failing a ROLLBACK after the failed COMMIT.
      *
@@ -168,16 +167,15 @@ class TransactionalMutexTest extends TestCase
      */
     public function testRollbackAfterFailedCommitFails()
     {
-        $pdo   = $this->buildMySqlPdo();
+        $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
-        
-        $mutex->synchronized(function () use ($pdo) {
 
+        $mutex->synchronized(function () use ($pdo) {
             // This will provoke the mutex' commit and rollback to fail.
             $pdo->rollBack();
         });
     }
-    
+
     /**
      * Builds a MySQL PDO.
      *
@@ -190,16 +188,16 @@ class TransactionalMutexTest extends TestCase
      */
     private function buildMySqlPdo()
     {
-        if (!getenv("MYSQL_DSN")) {
+        if (!getenv('MYSQL_DSN')) {
             $this->markTestSkipped();
         }
-        
-        $dsn  = getenv("MYSQL_DSN");
-        $user = getenv("MYSQL_USER");
+
+        $dsn = getenv('MYSQL_DSN');
+        $user = getenv('MYSQL_USER');
         $pdo = new \PDO($dsn, $user);
-        
+
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        
+
         return $pdo;
     }
 }

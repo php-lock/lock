@@ -22,11 +22,14 @@ php-lock/lock follows semantic versioning. Read more on [semver.org][1].
 
  - PHP 7.1 or above
  - Optionally [nrk/predis][2] to use the Predis locks.
- - Optionally the [php-pcntl][3] extension to enable locking with `flock()` without
-   busy waiting in CLI scripts.
- - Optionally `flock()`, `ext-redis`, `ext-pdo_mysql`, `ext-pdo_sqlite`, `ext-pdo_pgsql` or `ext-memcached` can be used as a backend for locks. See examples below.
- - If `ext-redis` is used for locking and is configured to use igbinary for serialization or
-   lzf for compression, additionally `ext-igbinary` and/or `ext-lzf` have to be installed.
+ - Optionally the [php-pcntl][3] extension to enable locking with `flock()`
+   without busy waiting in CLI scripts.
+ - Optionally `flock()`, `ext-redis`, `ext-pdo_mysql`, `ext-pdo_sqlite`,
+   `ext-pdo_pgsql` or `ext-memcached` can be used as a backend for locks. See
+   examples below.
+ - If `ext-redis` is used for locking and is configured to use igbinary for
+   serialization or lzf for compression, additionally `ext-igbinary` and/or
+   `ext-lzf` have to be installed.
 
 ----
 
@@ -64,7 +67,10 @@ return value `false` or `null` should be seen as a failed action.
 Example:
 
 ```php
-$newBalance = $mutex->synchronized(function () use ($bankAccount, $amount): int {
+$newBalance = $mutex->synchronized(function () use (
+    $bankAccount,
+    $amount
+): int {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
@@ -133,26 +139,26 @@ Example:
 ```php
 try {
     // or $mutex->check(...)
-    $mutex->synchronized(function () {
+    $result = $mutex->synchronized(function () {
         if (someCondition()) {
             throw new \DomainException();
         }
 
         return "result";
     });
-} catch (LockReleaseException $unlock_exception) {
-    if ($unlock_exception->getCodeException() !== null) {
-        $code_exception = $unlock_exception->getCodeException()
+} catch (LockReleaseException $unlockException) {
+    if ($unlockException->getCodeException() !== null) {
+        $codeException = $unlockException->getCodeException()
         // do something with the code exception
     } else {
-        $code_result = $unlock_exception->getCodeResult();
+        $code_result = $unlockException->getCodeResult();
         // do something with the code result
     }
-    
+
     // deal with LockReleaseException or propagate it
-    throw $unlock_exception;
+    throw $unlockException;
 }
-``` 
+```
 
 ### Implementations
 
@@ -189,7 +195,6 @@ $mutex->synchronized(function () use ($memcached, $mutex, $amount): void {
     $balance -= $amount;
     if (!$memcached->cas($casToken, "balance", $balance)) {
         return;
-
     }
     $mutex->notify();
 });
@@ -197,7 +202,8 @@ $mutex->synchronized(function () use ($memcached, $mutex, $amount): void {
 
 #### FlockMutex
 
-The **FlockMutex** is a lock implementation based on [`flock()`](http://php.net/manual/en/function.flock.php).
+The **FlockMutex** is a lock implementation based on
+[`flock()`](http://php.net/manual/en/function.flock.php).
 
 Example:
 ```php
@@ -207,19 +213,18 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance -= $amount;
     if ($balance < 0) {
         throw new \DomainException("You have no credit.");
-
     }
     $bankAccount->setBalance($balance);
 });
 ```
 
 Timeouts are supported as an optional second argument. This uses the `ext-pcntl`
-extension if possible or busy waiting if not.  
+extension if possible or busy waiting if not.
 
 #### MemcachedMutex
 
-The **MemcachedMutex**
-is a spinlock implementation which uses the [`Memcached` API](http://php.net/manual/en/book.memcached.php).
+The **MemcachedMutex** is a spinlock implementation which uses the
+[`Memcached` API](http://php.net/manual/en/book.memcached.php).
 
 Example:
 ```php
@@ -232,7 +237,6 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance -= $amount;
     if ($balance < 0) {
         throw new \DomainException("You have no credit.");
-
     }
     $bankAccount->setBalance($balance);
 });
@@ -240,13 +244,14 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 #### PHPRedisMutex
 
-The **PHPRedisMutex** is the distributed lock implementation of [RedLock](http://redis.io/topics/distlock)
-which uses the [`phpredis` extension](https://github.com/phpredis/phpredis).
+The **PHPRedisMutex** is the distributed lock implementation of
+[RedLock](http://redis.io/topics/distlock) which uses the
+[`phpredis` extension](https://github.com/phpredis/phpredis).
 
 This implementation requires at least `phpredis-2.2.4`.
 
-If used with a cluster of Redis servers, acquiring and releasing locks will continue to function as 
-long as a majority of the servers still works.  
+If used with a cluster of Redis servers, acquiring and releasing locks will
+continue to function as long as a majority of the servers still works.
 
 Example:
 ```php
@@ -259,7 +264,6 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance -= $amount;
     if ($balance < 0) {
         throw new \DomainException("You have no credit.");
-
     }
     $bankAccount->setBalance($balance);
 });
@@ -267,8 +271,9 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 #### PredisMutex
 
-The **PredisMutex** is the distributed lock implementation of [RedLock](http://redis.io/topics/distlock)
-which uses the [`Predis` API](https://github.com/nrk/predis).
+The **PredisMutex** is the distributed lock implementation of
+[RedLock](http://redis.io/topics/distlock) which uses the
+[`Predis` API](https://github.com/nrk/predis).
 
 Example:
 ```php
@@ -280,7 +285,6 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance -= $amount;
     if ($balance < 0) {
         throw new \DomainException("You have no credit.");
-
     }
     $bankAccount->setBalance($balance);
 });
@@ -288,19 +292,18 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 #### SemaphoreMutex
 
-The **SemaphoreMutex**
-is a lock implementation based on [Semaphore](http://php.net/manual/en/ref.sem.php).
+The **SemaphoreMutex** is a lock implementation based on
+[Semaphore](http://php.net/manual/en/ref.sem.php).
 
 Example:
 ```php
 $semaphore = sem_get(ftok(__FILE__, "a"));
-$mutex     = new SemaphoreMutex($semaphore);
+$mutex = new SemaphoreMutex($semaphore);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
         throw new \DomainException("You have no credit.");
-
     }
     $bankAccount->setBalance($balance);
 });
@@ -321,14 +324,15 @@ Example:
 ```php
 $mutex = new TransactionalMutex($pdo);
 $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
-    $select = $pdo->prepare("SELECT balance FROM account WHERE id = ? FOR UPDATE");
+    $select = $pdo->prepare(
+        "SELECT balance FROM account WHERE id = ? FOR UPDATE"
+    );
     $select->execute([$accountId]);
     $balance = $select->fetchColumn();
 
     $balance -= $amount;
     if ($balance < 0) {
         throw new \DomainException("You have no credit.");
-
     }
     $pdo->prepare("UPDATE account SET balance = ? WHERE id = ?")
         ->execute([$balance, $accountId]);
@@ -337,15 +341,16 @@ $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
 
 #### MySQLMutex
 
-The **MySQLMutex** uses MySQL's 
+The **MySQLMutex** uses MySQL's
 [`GET_LOCK`](https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_get-lock)
 function.
 
-It supports time outs. If the connection to the database server is lost or interrupted, the lock is 
-automatically released. 
+It supports time outs. If the connection to the database server is lost or
+interrupted, the lock is automatically released.
 
-Note that before MySQL 5.7.5 you cannot use nested locks, any new lock will silently release already
-held locks. You should probably refrain from using this mutex on MySQL versions < 5.7.5.
+Note that before MySQL 5.7.5 you cannot use nested locks, any new lock will
+silently release already held locks. You should probably refrain from using this
+mutex on MySQL versions < 5.7.5.
 
 ```php
 $pdo = new PDO("mysql:host=localhost;dbname=test", "username");
@@ -356,7 +361,6 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance -= $amount;
     if ($balance < 0) {
         throw new \DomainException("You have no credit.");
-
     }
     $bankAccount->setBalance($balance);
 });
@@ -364,14 +368,15 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 #### PgAdvisoryLockMutex
 
-The **PgAdvisoryLockMutex** uses PostgreSQL's 
+The **PgAdvisoryLockMutex** uses PostgreSQL's
 [advisory locking](https://www.postgresql.org/docs/9.4/static/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS)
 functions.
 
-Named locks are offered. PostgreSQL locking functions require integers but the conversion is handled automatically.
+Named locks are offered. PostgreSQL locking functions require integers but the
+conversion is handled automatically.
 
-No time outs are supported. If the connection to the database server is lost or interrupted, the lock is 
-automatically released. 
+No time outs are supported. If the connection to the database server is lost or
+interrupted, the lock is automatically released.
 
 ```php
 $pdo = new PDO("pgsql:host=localhost;dbname=test;", "username");
@@ -382,7 +387,6 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance -= $amount;
     if ($balance < 0) {
         throw new \DomainException("You have no credit.");
-
     }
     $bankAccount->setBalance($balance);
 });

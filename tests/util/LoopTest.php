@@ -17,16 +17,16 @@ use PHPUnit\Framework\TestCase;
 class LoopTest extends TestCase
 {
     use PHPMock;
-    
+
     protected function setUp()
     {
         parent::setUp();
-        
+
         $builder = new SleepEnvironmentBuilder();
         $builder->addNamespace(__NAMESPACE__);
         $sleep = $builder->build();
         $sleep->enable();
-        
+
         $this->registerForTearDown($sleep);
     }
 
@@ -38,7 +38,7 @@ class LoopTest extends TestCase
     {
         new Loop(0);
     }
-    
+
     /**
      * Tests execution within the timeout.
      */
@@ -52,7 +52,7 @@ class LoopTest extends TestCase
             $loop->end();
         });
     }
-    
+
     /**
      * Tests exceeding the execution timeout.
      *
@@ -67,7 +67,7 @@ class LoopTest extends TestCase
             $loop->end();
         });
     }
-    
+
     /**
      * Tests exceeding the execution timeout without calling end().
      *
@@ -100,7 +100,7 @@ class LoopTest extends TestCase
      */
     public function testEnd()
     {
-        $i    = 0;
+        $i = 0;
         $loop = new Loop();
         $loop->execute(function () use ($loop, &$i) {
             $i++;
@@ -114,7 +114,7 @@ class LoopTest extends TestCase
      */
     public function testIteration()
     {
-        $i    = 0;
+        $i = 0;
         $loop = new Loop();
         $loop->execute(function () use ($loop, &$i): void {
             $i++;
