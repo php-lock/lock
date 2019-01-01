@@ -55,7 +55,7 @@ method guarantees that the code is only executed by one process at once. Other
 processes have to wait until the mutex is available. The critical code may throw
 an exception, which would release the lock as well.
 
-This method returns what ever is returned to the given callable. The return
+This method returns whatever is returned to the given callable. The return
 value is not checked, thus it is up to the user to decide if for example the
 return value `false` or `null` should be seen as a failed action.
 
@@ -118,6 +118,39 @@ if (false === $newBalance) {
     }
 }
 ```
+
+### Extracting code result after lock release exception
+
+Mutex implementations based on [`malkush\lock\mutex\LockMutex`][12] will throw
+[`malkusch\lock\exception\LockReleaseException`][13] in case of lock release
+problem, but the synchronized code block will be already executed at this point.
+In order to read the code result (or an exception thrown there),
+`LockReleaseException` provides methods to extract it.
+
+Example:
+```php
+try {
+    // or $mutex->check(...)
+    $mutex->synchronized(function () {
+        if (someCondition()) {
+            throw new \DomainException();
+        }
+
+        return "result";
+    });
+} catch (LockReleaseException $unlock_exception) {
+    if ($unlock_exception->getCodeException() !== null) {
+        $code_exception = $unlock_exception->getCodeException()
+        // do something with the code exception
+    } else {
+        $code_result = $unlock_exception->getCodeResult();
+        // do something with the code result
+    }
+    
+    // deal with LockReleaseException or propagate it
+    throw $unlock_exception;
+}
+``` 
 
 ### Implementations
 
@@ -374,3 +407,5 @@ If you like this project and feel generous donate a few Bitcoins here:
 [9]: https://en.wikipedia.org/wiki/Double-checked_locking
 [10]: https://en.wikipedia.org/wiki/Compare-and-swap
 [11]: https://github.com/php-lock/lock/blob/master/classes/mutex/CASMutex.php#L44
+[12]: https://github.com/php-lock/lock/blob/master/classes/mutex/LockMutex.php
+[13]: https://github.com/php-lock/lock/blob/master/classes/exception/LockReleaseException.php

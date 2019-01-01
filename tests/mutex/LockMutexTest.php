@@ -92,18 +92,54 @@ class LockMutexTest extends TestCase
     /**
      * Tests unlock() fails after the code threw an exception.
      *
-     * The previous exception should be the code's exception.
-     *
      * @expectedException malkusch\lock\exception\LockReleaseException
      */
     public function testUnlockFailsAfterException()
     {
-        $this->mutex->expects($this->any())
+        $this->mutex->expects($this->once())
             ->method("unlock")
             ->willThrowException(new LockReleaseException());
         
         $this->mutex->synchronized(function () {
             throw new \DomainException();
         });
+    }
+
+    /**
+     * Tests the code result is available in LockReleaseException.
+     */
+    public function testCodeResultAvailableAfterFailedUnlock()
+    {
+        $this->mutex->expects($this->once())
+            ->method("unlock")
+            ->willThrowException(new LockReleaseException());
+
+        try {
+            $this->mutex->synchronized(function () {
+                return "result";
+            });
+        } catch (LockReleaseException $exception) {
+            $this->assertEquals("result", $exception->getCodeResult());
+            $this->assertNull($exception->getCodeException());
+        }
+    }
+
+    /**
+     * Tests the code exception is available in LockReleaseException.
+     */
+    public function testCodeExceptionAvailableAfterFailedUnlock()
+    {
+        $this->mutex->expects($this->once())
+            ->method("unlock")
+            ->willThrowException(new LockReleaseException());
+
+        try {
+            $this->mutex->synchronized(function () {
+                throw new \DomainException("Domain exception");
+            });
+        } catch (LockReleaseException $exception) {
+            $this->assertInstanceOf(\DomainException::class, $exception->getCodeException());
+            $this->assertEquals("Domain exception", $exception->getCodeException()->getMessage());
+        }
     }
 }
