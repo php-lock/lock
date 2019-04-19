@@ -10,8 +10,8 @@ use RedisException;
  * Mutex based on the Redlock algorithm using the phpredis extension.
  *
  * This implementation requires at least phpredis-2.2.4. If used together with
- * the lzf extension, and phpredis is configured to use compression, at least
- * phpredis-4.3.0 is required! For reason, see github issue link.
+ * the lzf extension, and phpredis is configured to use lzf compression, at
+ * least phpredis-4.3.0 is required! For reason, see github issue link.
  *
  * @see https://github.com/phpredis/phpredis/issues/1477
  *
