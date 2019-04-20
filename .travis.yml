@@ -32,6 +32,7 @@ matrix:
     - php: nightly
 
 before_install:
+  - pecl install lzf
   - phpenv config-add tests/php-travis.ini
   - redis-server --port 63791 &
   - redis-server --port 63792 &
