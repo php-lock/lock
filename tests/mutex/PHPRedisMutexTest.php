@@ -41,8 +41,7 @@ class PHPRedisMutexTest extends TestCase
             $uri  = parse_url($redisUri);
 
             // original Redis::set and Redis::eval calls will reopen the connection
-            $connection = new class extends Redis
-            {
+            $connection = new class extends Redis {
                 private $is_closed = false;
 
                 public function close()
@@ -100,6 +99,9 @@ class PHPRedisMutexTest extends TestCase
         }
 
         $numberToClose = ceil(count($this->connections) / 2) - 1;
+        if (0 >= $numberToClose) {
+            return;
+        }
 
         foreach ((array) array_rand($this->connections, $numberToClose) as $keyToClose) {
             $this->connections[$keyToClose]->close();
@@ -132,27 +134,36 @@ class PHPRedisMutexTest extends TestCase
     }
 
     /**
-     * @param $serialization
-     * @dataProvider dpSerializationModes
+     * @dataProvider serializationAndCompressionModes
+     *
+     * @param array $serializer Serializer to test.
+     * @param array $compressor Compressor to test.
      */
-    public function testSynchronizedWorks($serialization)
+    public function testSerializersAndCompressors($serializer, $compressor)
     {
         foreach ($this->connections as $connection) {
-            $connection->setOption(Redis::OPT_SERIALIZER, $serialization);
+            $connection->setOption(Redis::OPT_SERIALIZER, $serializer);
+            $connection->setOption(Redis::OPT_COMPRESSION, $compressor);
         }
 
-        $this->assertSame("test", $this->mutex->synchronized(function (): string {
-            return "test";
-        }));
+        $this->assertSame(
+            "test",
+            $this->mutex->synchronized(function (): string {
+                return "test";
+            })
+        );
     }
 
     public function testResistantToPartialClusterFailuresForAcquiringLock()
     {
         $this->closeMinorityConnections();
 
-        $this->assertSame("test", $this->mutex->synchronized(function (): string {
-            return "test";
-        }));
+        $this->assertSame(
+            "test",
+            $this->mutex->synchronized(function (): string {
+                return "test";
+            })
+        );
     }
 
     public function testResistantToPartialClusterFailuresForReleasingLock()
@@ -163,21 +174,42 @@ class PHPRedisMutexTest extends TestCase
         }));
     }
 
-    public function dpSerializationModes()
+    public function serializationAndCompressionModes()
     {
         if (!class_exists(Redis::class)) {
             return [];
         }
 
-        $serializers = [
-            [Redis::SERIALIZER_NONE],
-            [Redis::SERIALIZER_PHP],
+        $options = [
+            [Redis::SERIALIZER_NONE, Redis::COMPRESSION_NONE],
+            [Redis::SERIALIZER_PHP, Redis::COMPRESSION_NONE],
         ];
 
         if (defined("Redis::SERIALIZER_IGBINARY")) {
-            $serializers[] = [constant("Redis::SERIALIZER_IGBINARY")];
+            $options[] = [
+                constant("Redis::SERIALIZER_IGBINARY"),
+                Redis::COMPRESSION_NONE
+            ];
         }
 
-        return $serializers;
+        if (defined("Redis::COMPRESSION_LZF")) {
+            $options[] = [
+                Redis::SERIALIZER_NONE,
+                constant("Redis::COMPRESSION_LZF")
+            ];
+            $options[] = [
+                Redis::SERIALIZER_PHP,
+                constant("Redis::COMPRESSION_LZF")
+            ];
+
+            if (defined("Redis::SERIALIZER_IGBINARY")) {
+                $options[] = [
+                    constant("Redis::SERIALIZER_IGBINARY"),
+                    constant("Redis::COMPRESSION_LZF")
+                ];
+            }
+        }
+
+        return $options;
     }
 }

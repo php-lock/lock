@@ -4,6 +4,7 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use Redis;
 use RedisException;
 
 /**
@@ -70,14 +71,14 @@ class PHPRedisMutex extends RedisMutex
     {
         // Determine if we need to compress eval arguments.
         $lzfCompression = false;
-        if (\defined(\Redis::class . '::COMPRESSION_LZF') &&
-            \Redis::COMPRESSION_LZF === $redis->getOption(\Redis::OPT_COMPRESSION) &&
-            \function_exists('\lzf_compress')
+        if (defined("Redis::COMPRESSION_LZF") &&
+            constant("Redis::COMPRESSION_LZF") === $redis->getOption(Redis::OPT_COMPRESSION) &&
+            function_exists('lzf_compress')
         ) {
             $lzfCompression = true;
         }
 
-        for ($i = $numkeys, $iMax = \count($arguments); $i < $iMax; $i++) {
+        for ($i = $numkeys, $iMax = count($arguments); $i < $iMax; $i++) {
             /* If a serializion mode such as "php" or "igbinary" is enabled, the arguments must be
              * serialized by us, because phpredis does not do this for the eval command.
              */
@@ -87,7 +88,7 @@ class PHPRedisMutex extends RedisMutex
              * extension installed, compress the arguments as the final step.
              */
             if ($lzfCompression) {
-                $arguments[$i] = \lzf_compress($arguments[$i]);
+                $arguments[$i] = lzf_compress($arguments[$i]);
             }
         }
 
