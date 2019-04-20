@@ -33,7 +33,7 @@ matrix:
 
 before_install:
   - pecl update-channels
-  - yes | pecl install igbinary lzf redis
+  - yes | pecl install -f igbinary lzf redis
   - phpenv config-add tests/php-travis.ini
   - redis-server --port 63791 &
   - redis-server --port 63792 &
