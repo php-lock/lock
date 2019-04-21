@@ -72,7 +72,7 @@ class PHPRedisMutex extends RedisMutex
         // Determine if we need to compress eval arguments.
         $lzfCompression = false;
         if (defined("Redis::COMPRESSION_LZF") &&
-            constant("Redis::COMPRESSION_LZF") === $redis->getOption(Redis::OPT_COMPRESSION) &&
+            Redis::COMPRESSION_LZF === $redis->getOption(Redis::OPT_COMPRESSION) &&
             function_exists('lzf_compress')
         ) {
             $lzfCompression = true;

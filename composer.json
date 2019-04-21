@@ -46,6 +46,7 @@
         "psr/log": "^1"
     },
     "require-dev": {
+        "ext-igbinary": "*",
         "ext-lzf": "*",
         "ext-memcached": "*",
         "ext-pcntl": "*",
@@ -63,6 +64,7 @@
         "squizlabs/php_codesniffer": "^3.3"
     },
     "suggest": {
+        "ext-igbinary": "To use this library with PHP Redis igbinary serializer enabled.",
         "ext-lzf": "To use this library with PHP Redis lzf compression enabled.",
         "ext-pnctl": "Enables locking with flock without busy waiting in CLI scripts.",
         "ext-redis": "To use this library with the PHP Redis extension.",
