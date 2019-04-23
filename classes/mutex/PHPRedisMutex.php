@@ -69,15 +69,6 @@ class PHPRedisMutex extends RedisMutex
      */
     protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
-        // Determine if we need to compress eval arguments.
-        $lzfCompression = false;
-        if (defined("Redis::COMPRESSION_LZF") &&
-            Redis::COMPRESSION_LZF === $redis->getOption(Redis::OPT_COMPRESSION) &&
-            function_exists('lzf_compress')
-        ) {
-            $lzfCompression = true;
-        }
-
         for ($i = $numkeys, $iMax = count($arguments); $i < $iMax; $i++) {
             /* If a serializion mode such as "php" or "igbinary" is enabled, the arguments must be
              * serialized by us, because phpredis does not do this for the eval command.
@@ -87,7 +78,7 @@ class PHPRedisMutex extends RedisMutex
             /* If LZF compression is enabled for the redis connection and the runtime has the LZF
              * extension installed, compress the arguments as the final step.
              */
-            if ($lzfCompression) {
+            if ($this->hasLzfCompression($redis)) {
                 $arguments[$i] = lzf_compress($arguments[$i]);
             }
         }
@@ -97,5 +88,23 @@ class PHPRedisMutex extends RedisMutex
         } catch (RedisException $e) {
             throw new LockReleaseException("Failed to release lock", 0, $e);
         }
+    }
+
+    /**
+     * Determines if lzf compression is enabled for the given connection.
+     *
+     * @param  \Redis|\RedisCluster $redis Redis connection.
+     * @return bool TRUE if lzf comression is enabled, false otherwise.
+     */
+    private function hasLzfCompression($redis): bool
+    {
+        if (\defined('Redis::COMPRESSION_LZF') &&
+            Redis::COMPRESSION_LZF === $redis->getOption(Redis::OPT_COMPRESSION) &&
+            \function_exists('lzf_compress')
+        ) {
+            return true;
+        }
+
+        return false;
     }
 }
