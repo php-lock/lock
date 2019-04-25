@@ -27,7 +27,7 @@ class PHPRedisMutex extends RedisMutex
     /**
      * Sets the connected Redis APIs.
      *
-     * The Redis APIs needs to be connected yet. I.e. Redis::connect() was
+     * The Redis APIs needs to be connected. I.e. Redis::connect() was
      * called already.
      *
      * @param array<\Redis|\RedisCluster> $redisAPIs The Redis connections.
@@ -43,9 +43,7 @@ class PHPRedisMutex extends RedisMutex
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @throws \malkusch\lock\exception\LockAcquireException
+     * @throws LockAcquireException
      */
     protected function add($redisAPI, string $key, string $value, int $expire): bool
     {
@@ -63,19 +61,22 @@ class PHPRedisMutex extends RedisMutex
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @param \Redis|\RedisCluster $redis The Redis or RedisCluster connection.
+     * @throws LockReleaseException
      */
     protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
-        for ($i = $numkeys, $iMax = count($arguments); $i < $iMax; $i++) {
-            /* If a serializion mode such as "php" or "igbinary" is enabled, the arguments must be
+        for ($i = $numkeys; $i < \count($arguments); $i++) {
+            /*
+             * If a serialization mode such as "php" or "igbinary" is enabled, the arguments must be
              * serialized by us, because phpredis does not do this for the eval command.
+             *
+             * The keys must not be serialized.
              */
             $arguments[$i] = $redis->_serialize($arguments[$i]);
 
-            /* If LZF compression is enabled for the redis connection and the runtime has the LZF
+            /*
+             * If LZF compression is enabled for the redis connection and the runtime has the LZF
              * extension installed, compress the arguments as the final step.
              */
             if ($this->hasLzfCompression($redis)) {
@@ -94,17 +95,14 @@ class PHPRedisMutex extends RedisMutex
      * Determines if lzf compression is enabled for the given connection.
      *
      * @param  \Redis|\RedisCluster $redis Redis connection.
-     * @return bool TRUE if lzf comression is enabled, false otherwise.
+     * @return bool TRUE if lzf compression is enabled, false otherwise.
      */
     private function hasLzfCompression($redis): bool
     {
-        if (\defined('Redis::COMPRESSION_LZF') &&
-            Redis::COMPRESSION_LZF === $redis->getOption(Redis::OPT_COMPRESSION) &&
-            \function_exists('lzf_compress')
-        ) {
-            return true;
+        if (!\defined('Redis::COMPRESSION_LZF')) {
+            return false;
         }
 
-        return false;
+        return Redis::COMPRESSION_LZF === $redis->getOption(Redis::OPT_COMPRESSION);
     }
 }

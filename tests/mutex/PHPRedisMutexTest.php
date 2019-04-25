@@ -135,9 +135,6 @@ class PHPRedisMutexTest extends TestCase
 
     /**
      * @dataProvider serializationAndCompressionModes
-     *
-     * @param array $serializer Serializer to test.
-     * @param array $compressor Compressor to test.
      */
     public function testSerializersAndCompressors($serializer, $compressor)
     {
