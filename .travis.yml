@@ -9,6 +9,7 @@ cache:
 php:
   - 7.1
   - 7.2
+  - 7.3
   - nightly
 
 env: 
@@ -32,13 +33,15 @@ matrix:
     - php: nightly
 
 before_install:
+  - pecl update-channels
+  - yes | pecl install -f igbinary lzf redis
   - phpenv config-add tests/php-travis.ini
   - redis-server --port 63791 &
   - redis-server --port 63792 &
   - redis-server --port 63793 &
 
 install:
-  - composer install --no-scripts --no-suggest --no-interaction
+  - composer install --no-progress --no-scripts --no-suggest --no-interaction
 
 before_script:
   - mysql -e 'create database test;'

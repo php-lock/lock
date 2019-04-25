@@ -25,6 +25,8 @@ php-lock/lock follows semantic versioning. Read more on [semver.org][1].
  - Optionally the [php-pcntl][3] extension to enable locking with `flock()` without
    busy waiting in CLI scripts.
  - Optionally `flock()`, `ext-redis`, `ext-pdo_mysql`, `ext-pdo_sqlite`, `ext-pdo_pgsql` or `ext-memcached` can be used as a backend for locks. See examples below.
+ - If `ext-redis` is used for locking and is configured to use igbinary for serialization or
+   lzf for compression, additionally `ext-igbinary` and/or `ext-lzf` have to be installed.
 
 ----
 
