@@ -107,4 +107,19 @@ class PHPRedisMutex extends RedisMutex
 
         return Redis::COMPRESSION_LZF === $redis->getOption(Redis::OPT_COMPRESSION);
     }
+
+    /**
+     * Determines if lzf compression is enabled for the given connection.
+     *
+     * @param  \Redis|\RedisCluster $redis Redis connection.
+     * @return bool TRUE if lzf compression is enabled, false otherwise.
+     */
+    private function hasLzfCompression($redis): bool
+    {
+        if (!\defined('Redis::COMPRESSION_LZF')) {
+            return false;
+        }
+
+        return Redis::COMPRESSION_LZF === $redis->getOption(Redis::OPT_COMPRESSION);
+    }
 }
