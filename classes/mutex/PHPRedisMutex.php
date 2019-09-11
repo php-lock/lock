@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
@@ -31,10 +33,9 @@ class PHPRedisMutex extends RedisMutex
      * called already.
      *
      * @param array<\Redis|\RedisCluster> $redisAPIs The Redis connections.
-     * @param string                      $name      The lock name.
-     * @param int                         $timeout   The time in seconds a lock expires after.
-     *                                               Default is 3.
-     *
+     * @param string $name The lock name.
+     * @param int $timeout The time in seconds a lock expires after. Default is
+     * 3 seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
     public function __construct(array $redisAPIs, string $name, int $timeout = 3)
@@ -43,6 +44,7 @@ class PHPRedisMutex extends RedisMutex
     }
 
     /**
+     * @param \Redis|\RedisCluster $redisApi The Redis or RedisCluster connection.
      * @throws LockAcquireException
      */
     protected function add($redisAPI, string $key, string $value, int $expire): bool
@@ -50,7 +52,7 @@ class PHPRedisMutex extends RedisMutex
         /** @var \Redis $redisAPI */
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-            return $redisAPI->set($key, $value, ["nx", "ex" => $expire]);
+            return $redisAPI->set($key, $value, ['nx', 'ex' => $expire]);
         } catch (RedisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s'",
@@ -66,7 +68,7 @@ class PHPRedisMutex extends RedisMutex
      */
     protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
-        for ($i = $numkeys; $i < \count($arguments); $i++) {
+        for ($i = $numkeys; $i < count($arguments); $i++) {
             /*
              * If a serialization mode such as "php" or "igbinary" is enabled, the arguments must be
              * serialized by us, because phpredis does not do this for the eval command.
@@ -87,14 +89,14 @@ class PHPRedisMutex extends RedisMutex
         try {
             return $redis->eval($script, $arguments, $numkeys);
         } catch (RedisException $e) {
-            throw new LockReleaseException("Failed to release lock", 0, $e);
+            throw new LockReleaseException('Failed to release lock', 0, $e);
         }
     }
 
     /**
      * Determines if lzf compression is enabled for the given connection.
      *
-     * @param  \Redis|\RedisCluster $redis Redis connection.
+     * @param  \Redis|\RedisCluster $redis The Redis or RedisCluster connection.
      * @return bool TRUE if lzf compression is enabled, false otherwise.
      */
     private function hasLzfCompression($redis): bool

@@ -4,7 +4,6 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,11 +20,11 @@ class LockMutexTest extends TestCase
      * @var \PHPUnit\Framework\MockObject\MockObject The SUT
      */
     private $mutex;
-    
+
     protected function setUp()
     {
         parent::setUp();
-        
+
         $this->mutex = $this->getMockForAbstractClass(LockMutex::class);
     }
 
@@ -37,14 +36,14 @@ class LockMutexTest extends TestCase
     public function testLockFails()
     {
         $this->mutex->expects($this->once())
-            ->method("lock")
+            ->method('lock')
             ->willThrowException(new LockAcquireException());
-        
+
         $this->mutex->synchronized(function () {
-            $this->fail("Should not execute code.");
+            $this->fail('Should not execute code.');
         });
     }
-    
+
     /**
      * Tests unlock() is called after the code was executed.
      *
@@ -52,12 +51,12 @@ class LockMutexTest extends TestCase
     public function testUnlockAfterCode()
     {
         $this->mutex->expects($this->once())
-            ->method("unlock");
-        
+            ->method('unlock');
+
         $this->mutex->synchronized(function (): void {
         });
     }
-    
+
     /**
      * Tests unlock() is called after an exception.
      *
@@ -65,15 +64,14 @@ class LockMutexTest extends TestCase
     public function testUnlockAfterException()
     {
         $this->mutex->expects($this->once())
-            ->method("unlock");
-        
+            ->method('unlock');
 
         $this->expectException(\DomainException::class);
         $this->mutex->synchronized(function () {
             throw new \DomainException();
         });
     }
-    
+
     /**
      * Tests unlock() fails after the code was executed.
      *
@@ -82,13 +80,13 @@ class LockMutexTest extends TestCase
     public function testUnlockFailsAfterCode()
     {
         $this->mutex->expects($this->once())
-            ->method("unlock")
+            ->method('unlock')
             ->willThrowException(new LockReleaseException());
-        
+
         $this->mutex->synchronized(function () {
         });
     }
-    
+
     /**
      * Tests unlock() fails after the code threw an exception.
      *
@@ -97,9 +95,9 @@ class LockMutexTest extends TestCase
     public function testUnlockFailsAfterException()
     {
         $this->mutex->expects($this->once())
-            ->method("unlock")
+            ->method('unlock')
             ->willThrowException(new LockReleaseException());
-        
+
         $this->mutex->synchronized(function () {
             throw new \DomainException();
         });
@@ -111,15 +109,15 @@ class LockMutexTest extends TestCase
     public function testCodeResultAvailableAfterFailedUnlock()
     {
         $this->mutex->expects($this->once())
-            ->method("unlock")
+            ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
         try {
             $this->mutex->synchronized(function () {
-                return "result";
+                return 'result';
             });
         } catch (LockReleaseException $exception) {
-            $this->assertEquals("result", $exception->getCodeResult());
+            $this->assertEquals('result', $exception->getCodeResult());
             $this->assertNull($exception->getCodeException());
         }
     }
@@ -130,16 +128,16 @@ class LockMutexTest extends TestCase
     public function testCodeExceptionAvailableAfterFailedUnlock()
     {
         $this->mutex->expects($this->once())
-            ->method("unlock")
+            ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
         try {
             $this->mutex->synchronized(function () {
-                throw new \DomainException("Domain exception");
+                throw new \DomainException('Domain exception');
             });
         } catch (LockReleaseException $exception) {
             $this->assertInstanceOf(\DomainException::class, $exception->getCodeException());
-            $this->assertEquals("Domain exception", $exception->getCodeException()->getMessage());
+            $this->assertEquals('Domain exception', $exception->getCodeException()->getMessage());
         }
     }
 }

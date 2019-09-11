@@ -17,17 +17,17 @@ use PHPUnit\Framework\TestCase;
 class CASMutexTest extends TestCase
 {
     use PHPMock;
-    
+
     protected function setUp()
     {
         parent::setUp();
-        
+
         $builder = new SleepEnvironmentBuilder();
         $builder->addNamespace(__NAMESPACE__);
         $builder->addNamespace('malkusch\lock\util');
         $sleep = $builder->build();
         $sleep->enable();
-        
+
         $this->registerForTearDown($sleep);
     }
 
@@ -63,7 +63,7 @@ class CASMutexTest extends TestCase
      */
     public function testNotify()
     {
-        $i     = 0;
+        $i = 0;
         $mutex = new CASMutex();
         $mutex->synchronized(function () use ($mutex, &$i) {
             $i++;
@@ -78,7 +78,7 @@ class CASMutexTest extends TestCase
      */
     public function testIteration()
     {
-        $i     = 0;
+        $i = 0;
         $mutex = new CASMutex();
         $mutex->synchronized(function () use ($mutex, &$i): void {
             $i++;

@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\exception;
 
+use Throwable;
+
 /**
- * Failed to release lock.
+ * Lock release exception.
  *
- * Take this exception very serious. Failing to release a lock might have
- * the potential to introduce deadlocks. Also the critical code was executed
- * i.e. side effects may have happened.
+ * Failed to release the lock. Take this exception very serious. Failing to
+ * release a lock might have the potential to introduce deadlocks. Also the
+ * critical code was executed i.e. side effects may have happened.
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
@@ -15,46 +19,68 @@ namespace malkusch\lock\exception;
  */
 class LockReleaseException extends MutexException
 {
-
     /**
+     * Result that has been returned during the critical code execution.
+     *
      * @var mixed
      */
-    private $code_result;
+    private $codeResult;
 
     /**
+     * Exception that has happened during the critical code execution.
+     *
      * @var \Throwable|null
      */
-    private $code_exception;
+    private $codeException;
 
     /**
+     * Gets the result that has been returned during the critical code
+     * execution.
+     *
      * @return mixed The return value of the executed code block.
      */
     public function getCodeResult()
     {
-        return $this->code_result;
+        return $this->codeResult;
     }
 
     /**
-     * @param mixed $code_result The return value of the executed code block.
+     * Sets the result that has been returned during the critical code
+     * execution.
+     *
+     * @param mixed $codeResult The return value of the executed code block.
+     * @return self Current lock release exception instance.
      */
-    public function setCodeResult($code_result): void
+    public function setCodeResult($codeResult): self
     {
-        $this->code_result = $code_result;
+        $this->codeResult = $codeResult;
+
+        return $this;
     }
 
     /**
-     * @return \Throwable|null The exception thrown by the code block or null when there was no exception.
+     * Gets the exception that has happened during the synchronized code
+     * execution.
+     *
+     * @return \Throwable|null The exception thrown by the code block or null
+     * when there has been no exception.
      */
-    public function getCodeException(): ?\Throwable
+    public function getCodeException(): ?Throwable
     {
-        return $this->code_exception;
+        return $this->codeException;
     }
 
     /**
-     * @param \Throwable $code_exception The exception thrown by the code block.
+     * Sets the exception that has happened during the critical code
+     * execution.
+     *
+     * @param \Throwable $codeException The exception thrown by the code block.
+     * @return self Current lock release exception instance.
      */
-    public function setCodeException(\Throwable $code_exception): void
+    public function setCodeException(Throwable $codeException): self
     {
-        $this->code_exception = $code_exception;
+        $this->codeException = $codeException;
+
+        return $this;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\mutex;
 
 use Memcached;
@@ -13,12 +15,11 @@ use Memcached;
  */
 class MemcachedMutex extends SpinlockMutex
 {
-    
     /**
      * @var Memcached The connected Memcached API.
      */
     private $memcache;
-    
+
     /**
      * Sets the lock's name and the connected Memcached API.
      *
@@ -34,7 +35,7 @@ class MemcachedMutex extends SpinlockMutex
     public function __construct(string $name, Memcached $memcache, int $timeout = 3)
     {
         parent::__construct($name, $timeout);
-        
+
         $this->memcache = $memcache;
     }
 

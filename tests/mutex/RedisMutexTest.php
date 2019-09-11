@@ -21,11 +21,11 @@ use PHPUnit\Framework\TestCase;
 class RedisMutexTest extends TestCase
 {
     use PHPMock;
-    
+
     protected function setUp()
     {
         parent::setUp();
-        
+
         $sleepBuilder = new SleepEnvironmentBuilder();
         $sleepBuilder->addNamespace(__NAMESPACE__);
         $sleepBuilder->addNamespace('malkusch\lock\util');
@@ -47,14 +47,14 @@ class RedisMutexTest extends TestCase
     {
         $redisAPIs = array_map(
             function ($id): array {
-                return ["id" => $id];
+                return ['id' => $id];
             },
             range(1, $count)
         );
 
-        return $this->getMockForAbstractClass(RedisMutex::class, [$redisAPIs, "test", $timeout]);
+        return $this->getMockForAbstractClass(RedisMutex::class, [$redisAPIs, 'test', $timeout]);
     }
-    
+
     /**
      * Tests acquire() fails because too few servers are available.
      *
@@ -68,26 +68,27 @@ class RedisMutexTest extends TestCase
     public function testTooFewServerToAcquire(int $count, int $available)
     {
         $mutex = $this->buildRedisMutex($count);
-        
+
         $i = 0;
         $mutex->expects($this->exactly($count))
-            ->method("add")
+            ->method('add')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
                     if ($i < $available) {
                         $i++;
+
                         return true;
                     } else {
                         throw new LockAcquireException();
                     }
                 }
             );
-        
+
         $mutex->synchronized(function (): void {
-            $this->fail("Code should not be executed");
+            $this->fail('Code should not be executed');
         });
     }
-    
+
     /**
      * Tests synchronized() does work if the majority of servers is up.
      *
@@ -100,23 +101,24 @@ class RedisMutexTest extends TestCase
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->exactly($count))
-            ->method("evalScript")
+            ->method('evalScript')
             ->willReturn(true);
-        
+
         $i = 0;
         $mutex->expects($this->exactly($count))
-            ->method("add")
+            ->method('add')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
                     if ($i < $available) {
                         $i++;
+
                         return true;
                     } else {
                         throw new LockAcquireException();
                     }
                 }
             );
-        
+
         $mutex->synchronized(function () {
         });
     }
@@ -134,19 +136,20 @@ class RedisMutexTest extends TestCase
     public function testAcquireTooFewKeys($count, $available)
     {
         $mutex = $this->buildRedisMutex($count);
-        
+
         $i = 0;
         $mutex->expects($this->any())
-            ->method("add")
+            ->method('add')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
                     $i++;
+
                     return $i <= $available;
                 }
             );
-        
+
         $mutex->synchronized(function (): void {
-            $this->fail("Code should not be executed");
+            $this->fail('Code should not be executed');
         });
     }
 
@@ -163,16 +166,17 @@ class RedisMutexTest extends TestCase
     public function testTimingOut(int $count, int $timeout, int $delay)
     {
         $mutex = $this->buildRedisMutex($count, $timeout);
-        
+
         $mutex->expects($this->exactly($count))
-            ->method("add")
+            ->method('add')
             ->willReturnCallback(function () use ($delay): bool {
                 usleep($delay);
+
                 return true;
             });
-        
+
         $mutex->synchronized(function () {
-            $this->fail("Code should not be executed");
+            $this->fail('Code should not be executed');
         });
     }
 
@@ -189,7 +193,7 @@ class RedisMutexTest extends TestCase
             [2, 1, 1001000],
         ];
     }
-    
+
     /**
      * Tests synchronized() works if the majority of keys was acquired.
      *
@@ -202,19 +206,20 @@ class RedisMutexTest extends TestCase
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->exactly($count))
-            ->method("evalScript")
+            ->method('evalScript')
             ->willReturn(true);
-        
+
         $i = 0;
         $mutex->expects($this->exactly($count))
-            ->method("add")
+            ->method('add')
             ->willReturnCallback(
                 function () use (&$i, $available): int {
                     $i++;
+
                     return $i <= $available;
                 }
             );
-        
+
         $mutex->synchronized(function (): void {
         });
     }
@@ -232,23 +237,24 @@ class RedisMutexTest extends TestCase
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->exactly($count))
-            ->method("add")
+            ->method('add')
             ->willReturn(true);
-        
+
         $i = 0;
         $mutex->expects($this->exactly($count))
-            ->method("evalScript")
+            ->method('evalScript')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
                     if ($i < $available) {
                         $i++;
+
                         return true;
                     } else {
                         throw new LockReleaseException();
                     }
                 }
             );
-        
+
         $mutex->synchronized(function (): void {
         });
     }
@@ -266,23 +272,24 @@ class RedisMutexTest extends TestCase
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->exactly($count))
-            ->method("add")
+            ->method('add')
             ->willReturn(true);
-        
+
         $i = 0;
         $mutex->expects($this->exactly($count))
-            ->method("evalScript")
+            ->method('evalScript')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
                     $i++;
+
                     return $i <= $available;
                 }
             );
-        
+
         $mutex->synchronized(function (): void {
         });
     }
-    
+
     /**
      * Provides test cases with too few.
      *
@@ -302,7 +309,7 @@ class RedisMutexTest extends TestCase
             [4, 2],
         ];
     }
-    
+
     /**
      * Provides test cases with enough.
      *
