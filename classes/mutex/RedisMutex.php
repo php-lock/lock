@@ -44,9 +44,9 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $redisAPIs, string $name, int $timeout = 3)
+    public function __construct(array $redisAPIs, string $name, int $timeout = 3, int $lockedTimeout = null)
     {
-        parent::__construct($name, $timeout);
+        parent::__construct($name, $timeout, $lockedTimeout);
 
         $this->redisAPIs = $redisAPIs;
         $this->logger    = new NullLogger();

@@ -28,9 +28,9 @@ class PredisMutex extends RedisMutex
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $clients, string $name, int $timeout = 3)
+    public function __construct(array $clients, string $name, int $timeout = 3, int $lockedTimeout = null)
     {
-        parent::__construct($clients, $name, $timeout);
+        parent::__construct($clients, $name, $timeout, $lockedTimeout);
     }
 
     /**
