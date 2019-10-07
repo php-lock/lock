@@ -88,7 +88,7 @@ abstract class SpinlockMutex extends LockMutex
                 $this->loop->end();
             } elseif ($this->lockedTimeout !== null) {
                 if (microtime(true) - $this->start > $this->lockedTimeout) {
-                    throw new LockedTimeoutException();
+                    throw new LockedTimeoutException("Timeout while locked of $this->lockedTimeout seconds exceeded.");
                 }
             }
         });

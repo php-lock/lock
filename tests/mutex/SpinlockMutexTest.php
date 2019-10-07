@@ -3,6 +3,7 @@
 namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\ExecutionOutsideLockException;
+use malkusch\lock\exception\LockedTimeoutException;
 use malkusch\lock\exception\LockAcquireException;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
@@ -42,6 +43,27 @@ class SpinlockMutexTest extends TestCase
     {
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test']);
         $mutex->expects($this->any())->method('acquire')->willThrowException(new LockAcquireException());
+
+        $mutex->synchronized(function () {
+            $this->fail('execution is not expected');
+        });
+    }
+
+    /**
+     * Tests failing to acquire the lock due to a timeout (while lock is already taken).
+     *
+     * @expectedException \malkusch\lock\exception\LockedTimeoutException
+     * @expectedExceptionMessage Timeout while locked of 3 seconds exceeded.
+     */
+    public function testLockedTimeoutExeption()
+    {
+        $timeout = 5;
+        $lockedTimeout = 3;
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', $timeout, $lockedTimeout]);
+
+        $mutex->expects($this->atLeastOnce())
+            ->method('acquire')
+            ->willReturn(false);
 
         $mutex->synchronized(function () {
             $this->fail('execution is not expected');
