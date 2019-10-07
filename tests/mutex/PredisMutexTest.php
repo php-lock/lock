@@ -38,10 +38,10 @@ class PredisMutexTest extends TestCase
         parent::setUp();
 
         $this->client = $this->getMockBuilder(ClientInterface::class)
-            ->setMethods(array_merge(get_class_methods(ClientInterface::class), ["set", "eval"]))
+            ->setMethods(array_merge(get_class_methods(ClientInterface::class), ['set', 'eval']))
             ->getMock();
 
-        $this->mutex = new PredisMutex([$this->client], "test");
+        $this->mutex = new PredisMutex([$this->client], 'test');
 
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->mutex->setLogger($this->logger);
@@ -55,16 +55,16 @@ class PredisMutexTest extends TestCase
     public function testAddFailsToSetKey()
     {
         $this->client->expects($this->atLeastOnce())
-            ->method("set")
-            ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
+            ->method('set')
+            ->with('lock_test', $this->isType('string'), 'EX', 4, 'NX')
             ->willReturn(null);
 
         $this->logger->expects($this->never())
-            ->method("warning");
+            ->method('warning');
 
         $this->mutex->synchronized(
             function () {
-                $this->fail("Code execution is not expected");
+                $this->fail('Code execution is not expected');
             }
         );
     }
@@ -77,17 +77,17 @@ class PredisMutexTest extends TestCase
     public function testAddErrors()
     {
         $this->client->expects($this->atLeastOnce())
-            ->method("set")
-            ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
+            ->method('set')
+            ->with('lock_test', $this->isType('string'), 'EX', 4, 'NX')
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects($this->once())
-            ->method("warning")
-            ->with("Could not set {key} = {token} at server #{index}.", $this->anything());
+            ->method('warning')
+            ->with('Could not set {key} = {token} at server #{index}.', $this->anything());
 
         $this->mutex->synchronized(
             function () {
-                $this->fail("Code execution is not expected");
+                $this->fail('Code execution is not expected');
             }
         );
     }
@@ -95,13 +95,13 @@ class PredisMutexTest extends TestCase
     public function testWorksNormally()
     {
         $this->client->expects($this->atLeastOnce())
-            ->method("set")
-            ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
+            ->method('set')
+            ->with('lock_test', $this->isType('string'), 'EX', 4, 'NX')
             ->willReturnSelf();
 
         $this->client->expects($this->once())
-            ->method("eval")
-            ->with($this->anything(), 1, "lock_test", $this->isType("string"))
+            ->method('eval')
+            ->with($this->anything(), 1, 'lock_test', $this->isType('string'))
             ->willReturn(true);
 
         $executed = false;
@@ -121,18 +121,18 @@ class PredisMutexTest extends TestCase
     public function testEvalScriptFails()
     {
         $this->client->expects($this->atLeastOnce())
-            ->method("set")
-            ->with("lock_test", $this->isType("string"), "EX", 4, "NX")
+            ->method('set')
+            ->with('lock_test', $this->isType('string'), 'EX', 4, 'NX')
             ->willReturnSelf();
 
         $this->client->expects($this->once())
-            ->method("eval")
-            ->with($this->anything(), 1, "lock_test", $this->isType("string"))
+            ->method('eval')
+            ->with($this->anything(), 1, 'lock_test', $this->isType('string'))
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects($this->once())
-            ->method("warning")
-            ->with("Could not unset {key} = {token} at server #{index}.", $this->anything());
+            ->method('warning')
+            ->with('Could not unset {key} = {token} at server #{index}.', $this->anything());
 
         $executed = false;
 

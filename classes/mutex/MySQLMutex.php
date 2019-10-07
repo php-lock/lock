@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\mutex;
 
+use InvalidArgumentException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\TimeoutException;
 
@@ -26,7 +29,7 @@ class MySQLMutex extends LockMutex
         $this->pdo = $PDO;
 
         if (\strlen($name) > 64) {
-            throw new \InvalidArgumentException("The maximum length of the lock name is 64 characters.");
+            throw new InvalidArgumentException('The maximum length of the lock name is 64 characters.');
         }
 
         $this->name = $name;
@@ -38,7 +41,7 @@ class MySQLMutex extends LockMutex
      */
     public function lock(): void
     {
-        $statement = $this->pdo->prepare("SELECT GET_LOCK(?,?)");
+        $statement = $this->pdo->prepare('SELECT GET_LOCK(?,?)');
 
         $statement->execute([
             $this->name,
@@ -59,7 +62,7 @@ class MySQLMutex extends LockMutex
             /*
              *  NULL if an error occurred (such as running out of memory or the thread was killed with mysqladmin kill).
              */
-            throw new LockAcquireException("An error occurred while acquiring the lock");
+            throw new LockAcquireException('An error occurred while acquiring the lock');
         }
 
         throw TimeoutException::create($this->timeout);
@@ -67,7 +70,7 @@ class MySQLMutex extends LockMutex
 
     public function unlock(): void
     {
-        $statement = $this->pdo->prepare("DO RELEASE_LOCK(?)");
+        $statement = $this->pdo->prepare('DO RELEASE_LOCK(?)');
         $statement->execute([
             $this->name
         ]);

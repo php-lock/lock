@@ -20,11 +20,11 @@ class DoubleCheckedLockingTest extends TestCase
      * @var Mutex|MockObject The Mutex mock.
      */
     private $mutex;
-    
+
     protected function setUp()
     {
         parent::setUp();
-        
+
         $this->mutex = $this->createMock(Mutex::class);
     }
 
@@ -33,7 +33,7 @@ class DoubleCheckedLockingTest extends TestCase
      */
     public function testCheckFailsAcquiresNoLock()
     {
-        $this->mutex->expects($this->never())->method("synchronized");
+        $this->mutex->expects($this->never())->method('synchronized');
 
         $checkedLocking = new DoubleCheckedLocking($this->mutex, function (): bool {
             return false;
@@ -46,18 +46,18 @@ class DoubleCheckedLockingTest extends TestCase
         // Failed check should return false.
         $this->assertFalse($result);
     }
-    
+
     /**
      * Tests that the check and execution are in the same lock.
      *
      */
     public function testLockedCheckAndExecution()
     {
-        $lock  = 0;
+        $lock = 0;
         $check = 0;
-        
+
         $this->mutex->expects($this->once())
-                ->method("synchronized")
+                ->method('synchronized')
                 ->willReturnCallback(function (callable $block) use (&$lock) {
                     $lock++;
                     $result = $block();
@@ -86,7 +86,7 @@ class DoubleCheckedLockingTest extends TestCase
         // Synchronized code should return a test string.
         $this->assertSame('test', $result);
     }
-    
+
     /**
      * Tests that the code is not executed if the first or second check fails.
      *
@@ -96,7 +96,7 @@ class DoubleCheckedLockingTest extends TestCase
     public function testCodeNotExecuted(callable $check)
     {
         $this->mutex->expects($this->any())
-                ->method("synchronized")
+                ->method('synchronized')
                 ->willReturnCallback(function (callable $block) {
                     return $block();
                 });
@@ -109,7 +109,7 @@ class DoubleCheckedLockingTest extends TestCase
         // Each failed check should return false.
         $this->assertFalse($result);
     }
-    
+
     /**
      * Returns checks for testCodeNotExecuted().
      *
@@ -118,6 +118,7 @@ class DoubleCheckedLockingTest extends TestCase
     public function provideTestCodeNotExecuted()
     {
         $checkCounter = 0;
+
         return [
             [function (): bool {
                 return false;
@@ -126,18 +127,19 @@ class DoubleCheckedLockingTest extends TestCase
             [function () use (&$checkCounter): bool {
                 $result = $checkCounter == 0;
                 $checkCounter++;
+
                 return $result;
             }],
         ];
     }
-    
+
     /**
      * Tests that the code executed if the checks are true.
      */
     public function testCodeExecuted()
     {
         $this->mutex->expects($this->once())
-                ->method("synchronized")
+                ->method('synchronized')
                 ->willReturnCallback(function (callable $block) {
                     return $block();
                 });

@@ -59,9 +59,10 @@ class MutexConcurrencyTest extends TestCase
             $this->pdo = new \PDO($dsn, $user);
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         }
+
         return $this->pdo;
     }
-    
+
     /**
      * Forks, runs code in the children and wait until all finished.
      *
@@ -79,7 +80,7 @@ class MutexConcurrencyTest extends TestCase
 
         $manager->check();
     }
-    
+
     /**
      * Tests high contention empirically.
      *
@@ -92,9 +93,9 @@ class MutexConcurrencyTest extends TestCase
     public function testHighContention(callable $code, callable $mutexFactory)
     {
         $concurrency = 2;
-        $iterations  = 20000 / $concurrency;
+        $iterations = 20000 / $concurrency;
         $timeout = $concurrency * 20;
-        
+
         $this->fork($concurrency, function () use ($mutexFactory, $timeout, $iterations, $code): void {
             /** @var Mutex $mutex */
             $mutex = $mutexFactory($timeout);
@@ -108,7 +109,7 @@ class MutexConcurrencyTest extends TestCase
         $counter = $code(0);
         $this->assertEquals($concurrency * $iterations, $counter);
     }
-    
+
     /**
      * Returns test cases for testHighContention().
      *
@@ -118,7 +119,7 @@ class MutexConcurrencyTest extends TestCase
     {
         $cases = array_map(function (array $mutexFactory) {
             $file = tmpfile();
-            $this->assertEquals(4, fwrite($file, pack("i", 0)), "Expected 4 bytes to be written to temporary file.");
+            $this->assertEquals(4, fwrite($file, pack('i', 0)), 'Expected 4 bytes to be written to temporary file.');
 
             return [
                 function (int $increment) use ($file): int {
@@ -126,14 +127,14 @@ class MutexConcurrencyTest extends TestCase
                     flock($file, LOCK_EX);
                     $data = fread($file, 4);
 
-                    $this->assertEquals(4, strlen($data), "Expected four bytes to be present in temporary file.");
+                    $this->assertEquals(4, strlen($data), 'Expected four bytes to be present in temporary file.');
 
-                    $counter = unpack("i", $data)[1];
+                    $counter = unpack('i', $data)[1];
 
                     $counter += $increment;
-                    
+
                     rewind($file);
-                    fwrite($file, pack("i", $counter));
+                    fwrite($file, pack('i', $counter));
 
                     flock($file, LOCK_UN);
 
@@ -142,17 +143,17 @@ class MutexConcurrencyTest extends TestCase
                 $mutexFactory[0]
             ];
         }, $this->provideMutexFactories());
-        
+
         $addPDO = function ($dsn, $user, $vendor) use (&$cases) {
             $pdo = $this->getPDO($dsn, $user);
 
-            $options = ["mysql" => "engine=InnoDB"];
-            $option  = $options[$vendor] ?? "";
+            $options = ['mysql' => 'engine=InnoDB'];
+            $option = $options[$vendor] ?? '';
             $pdo->exec("CREATE TABLE IF NOT EXISTS counter(id INT PRIMARY KEY, counter INT) $option");
 
             $pdo->beginTransaction();
-            $pdo->exec("DELETE FROM counter");
-            $pdo->exec("INSERT INTO counter VALUES (1, 0)");
+            $pdo->exec('DELETE FROM counter');
+            $pdo->exec('INSERT INTO counter VALUES (1, 0)');
             $pdo->commit();
 
             $this->pdo = null;
@@ -164,14 +165,14 @@ class MutexConcurrencyTest extends TestCase
                         $this->pdo = null;
                     }
                     $pdo = $this->getPDO($dsn, $user);
-                    $id  = 1;
-                    $select = $pdo->prepare("SELECT counter FROM counter WHERE id = ? FOR UPDATE");
+                    $id = 1;
+                    $select = $pdo->prepare('SELECT counter FROM counter WHERE id = ? FOR UPDATE');
                     $select->execute([$id]);
                     $counter = $select->fetchColumn();
 
                     $counter += $increment;
 
-                    $pdo->prepare("UPDATE counter SET counter = ? WHERE id = ?")
+                    $pdo->prepare('UPDATE counter SET counter = ? WHERE id = ?')
                         ->execute([$counter, $id]);
 
                     return $counter;
@@ -179,26 +180,27 @@ class MutexConcurrencyTest extends TestCase
                 function ($timeout = 3) use ($dsn, $user) {
                     $this->pdo = null;
                     $pdo = $this->getPDO($dsn, $user);
+
                     return new TransactionalMutex($pdo, $timeout);
                 }
             ];
         };
-        
-        if (getenv("MYSQL_DSN")) {
-            $dsn  = getenv("MYSQL_DSN");
-            $user = getenv("MYSQL_USER");
-            $addPDO($dsn, $user, "mysql");
+
+        if (getenv('MYSQL_DSN')) {
+            $dsn = getenv('MYSQL_DSN');
+            $user = getenv('MYSQL_USER');
+            $addPDO($dsn, $user, 'mysql');
         }
-        
-        if (getenv("PGSQL_DSN")) {
-            $dsn  = getenv("PGSQL_DSN");
-            $user = getenv("PGSQL_USER");
-            $addPDO($dsn, $user, "postgres");
+
+        if (getenv('PGSQL_DSN')) {
+            $dsn = getenv('PGSQL_DSN');
+            $user = getenv('PGSQL_USER');
+            $addPDO($dsn, $user, 'postgres');
         }
-        
+
         return $cases;
     }
-    
+
     /**
      * Tests that two processes run sequentially.
      *
@@ -209,7 +211,7 @@ class MutexConcurrencyTest extends TestCase
     public function testExecutionIsSerializedWhenLocked(callable $mutexFactory)
     {
         $timestamp = microtime(true);
-        
+
         $this->fork(2, function () use ($mutexFactory): void {
             /** @var Mutex $mutex */
             $mutex = $mutexFactory();
@@ -221,7 +223,7 @@ class MutexConcurrencyTest extends TestCase
         $delta = microtime(true) - $timestamp;
         $this->assertGreaterThan(1, $delta);
     }
-    
+
     /**
      * Provides Mutex factories.
      *
@@ -229,95 +231,100 @@ class MutexConcurrencyTest extends TestCase
      */
     public function provideMutexFactories()
     {
-        $this->path = tempnam(sys_get_temp_dir(), "mutex-concurrency-test");
+        $this->path = tempnam(sys_get_temp_dir(), 'mutex-concurrency-test');
 
         $cases = [
-            "flock" => [function ($timeout = 3): Mutex {
-                $file = fopen($this->path, "w");
+            'flock' => [function ($timeout = 3): Mutex {
+                $file = fopen($this->path, 'w');
+
                 return new FlockMutex($file);
             }],
 
-            "flockWithTimoutPcntl" => [function ($timeout = 3): Mutex {
-                $file = fopen($this->path, "w");
+            'flockWithTimoutPcntl' => [function ($timeout = 3): Mutex {
+                $file = fopen($this->path, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
                 $lock->stategy = FlockMutex::STRATEGY_PCNTL;
 
                 return $lock->popsValue();
             }],
 
-            "flockWithTimoutBusy" => [function ($timeout = 3): Mutex {
-                $file = fopen($this->path, "w");
+            'flockWithTimoutBusy' => [function ($timeout = 3): Mutex {
+                $file = fopen($this->path, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
                 $lock->stategy = FlockMutex::STRATEGY_BUSY;
 
                 return $lock->popsValue();
             }],
 
-            "semaphore" => [function ($timeout = 3): Mutex {
-                $semaphore = sem_get(ftok($this->path, "b"));
+            'semaphore' => [function ($timeout = 3): Mutex {
+                $semaphore = sem_get(ftok($this->path, 'b'));
                 $this->assertTrue(is_resource($semaphore));
+
                 return new SemaphoreMutex($semaphore);
             }],
         ];
-            
-        if (getenv("MEMCACHE_HOST")) {
-            $cases["memcached"] = [function ($timeout = 3): Mutex {
+
+        if (getenv('MEMCACHE_HOST')) {
+            $cases['memcached'] = [function ($timeout = 3): Mutex {
                 $memcached = new \Memcached();
-                $memcached->addServer(getenv("MEMCACHE_HOST"), 11211);
-                return new MemcachedMutex("test", $memcached, $timeout);
+                $memcached->addServer(getenv('MEMCACHE_HOST'), 11211);
+
+                return new MemcachedMutex('test', $memcached, $timeout);
             }];
         }
-        
-        $uris = getenv("REDIS_URIS") !== false ? explode(",", getenv("REDIS_URIS")) : ["redis://localhost:6379"];
 
-        $cases["PredisMutex"] = [function ($timeout = 3) use ($uris): Mutex {
+        $uris = getenv('REDIS_URIS') !== false ? explode(',', getenv('REDIS_URIS')) : ['redis://localhost:6379'];
+
+        $cases['PredisMutex'] = [function ($timeout = 3) use ($uris): Mutex {
             $clients = array_map(
                 function ($uri) {
                     return new Client($uri);
                 },
                 $uris
             );
-            return new PredisMutex($clients, "test", $timeout);
+
+            return new PredisMutex($clients, 'test', $timeout);
         }];
 
-        $cases["PHPRedisMutex"] = [function ($timeout = 3) use ($uris): Mutex {
+        $cases['PHPRedisMutex'] = [function ($timeout = 3) use ($uris): Mutex {
             /** @var Redis[] $apis */
             $apis = array_map(
                 function (string $uri): Redis {
                     $redis = new Redis();
 
                     $uri = parse_url($uri);
-                    if (!empty($uri["port"])) {
-                        $redis->connect($uri["host"], $uri["port"]);
+                    if (!empty($uri['port'])) {
+                        $redis->connect($uri['host'], $uri['port']);
                     } else {
-                        $redis->connect($uri["host"]);
+                        $redis->connect($uri['host']);
                     }
 
                     return $redis;
                 },
                 $uris
             );
-            return new PHPRedisMutex($apis, "test", $timeout);
+
+            return new PHPRedisMutex($apis, 'test', $timeout);
         }];
 
-        if (getenv("MYSQL_DSN")) {
-            $cases["MySQLMutex"] = [function ($timeout = 3): Mutex {
-                $pdo = new \PDO(getenv("MYSQL_DSN"), getenv("MYSQL_USER"));
+        if (getenv('MYSQL_DSN')) {
+            $cases['MySQLMutex'] = [function ($timeout = 3): Mutex {
+                $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new MySQLMutex($pdo, "test", $timeout);
+                return new MySQLMutex($pdo, 'test', $timeout);
             }];
         }
 
-        if (getenv("PGSQL_DSN")) {
-            $cases["PgAdvisoryLockMutex"] = [function (): Mutex {
-                $pdo = new \PDO(getenv("PGSQL_DSN"), getenv("PGSQL_USER"));
+        if (getenv('PGSQL_DSN')) {
+            $cases['PgAdvisoryLockMutex'] = [function (): Mutex {
+                $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new PgAdvisoryLockMutex($pdo, "test");
+                return new PgAdvisoryLockMutex($pdo, 'test');
             }];
         }
-        
+
         return $cases;
     }
 }

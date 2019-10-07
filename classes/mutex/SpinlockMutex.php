@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\ExecutionOutsideLockException;
@@ -18,7 +20,11 @@ use malkusch\lock\util\Loop;
  */
 abstract class SpinlockMutex extends LockMutex
 {
-    
+    /**
+     * The prefix for the lock key.
+     */
+    private const PREFIX = 'lock_';
+
     /**
      * @var int The timeout in seconds a lock may live.
      */
@@ -30,29 +36,30 @@ abstract class SpinlockMutex extends LockMutex
     private $lockedTimeout;
 
     /**
-     * @var Loop The loop.
+     * @var \malkusch\lock\util\Loop The loop.
      */
     private $loop;
-    
+
     /**
      * @var string The lock key.
      */
     private $key;
-    
+
     /**
      * @var double The timestamp when the lock was acquired.
      */
     private $acquired;
-    
+
     /**
-     * The prefix for the lock key.
+     * @var double The timestamp before the first lock has been attempted.
      */
-    private const PREFIX = "lock_";
-    
+    private $start;
+
     /**
      * Sets the timeout.
      *
      * @param int $timeout The time in seconds a lock expires, default is 3.
+     * @param int $lockedTimeout The time in seconds we are spinning while locked.
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
@@ -60,16 +67,16 @@ abstract class SpinlockMutex extends LockMutex
     {
         $this->timeout = $timeout;
         $this->lockedTimeout = $lockedTimeout;
-        $this->loop    = new Loop($this->timeout);
-        $this->key     = self::PREFIX.$name;
+        $this->loop = new Loop($this->timeout);
+        $this->key = self::PREFIX . $name;
     }
-    
+
     protected function lock(): void
     {
         $this->start = microtime(true);
         $this->loop->execute(function (): void  {
             $this->acquired = microtime(true);
-            
+
             /*
              * The expiration time for the lock is increased by one second
              * to ensure that we delete only our keys. This will prevent the
@@ -99,18 +106,18 @@ abstract class SpinlockMutex extends LockMutex
          * This guarantees that we don't delete a wrong key.
          */
         if (!$this->release($this->key)) {
-            throw new LockReleaseException("Failed to release the lock.");
+            throw new LockReleaseException('Failed to release the lock.');
         }
     }
-    
+
     /**
      * Tries to acquire a lock.
      *
      * @param string $key The lock key.
      * @param int $expire The timeout in seconds when a lock expires.
      *
-     * @return bool True, if the lock could be acquired.
      * @throws LockAcquireException An unexpected error happened.
+     * @return bool True, if the lock could be acquired.
      */
     abstract protected function acquire(string $key, int $expire): bool;
 

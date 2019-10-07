@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\mutex;
 
-use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use Throwable;
 
 /**
  * Locking mutex.
@@ -15,48 +17,52 @@ use malkusch\lock\exception\LockReleaseException;
  */
 abstract class LockMutex extends Mutex
 {
-
     /**
      * Acquires the lock.
      *
      * This method blocks until the lock was acquired.
      *
-     * @throws LockAcquireException The lock could not be acquired.
+     * @throws \malkusch\lock\exception\LockAcquireException The lock could not
+     * be acquired.
      */
     abstract protected function lock(): void;
 
     /**
      * Releases the lock.
      *
-     * @throws LockReleaseException The lock could not be released.
+     * @throws \malkusch\lock\exception\LockReleaseException The lock could not
+     * be released.
      */
     abstract protected function unlock(): void;
 
+    /**
+     * {@inheritDoc}
+     */
     public function synchronized(callable $code)
     {
         $this->lock();
 
-        $code_result = null;
-        $code_exception = null;
+        $codeResult = null;
+        $codeException = null;
         try {
-            $code_result = $code();
-        } catch (\Throwable $exception) {
-            $code_exception = $exception;
+            $codeResult = $code();
+        } catch (Throwable $exception) {
+            $codeException = $exception;
 
             throw $exception;
         } finally {
             try {
                 $this->unlock();
-            } catch (LockReleaseException $lock_exception) {
-                $lock_exception->setCodeResult($code_result);
-                if ($code_exception !== null) {
-                    $lock_exception->setCodeException($code_exception);
+            } catch (LockReleaseException $lockReleaseException) {
+                $lockReleaseException->setCodeResult($codeResult);
+                if ($codeException !== null) {
+                    $lockReleaseException->setCodeException($codeException);
                 }
 
-                throw $lock_exception;
+                throw $lockReleaseException;
             }
         }
 
-        return $code_result;
+        return $codeResult;
     }
 }

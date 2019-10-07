@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\mutex;
 
+use Exception;
+use InvalidArgumentException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\util\Loop;
+use PDO;
+use PDOException;
 
 /**
  * Serialization is delegated to the DBS.
@@ -19,12 +25,11 @@ use malkusch\lock\util\Loop;
  */
 class TransactionalMutex extends Mutex
 {
-    
     /**
      * @var \PDO $pdo The PDO.
      */
     private $pdo;
-    
+
     /**
      * @var Loop The loop.
      */
@@ -46,15 +51,15 @@ class TransactionalMutex extends Mutex
      */
     public function __construct(\PDO $pdo, int $timeout = 3)
     {
-        if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
-            throw new \InvalidArgumentException("The pdo must have PDO::ERRMODE_EXCEPTION set.");
+        if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== PDO::ERRMODE_EXCEPTION) {
+            throw new InvalidArgumentException('The pdo must have PDO::ERRMODE_EXCEPTION set.');
         }
         self::checkAutocommit($pdo);
 
-        $this->pdo  = $pdo;
+        $this->pdo = $pdo;
         $this->loop = new Loop($timeout);
     }
-    
+
     /**
      * Checks that the AUTOCOMMIT mode is turned off.
      *
@@ -63,24 +68,24 @@ class TransactionalMutex extends Mutex
     private static function checkAutocommit(\PDO $pdo): void
     {
         $vendor = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
-        
+
         // MySQL turns autocommit off during a transaction.
-        if ($vendor == "mysql") {
+        if ($vendor == 'mysql') {
             return;
         }
 
         try {
             if ($pdo->getAttribute(\PDO::ATTR_AUTOCOMMIT)) {
-                throw new \InvalidArgumentException("PDO::ATTR_AUTOCOMMIT should be disabled.");
+                throw new InvalidArgumentException('PDO::ATTR_AUTOCOMMIT should be disabled.');
             }
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             /*
              * Ignore this, as some drivers would throw an exception for an
              * unsupported attribute (e.g. Postgres).
              */
         }
     }
-    
+
     /**
      * Executes the critical code within a transaction.
      *
@@ -97,11 +102,11 @@ class TransactionalMutex extends Mutex
      * and won't  be replayed.
      *
      * @param callable $code The synchronized execution block.
+     * @throws \Exception The execution block threw an exception.
+     * @throws LockAcquireException The transaction was not commited.
      * @return mixed The return value of the execution block.
      * @SuppressWarnings(PHPMD)
      *
-     * @throws \Exception The execution block threw an exception.
-     * @throws LockAcquireException The transaction was not commited.
      */
     public function synchronized(callable $code)
     {
@@ -109,19 +114,20 @@ class TransactionalMutex extends Mutex
             try {
                 // BEGIN
                 $this->pdo->beginTransaction();
-            } catch (\PDOException $e) {
-                throw new LockAcquireException("Could not begin transaction.", 0, $e);
+            } catch (PDOException $e) {
+                throw new LockAcquireException('Could not begin transaction.', 0, $e);
             }
-            
+
             try {
                 // Unit of work
                 $result = $code();
                 $this->pdo->commit();
                 $this->loop->end();
+
                 return $result;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->rollBack($e);
-                
+
                 if (self::hasPDOException($e)) {
                     return; // Replay
                 } else {
@@ -130,7 +136,7 @@ class TransactionalMutex extends Mutex
             }
         });
     }
-    
+
     /**
      * Checks if an exception or any of its previous exceptions is a PDOException.
      *
@@ -139,15 +145,16 @@ class TransactionalMutex extends Mutex
      */
     private static function hasPDOException(\Exception $exception)
     {
-        if ($exception instanceof \PDOException) {
+        if ($exception instanceof PDOException) {
             return true;
         }
         if ($exception->getPrevious() === null) {
             return false;
         }
+
         return self::hasPDOException($exception->getPrevious());
     }
-    
+
     /**
      * Rolls back a transaction.
      *

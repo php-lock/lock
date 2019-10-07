@@ -2,8 +2,6 @@
 
 namespace malkusch\lock\mutex;
 
-use phpmock\environment\SleepEnvironmentBuilder;
-use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -33,7 +31,7 @@ class MemcachedMutexTest extends TestCase
     protected function setUp()
     {
         $this->memcached = $this->createMock(\Memcached::class);
-        $this->mutex = new MemcachedMutex("test", $this->memcached, 1);
+        $this->mutex = new MemcachedMutex('test', $this->memcached, 1);
     }
 
     /**
@@ -44,15 +42,15 @@ class MemcachedMutexTest extends TestCase
     public function testFailAcquireLock()
     {
         $this->memcached->expects($this->atLeastOnce())
-            ->method("add")
-            ->with("lock_test", true, 2)
+            ->method('add')
+            ->with('lock_test', true, 2)
             ->willReturn(false);
 
         $this->mutex->synchronized(function (): void {
-            $this->fail("execution is not expected");
+            $this->fail('execution is not expected');
         });
     }
-    
+
     /**
      * Tests failing to release a lock.
      *
@@ -61,13 +59,13 @@ class MemcachedMutexTest extends TestCase
     public function testFailReleasingLock()
     {
         $this->memcached->expects($this->once())
-            ->method("add")
-            ->with("lock_test", true, 2)
+            ->method('add')
+            ->with('lock_test', true, 2)
             ->willReturn(true);
 
         $this->memcached->expects($this->once())
-            ->method("delete")
-            ->with("lock_test")
+            ->method('delete')
+            ->with('lock_test')
             ->willReturn(false);
 
         $this->mutex->synchronized(function (): void {
