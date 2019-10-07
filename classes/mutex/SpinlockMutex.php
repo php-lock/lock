@@ -74,7 +74,7 @@ abstract class SpinlockMutex extends LockMutex
     protected function lock(): void
     {
         $this->start = microtime(true);
-        $this->loop->execute(function (): void  {
+        $this->loop->execute(function (): void {
             $this->acquired = microtime(true);
 
             /*
