@@ -47,7 +47,6 @@
     },
     "require-dev": {
         "ext-igbinary": "*",
-        "ext-lzf": "*",
         "ext-memcached": "*",
         "ext-pcntl": "*",
         "ext-pdo_mysql": "*",
