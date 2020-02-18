@@ -16,7 +16,7 @@ use Redis;
  * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
  * @license WTFPL
  * @see PHPRedisMutex
- * @requires redis
+ * @requires extension redis
  * @group redis
  */
 class PHPRedisMutexTest extends TestCase
