@@ -286,26 +286,30 @@ class MutexConcurrencyTest extends TestCase
             return new PredisMutex($clients, 'test', $timeout);
         }];
 
-        $cases['PHPRedisMutex'] = [function ($timeout = 3) use ($uris): Mutex {
-            /** @var Redis[] $apis */
-            $apis = array_map(
-                function (string $uri): Redis {
-                    $redis = new Redis();
+        if (class_exists(Redis::class)) {
+            $cases['PHPRedisMutex'] = [
+                function ($timeout = 3) use ($uris): Mutex {
+                    /** @var Redis[] $apis */
+                    $apis = array_map(
+                        function (string $uri): Redis {
+                            $redis = new Redis();
 
-                    $uri = parse_url($uri);
-                    if (!empty($uri['port'])) {
-                        $redis->connect($uri['host'], $uri['port']);
-                    } else {
-                        $redis->connect($uri['host']);
-                    }
+                            $uri = parse_url($uri);
+                            if (!empty($uri['port'])) {
+                                $redis->connect($uri['host'], $uri['port']);
+                            } else {
+                                $redis->connect($uri['host']);
+                            }
 
-                    return $redis;
-                },
-                $uris
-            );
+                            return $redis;
+                        },
+                        $uris
+                    );
 
-            return new PHPRedisMutex($apis, 'test', $timeout);
-        }];
+                    return new PHPRedisMutex($apis, 'test', $timeout);
+                }
+            ];
+        }
 
         if (getenv('MYSQL_DSN')) {
             $cases['MySQLMutex'] = [function ($timeout = 3): Mutex {

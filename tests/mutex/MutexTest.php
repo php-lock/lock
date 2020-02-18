@@ -126,26 +126,30 @@ class MutexTest extends TestCase
                 return new PredisMutex($clients, 'test', self::TIMEOUT);
             }];
 
-            $cases['PHPRedisMutex'] = [function () use ($uris): Mutex {
-                /** @var Redis[] $apis */
-                $apis = array_map(
-                    function ($uri) {
-                        $redis = new Redis();
+            if (class_exists(Redis::class)) {
+                $cases['PHPRedisMutex'] = [
+                    function () use ($uris): Mutex {
+                        /** @var Redis[] $apis */
+                        $apis = array_map(
+                            function ($uri) {
+                                $redis = new Redis();
 
-                        $uri = parse_url($uri);
-                        if (!empty($uri['port'])) {
-                            $redis->connect($uri['host'], $uri['port']);
-                        } else {
-                            $redis->connect($uri['host']);
-                        }
+                                $uri = parse_url($uri);
+                                if (!empty($uri['port'])) {
+                                    $redis->connect($uri['host'], $uri['port']);
+                                } else {
+                                    $redis->connect($uri['host']);
+                                }
 
-                        return $redis;
-                    },
-                    $uris
-                );
+                                return $redis;
+                            },
+                            $uris
+                        );
 
-                return new PHPRedisMutex($apis, 'test', self::TIMEOUT);
-            }];
+                        return new PHPRedisMutex($apis, 'test', self::TIMEOUT);
+                    }
+                ];
+            }
         }
 
         if (getenv('MYSQL_DSN')) {
