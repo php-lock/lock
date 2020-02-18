@@ -34,7 +34,6 @@ matrix:
 before_install:
   - sudo apt-get update
   - pecl update-channels
-  - yes | pecl install -f igbinary redis
   - phpenv config-add tests/php-travis.ini
   - redis-server --port 63791 &
   - redis-server --port 63792 &
