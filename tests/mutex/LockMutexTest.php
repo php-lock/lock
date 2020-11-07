@@ -34,7 +34,7 @@ class LockMutexTest extends TestCase
     public function testLockFails()
     {
         $this->expectException(LockAcquireException::class);
-        
+
         $this->mutex->expects($this->once())
             ->method('lock')
             ->willThrowException(new LockAcquireException());

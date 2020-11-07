@@ -6,7 +6,7 @@ use Eloquent\Liberator\Liberator;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
 use Redis;
-use Spork\ProcessManager;
+use Spatie\Async\Pool;
 
 /**
  * Concurrency Tests for Mutex.
@@ -69,16 +69,15 @@ class MutexConcurrencyTest extends TestCase
      * @param int $concurrency The amount of forks.
      * @param callable $code The code for the fork.
      */
-    private function fork($concurrency, callable $code)
+    private function fork(int $concurrency, callable $code)
     {
-        $manager = new ProcessManager();
-        $manager->setDebug(true);
+        $pool = Pool::create();
 
         for ($i = 0; $i < $concurrency; $i++) {
-            $manager->fork($code);
+            $pool[] = async($code);
         }
 
-        $manager->check();
+        await($pool);
     }
 
     /**
@@ -92,8 +91,8 @@ class MutexConcurrencyTest extends TestCase
      */
     public function testHighContention(callable $code, callable $mutexFactory)
     {
-        $concurrency = 2;
-        $iterations = 20000 / $concurrency;
+        $concurrency = 10;
+        $iterations = 1000 / $concurrency;
         $timeout = $concurrency * 20;
 
         $this->fork($concurrency, function () use ($mutexFactory, $timeout, $iterations, $code): void {
@@ -112,20 +111,17 @@ class MutexConcurrencyTest extends TestCase
 
     /**
      * Returns test cases for testHighContention().
-     *
-     * @return array The test cases.
      */
-    public function provideTestHighContention()
+    public function provideTestHighContention(): array
     {
         $cases = array_map(function (array $mutexFactory) {
-            $file = tmpfile();
-            $this->assertEquals(4, fwrite($file, pack('i', 0)), 'Expected 4 bytes to be written to temporary file.');
+            $filename = tempnam(sys_get_temp_dir(), 'php-lock');
+
+            file_put_contents($filename, pack('i', 0));
 
             return [
-                function (int $increment) use ($file): int {
-                    rewind($file);
-                    flock($file, LOCK_EX);
-                    $data = fread($file, 4);
+                function (int $increment) use ($filename): int {
+                    $data = file_get_contents($filename);
 
                     $this->assertEquals(4, strlen($data), 'Expected four bytes to be present in temporary file.');
 
@@ -133,10 +129,7 @@ class MutexConcurrencyTest extends TestCase
 
                     $counter += $increment;
 
-                    rewind($file);
-                    fwrite($file, pack('i', $counter));
-
-                    flock($file, LOCK_UN);
+                    file_put_contents($filename, pack('i', $counter));
 
                     return $counter;
                 },
