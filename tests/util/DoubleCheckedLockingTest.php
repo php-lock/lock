@@ -21,7 +21,7 @@ class DoubleCheckedLockingTest extends TestCase
      */
     private $mutex;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -26,7 +26,7 @@ class MutexTest extends TestCase
 {
     const TIMEOUT = 4;
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         vfsStream::setup('test');
     }
@@ -92,12 +92,10 @@ class MutexTest extends TestCase
             'LockMutex' => [function (): Mutex {
                 $mock = $this->getMockForAbstractClass(LockMutex::class);
                 $mock->expects($this->atLeastOnce())
-                    ->method('lock')
-                    ->willReturn(true);
+                    ->method('lock');
 
                 $mock->expects($this->atLeastOnce())
-                    ->method('unlock')
-                    ->willReturn(true);
+                    ->method('unlock');
 
                 return $mock;
             }],
@@ -183,7 +181,7 @@ class MutexTest extends TestCase
     {
         /** @var Mutex $mutex */
         $mutex = $mutexFactory();
-        $result = $mutex->synchronized(function () {
+        $result = $mutex->synchronized(function (): string {
             return 'test';
         });
         $this->assertSame('test', $result);
@@ -211,10 +209,11 @@ class MutexTest extends TestCase
      *
      * @param callable $mutexFactory The Mutex factory.
      * @dataProvider provideMutexFactories
-     * @expectedException \DomainException
      */
     public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)
     {
+        $this->expectException(\DomainException::class);
+
         /** @var Mutex $mutex */
         $mutex = $mutexFactory();
         $mutex->synchronized(function () {

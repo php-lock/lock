@@ -21,7 +21,7 @@ class LockMutexTest extends TestCase
      */
     private $mutex;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -30,23 +30,22 @@ class LockMutexTest extends TestCase
 
     /**
      * Tests lock() fails and the code is not executed.
-     *
-     * @expectedException malkusch\lock\exception\LockAcquireException
      */
     public function testLockFails()
     {
+        $this->expectException(LockAcquireException::class);
+        
         $this->mutex->expects($this->once())
             ->method('lock')
             ->willThrowException(new LockAcquireException());
 
-        $this->mutex->synchronized(function () {
+        $this->mutex->synchronized(function (): void {
             $this->fail('Should not execute code.');
         });
     }
 
     /**
      * Tests unlock() is called after the code was executed.
-     *
      */
     public function testUnlockAfterCode()
     {
@@ -74,11 +73,11 @@ class LockMutexTest extends TestCase
 
     /**
      * Tests unlock() fails after the code was executed.
-     *
-     * @expectedException malkusch\lock\exception\LockReleaseException
      */
     public function testUnlockFailsAfterCode()
     {
+        $this->expectException(LockReleaseException::class);
+
         $this->mutex->expects($this->once())
             ->method('unlock')
             ->willThrowException(new LockReleaseException());
@@ -89,11 +88,11 @@ class LockMutexTest extends TestCase
 
     /**
      * Tests unlock() fails after the code threw an exception.
-     *
-     * @expectedException malkusch\lock\exception\LockReleaseException
      */
     public function testUnlockFailsAfterException()
     {
+        $this->expectException(LockReleaseException::class);
+
         $this->mutex->expects($this->once())
             ->method('unlock')
             ->willThrowException(new LockReleaseException());

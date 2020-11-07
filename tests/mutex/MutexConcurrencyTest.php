@@ -36,7 +36,7 @@ class MutexConcurrencyTest extends TestCase
      */
     private $path;
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         if ($this->path) {
             unlink($this->path);

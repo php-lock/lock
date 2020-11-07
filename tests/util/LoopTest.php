@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\util;
 
+use malkusch\lock\exception\TimeoutException;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
@@ -18,7 +19,7 @@ class LoopTest extends TestCase
 {
     use PHPMock;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -32,10 +33,11 @@ class LoopTest extends TestCase
 
     /**
      * Test an invalid timeout.
-     * @expectedException \LengthException
      */
     public function testInvalidTimeout()
     {
+        $this->expectException(\LengthException::class);
+
         new Loop(0);
     }
 
@@ -55,12 +57,12 @@ class LoopTest extends TestCase
 
     /**
      * Tests exceeding the execution timeout.
-     *
-     * @expectedException \malkusch\lock\exception\TimeoutException
-     * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      */
     public function testExceedTimeout()
     {
+        $this->expectException(TimeoutException::class);
+        $this->expectExceptionMessage('Timeout of 1 seconds exceeded.');
+
         $loop = new Loop(1);
         $loop->execute(function () use ($loop) {
             sleep(1);
@@ -70,12 +72,12 @@ class LoopTest extends TestCase
 
     /**
      * Tests exceeding the execution timeout without calling end().
-     *
-     * @expectedException \malkusch\lock\exception\TimeoutException
-     * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      */
     public function testExceedTimeoutWithoutExplicitEnd()
     {
+        $this->expectException(TimeoutException::class);
+        $this->expectExceptionMessage('Timeout of 1 seconds exceeded.');
+
         $loop = new Loop(1);
         $loop->execute(function () {
             sleep(1);
@@ -84,11 +86,11 @@ class LoopTest extends TestCase
 
     /**
      * Tests that an exception would stop any further iteration.
-     *
-     * @expectedException \DomainException
      */
     public function testExceptionStopsIteration()
     {
+        $this->expectException(\DomainException::class);
+
         $loop = new Loop();
         $loop->execute(function () {
             throw new \DomainException();
