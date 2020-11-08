@@ -22,14 +22,14 @@ class Loop
      *
      * @var double
      */
-    private const MINIMUM_WAIT_US = 1e4;
+    private const MINIMUM_WAIT_US = 1e4; // 0.01 seconds
 
     /**
      * Maximum time that we want to wait, between lock checks. In micro seconds.
      *
      * @var double
      */
-    private const MAXIMUM_WAIT_US = 1e6;
+    private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
     /**
      * @var int The timeout in seconds.
@@ -110,7 +110,7 @@ class Loop
             }
 
             $min = min(
-                (int) self::MINIMUM_WAIT_US * 1.5 ** $i,
+                (int) self::MINIMUM_WAIT_US * 1.25 ** $i,
                 self::MAXIMUM_WAIT_US
             );
             $max = min($min * 2, self::MAXIMUM_WAIT_US);
