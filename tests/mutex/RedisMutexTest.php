@@ -4,8 +4,11 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\exception\MutexException;
+use malkusch\lock\exception\TimeoutException;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -22,7 +25,7 @@ class RedisMutexTest extends TestCase
 {
     use PHPMock;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -41,7 +44,7 @@ class RedisMutexTest extends TestCase
      * @param int $count The amount of redis apis.
      * @param int $timeout The timeout.
      *
-     * @return \PHPUnit\Framework\MockObject\MockObject|RedisMutex
+     * @return MockObject|RedisMutex
      */
     private function buildRedisMutex(int $count, int $timeout = 1)
     {
@@ -61,12 +64,13 @@ class RedisMutexTest extends TestCase
      * @param int $count The total count of servers
      * @param int $available The count of available servers.
      *
-     * @expectedException \malkusch\lock\exception\LockAcquireException
-     * @expectedExceptionCode \malkusch\lock\exception\MutexException::REDIS_NOT_ENOUGH_SERVERS
      * @dataProvider provideMinority
      */
     public function testTooFewServerToAcquire(int $count, int $available)
     {
+        $this->expectException(LockAcquireException::class);
+        $this->expectExceptionCode(MutexException::REDIS_NOT_ENOUGH_SERVERS);
+
         $mutex = $this->buildRedisMutex($count);
 
         $i = 0;
@@ -129,12 +133,13 @@ class RedisMutexTest extends TestCase
      * @param int $count The total count of servers
      * @param int $available The count of available servers.
      *
-     * @expectedException \malkusch\lock\exception\TimeoutException
-     * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      * @dataProvider provideMinority
      */
     public function testAcquireTooFewKeys($count, $available)
     {
+        $this->expectException(TimeoutException::class);
+        $this->expectExceptionMessage('Timeout of 1 seconds exceeded.');
+
         $mutex = $this->buildRedisMutex($count);
 
         $i = 0;
@@ -160,11 +165,13 @@ class RedisMutexTest extends TestCase
      * @param int $timeout The timeout in seconds.
      * @param int $delay The delay in microseconds.
      *
-     * @expectedException \malkusch\lock\exception\TimeoutException
      * @dataProvider provideTestTimingOut
      */
     public function testTimingOut(int $count, int $timeout, int $delay)
     {
+        $this->expectException(TimeoutException::class);
+        $this->expectExceptionMessage("Timeout of {$timeout} seconds exceeded.");
+
         $mutex = $this->buildRedisMutex($count, $timeout);
 
         $mutex->expects($this->exactly($count))
@@ -175,7 +182,7 @@ class RedisMutexTest extends TestCase
                 return true;
             });
 
-        $mutex->synchronized(function () {
+        $mutex->synchronized(function (): void {
             $this->fail('Code should not be executed');
         });
     }
@@ -213,7 +220,7 @@ class RedisMutexTest extends TestCase
         $mutex->expects($this->exactly($count))
             ->method('add')
             ->willReturnCallback(
-                function () use (&$i, $available): int {
+                function () use (&$i, $available): bool {
                     $i++;
 
                     return $i <= $available;
@@ -230,7 +237,6 @@ class RedisMutexTest extends TestCase
      * @param int $count The total count of servers
      * @param int $available The count of available servers.
      *
-     * @expectedException \malkusch\lock\exception\LockReleaseException
      * @dataProvider provideMinority
      */
     public function testTooFewServersToRelease(int $count, int $available)
@@ -255,6 +261,8 @@ class RedisMutexTest extends TestCase
                 }
             );
 
+        $this->expectException(LockReleaseException::class);
+
         $mutex->synchronized(function (): void {
         });
     }
@@ -265,10 +273,9 @@ class RedisMutexTest extends TestCase
      * @param int $count The total count of servers
      * @param int $available The count of available servers.
      *
-     * @expectedException \malkusch\lock\exception\LockReleaseException
      * @dataProvider provideMinority
      */
-    public function testReleaseTooFewKeys($count, $available)
+    public function testReleaseTooFewKeys(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects($this->exactly($count))
@@ -285,6 +292,8 @@ class RedisMutexTest extends TestCase
                     return $i <= $available;
                 }
             );
+
+        $this->expectException(LockReleaseException::class);
 
         $mutex->synchronized(function (): void {
         });

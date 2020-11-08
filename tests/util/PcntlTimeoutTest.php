@@ -2,6 +2,8 @@
 
 namespace malkusch\lock\util;
 
+use malkusch\lock\exception\DeadlineException;
+use malkusch\lock\exception\LockAcquireException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,11 +19,11 @@ class PcntlTimeoutTest extends TestCase
 {
     /**
      * A long running system call should be interrupted
-     *
-     * @expectedException \malkusch\lock\exception\DeadlineException
      */
     public function testShouldTimeout()
     {
+        $this->expectException(DeadlineException::class);
+
         $timeout = new PcntlTimeout(1);
 
         $timeout->timeBoxed(function () {
@@ -45,11 +47,11 @@ class PcntlTimeoutTest extends TestCase
 
     /**
      * When a previous scheduled alarm exists, it should fail
-     *
-     * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testShouldFailOnExistingAlarm()
     {
+        $this->expectException(LockAcquireException::class);
+
         try {
             pcntl_alarm(1);
             $timeout = new PcntlTimeout(1);

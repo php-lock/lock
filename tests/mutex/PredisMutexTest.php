@@ -2,6 +2,8 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface;
@@ -33,7 +35,7 @@ class PredisMutexTest extends TestCase
      */
     private $logger;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -49,8 +51,6 @@ class PredisMutexTest extends TestCase
 
     /**
      * Tests add() fails.
-     *
-     * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testAddFailsToSetKey()
     {
@@ -62,8 +62,10 @@ class PredisMutexTest extends TestCase
         $this->logger->expects($this->never())
             ->method('warning');
 
+        $this->expectException(LockAcquireException::class);
+
         $this->mutex->synchronized(
-            function () {
+            function (): void {
                 $this->fail('Code execution is not expected');
             }
         );
@@ -71,8 +73,6 @@ class PredisMutexTest extends TestCase
 
     /**
      * Tests add() errors.
-     *
-     * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testAddErrors()
     {
@@ -84,6 +84,8 @@ class PredisMutexTest extends TestCase
         $this->logger->expects($this->once())
             ->method('warning')
             ->with('Could not set {key} = {token} at server #{index}.', $this->anything());
+
+        $this->expectException(LockAcquireException::class);
 
         $this->mutex->synchronized(
             function () {
@@ -115,8 +117,6 @@ class PredisMutexTest extends TestCase
 
     /**
      * Tests evalScript() fails.
-     *
-     * @expectedException \malkusch\lock\exception\LockReleaseException
      */
     public function testEvalScriptFails()
     {
@@ -135,6 +135,8 @@ class PredisMutexTest extends TestCase
             ->with('Could not unset {key} = {token} at server #{index}.', $this->anything());
 
         $executed = false;
+
+        $this->expectException(LockReleaseException::class);
 
         $this->mutex->synchronized(function () use (&$executed): void {
             $executed = true;

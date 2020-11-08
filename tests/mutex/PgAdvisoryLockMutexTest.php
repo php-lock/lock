@@ -21,7 +21,7 @@ class PgAdvisoryLockMutexTest extends TestCase
      */
     private $mutex;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -45,11 +45,11 @@ class PgAdvisoryLockMutexTest extends TestCase
                 $this->logicalAnd(
                     $this->isType('array'),
                     $this->countOf(2),
-                    $this->callback(function (...$arguments) {
+                    $this->callback(function (...$arguments): bool {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {
-                            $this->assertInternalType('integer', $each);
+                            $this->assertIsInt($each);
                         }
 
                         return true;
@@ -81,7 +81,7 @@ class PgAdvisoryLockMutexTest extends TestCase
                         foreach ($integers as $each) {
                             $this->assertLessThan(1 << 32, $each);
                             $this->assertGreaterThan(-(1 << 32), $each);
-                            $this->assertInternalType('integer', $each);
+                            $this->assertIsInt($each);
                         }
 
                         return true;

@@ -6,7 +6,7 @@ use Eloquent\Liberator\Liberator;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
 use Redis;
-use Spork\ProcessManager;
+use Spatie\Async\Pool;
 
 /**
  * Concurrency Tests for Mutex.
@@ -27,22 +27,21 @@ use Spork\ProcessManager;
 class MutexConcurrencyTest extends TestCase
 {
     /**
+     * @var array
+     */
+    private static $temporaryFiles = [];
+    /**
      * @var \PDO The pdo instance.
      */
     private $pdo;
 
-    /**
-     * @var string
-     */
-    private $path;
-
-    protected function tearDown()
+    public static function tearDownAfterClass(): void
     {
-        if ($this->path) {
-            unlink($this->path);
+        foreach (self::$temporaryFiles as $temporaryFile) {
+            unlink($temporaryFile);
         }
 
-        parent::tearDown();
+        parent::tearDownAfterClass();
     }
 
     /**
@@ -69,16 +68,15 @@ class MutexConcurrencyTest extends TestCase
      * @param int $concurrency The amount of forks.
      * @param callable $code The code for the fork.
      */
-    private function fork($concurrency, callable $code)
+    private function fork(int $concurrency, callable $code)
     {
-        $manager = new ProcessManager();
-        $manager->setDebug(true);
+        $pool = Pool::create();
 
         for ($i = 0; $i < $concurrency; $i++) {
-            $manager->fork($code);
+            $pool[] = async($code);
         }
 
-        $manager->check();
+        await($pool);
     }
 
     /**
@@ -92,8 +90,8 @@ class MutexConcurrencyTest extends TestCase
      */
     public function testHighContention(callable $code, callable $mutexFactory)
     {
-        $concurrency = 2;
-        $iterations = 20000 / $concurrency;
+        $concurrency = 10;
+        $iterations = 1000 / $concurrency;
         $timeout = $concurrency * 20;
 
         $this->fork($concurrency, function () use ($mutexFactory, $timeout, $iterations, $code): void {
@@ -112,31 +110,22 @@ class MutexConcurrencyTest extends TestCase
 
     /**
      * Returns test cases for testHighContention().
-     *
-     * @return array The test cases.
      */
-    public function provideTestHighContention()
+    public function provideTestHighContention(): array
     {
-        $cases = array_map(function (array $mutexFactory) {
-            $file = tmpfile();
-            $this->assertEquals(4, fwrite($file, pack('i', 0)), 'Expected 4 bytes to be written to temporary file.');
+        $cases = array_map(function (array $mutexFactory): array {
+            $filename = tempnam(sys_get_temp_dir(), 'php-lock-high-contention');
+
+            static::$temporaryFiles[] = $filename;
+
+            file_put_contents($filename, '0');
 
             return [
-                function (int $increment) use ($file): int {
-                    rewind($file);
-                    flock($file, LOCK_EX);
-                    $data = fread($file, 4);
-
-                    $this->assertEquals(4, strlen($data), 'Expected four bytes to be present in temporary file.');
-
-                    $counter = unpack('i', $data)[1];
-
+                function (int $increment) use ($filename): int {
+                    $counter = file_get_contents($filename);
                     $counter += $increment;
 
-                    rewind($file);
-                    fwrite($file, pack('i', $counter));
-
-                    flock($file, LOCK_UN);
+                    file_put_contents($filename, $counter);
 
                     return $counter;
                 },
@@ -202,26 +191,26 @@ class MutexConcurrencyTest extends TestCase
     }
 
     /**
-     * Tests that two processes run sequentially.
+     * Tests that five processes run sequentially.
      *
      * @param callable $mutexFactory The Mutex factory.
      * @dataProvider provideMutexFactories
-     * @slowThreshold 1000
+     * @slowThreshold 2000
      */
     public function testExecutionIsSerializedWhenLocked(callable $mutexFactory)
     {
-        $timestamp = microtime(true);
+        $timestamp = hrtime(true);
 
-        $this->fork(2, function () use ($mutexFactory): void {
+        $this->fork(5, function () use ($mutexFactory): void {
             /** @var Mutex $mutex */
             $mutex = $mutexFactory();
             $mutex->synchronized(function (): void {
-                usleep(500000);
+                \usleep(200000);
             });
         });
 
-        $delta = microtime(true) - $timestamp;
-        $this->assertGreaterThan(1, $delta);
+        $delta = \hrtime(true) - $timestamp;
+        $this->assertGreaterThan(1e9, $delta);
     }
 
     /**
@@ -231,33 +220,35 @@ class MutexConcurrencyTest extends TestCase
      */
     public function provideMutexFactories()
     {
-        $this->path = tempnam(sys_get_temp_dir(), 'mutex-concurrency-test');
+        $filename = tempnam(sys_get_temp_dir(), 'mutex-concurrency-test');
+
+        self::$temporaryFiles[] = $filename;
 
         $cases = [
-            'flock' => [function ($timeout = 3): Mutex {
-                $file = fopen($this->path, 'w');
+            'flock' => [function ($timeout = 3) use ($filename): Mutex {
+                $file = fopen($filename, 'w');
 
                 return new FlockMutex($file);
             }],
 
-            'flockWithTimoutPcntl' => [function ($timeout = 3): Mutex {
-                $file = fopen($this->path, 'w');
+            'flockWithTimoutPcntl' => [function ($timeout = 3) use ($filename): Mutex {
+                $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
                 $lock->stategy = FlockMutex::STRATEGY_PCNTL;
 
                 return $lock->popsValue();
             }],
 
-            'flockWithTimoutBusy' => [function ($timeout = 3): Mutex {
-                $file = fopen($this->path, 'w');
+            'flockWithTimoutBusy' => [function ($timeout = 3) use ($filename): Mutex {
+                $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
                 $lock->stategy = FlockMutex::STRATEGY_BUSY;
 
                 return $lock->popsValue();
             }],
 
-            'semaphore' => [function ($timeout = 3): Mutex {
-                $semaphore = sem_get(ftok($this->path, 'b'));
+            'semaphore' => [function ($timeout = 3) use ($filename): Mutex {
+                $semaphore = sem_get(ftok($filename, 'b'));
                 $this->assertTrue(is_resource($semaphore));
 
                 return new SemaphoreMutex($semaphore);
@@ -273,42 +264,44 @@ class MutexConcurrencyTest extends TestCase
             }];
         }
 
-        $uris = getenv('REDIS_URIS') !== false ? explode(',', getenv('REDIS_URIS')) : ['redis://localhost:6379'];
+        $uris = getenv('REDIS_URIS') !== false ? explode(',', getenv('REDIS_URIS')) : false;
 
-        $cases['PredisMutex'] = [function ($timeout = 3) use ($uris): Mutex {
-            $clients = array_map(
-                function ($uri) {
-                    return new Client($uri);
-                },
-                $uris
-            );
+        if ($uris) {
+            $cases['PredisMutex'] = [function ($timeout = 3) use ($uris): Mutex {
+                $clients = array_map(
+                    function ($uri) {
+                        return new Client($uri);
+                    },
+                    $uris
+                );
 
-            return new PredisMutex($clients, 'test', $timeout);
-        }];
+                return new PredisMutex($clients, 'test', $timeout);
+            }];
 
-        if (class_exists(Redis::class)) {
-            $cases['PHPRedisMutex'] = [
-                function ($timeout = 3) use ($uris): Mutex {
-                    /** @var Redis[] $apis */
-                    $apis = array_map(
-                        function (string $uri): Redis {
-                            $redis = new Redis();
+            if (class_exists(Redis::class)) {
+                $cases['PHPRedisMutex'] = [
+                    function ($timeout = 3) use ($uris): Mutex {
+                        /** @var Redis[] $apis */
+                        $apis = array_map(
+                            function (string $uri): Redis {
+                                $redis = new Redis();
 
-                            $uri = parse_url($uri);
-                            if (!empty($uri['port'])) {
-                                $redis->connect($uri['host'], $uri['port']);
-                            } else {
-                                $redis->connect($uri['host']);
-                            }
+                                $uri = parse_url($uri);
+                                if (!empty($uri['port'])) {
+                                    $redis->connect($uri['host'], $uri['port']);
+                                } else {
+                                    $redis->connect($uri['host']);
+                                }
 
-                            return $redis;
-                        },
-                        $uris
-                    );
+                                return $redis;
+                            },
+                            $uris
+                        );
 
-                    return new PHPRedisMutex($apis, 'test', $timeout);
-                }
-            ];
+                        return new PHPRedisMutex($apis, 'test', $timeout);
+                    }
+                ];
+            }
         }
 
         if (getenv('MYSQL_DSN')) {

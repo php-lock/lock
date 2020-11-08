@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\LockAcquireException;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
@@ -18,7 +19,7 @@ class CASMutexTest extends TestCase
 {
     use PHPMock;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -33,11 +34,11 @@ class CASMutexTest extends TestCase
 
     /**
      * Tests exceeding the execution timeout.
-     *
-     * @expectedException malkusch\lock\exception\LockAcquireException
      */
     public function testExceedTimeout()
     {
+        $this->expectException(LockAcquireException::class);
+
         $mutex = new CASMutex(1);
         $mutex->synchronized(function (): void {
             sleep(2);
@@ -46,11 +47,11 @@ class CASMutexTest extends TestCase
 
     /**
      * Tests that an exception would stop any further iteration.
-     *
-     * @expectedException \DomainException
      */
     public function testExceptionStopsIteration()
     {
+        $this->expectException(\DomainException::class);
+
         $mutex = new CASMutex();
         $mutex->synchronized(function () {
             throw new \DomainException();

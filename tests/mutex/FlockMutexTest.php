@@ -3,6 +3,8 @@
 namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
+use malkusch\lock\exception\DeadlineException;
+use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\util\PcntlTimeout;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +26,7 @@ class FlockMutexTest extends TestCase
      */
     private $file;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -32,7 +34,7 @@ class FlockMutexTest extends TestCase
         $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, 'r'), 1));
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unlink($this->file);
 
@@ -54,12 +56,13 @@ class FlockMutexTest extends TestCase
     }
 
     /**
-     * @expectedException \malkusch\lock\exception\TimeoutException
-     * @expectedExceptionMessage Timeout of 1 seconds exceeded.
      * @dataProvider dpTimeoutableStrategies
      */
     public function testTimeoutOccurs(int $strategy)
     {
+        $this->expectException(TimeoutException::class);
+        $this->expectExceptionMessage('Timeout of 1 seconds exceeded.');
+
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, LOCK_EX);
 
@@ -84,11 +87,10 @@ class FlockMutexTest extends TestCase
         ];
     }
 
-    /**
-     * @expectedException \malkusch\lock\exception\DeadlineException
-     */
     public function testNoTimeoutWaitsForever()
     {
+        $this->expectException(DeadlineException::class);
+
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, LOCK_EX);
 
@@ -96,7 +98,7 @@ class FlockMutexTest extends TestCase
 
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {
-            $this->mutex->synchronized(function () {
+            $this->mutex->synchronized(function (): void {
                 $this->fail('Did not expect code execution.');
             });
         });

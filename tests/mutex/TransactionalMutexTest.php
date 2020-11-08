@@ -2,6 +2,7 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\LockAcquireException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,10 +22,11 @@ class TransactionalMutexTest extends TestCase
      *
      * @param int $mode The invalid error mode.
      * @dataProvider provideTestInvalidErrorMode
-     * @expectedException \InvalidArgumentException
      */
-    public function testInvalidErrorMode($mode)
+    public function testInvalidErrorMode(int $mode)
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         $pdo = new \PDO('sqlite::memory:');
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, $mode);
         new TransactionalMutex($pdo);
@@ -32,10 +34,8 @@ class TransactionalMutexTest extends TestCase
 
     /**
      * Returns test cases for testInvalidErrorMode().
-     *
-     * @return array Test cases.
      */
-    public function provideTestInvalidErrorMode()
+    public function provideTestInvalidErrorMode(): array
     {
         return [
             [\PDO::ERRMODE_SILENT],
@@ -45,12 +45,12 @@ class TransactionalMutexTest extends TestCase
 
     /**
      * Tests BEGIN fails.
-     *
-     * @expectedException \malkusch\lock\exception\LockAcquireException
-     * @expectedExceptionMessage Could not begin transaction.
      */
     public function testBeginFails()
     {
+        $this->expectException(LockAcquireException::class);
+        $this->expectExceptionMessage('Could not begin transaction.');
+
         $pdo = $this->buildMySqlPdo();
         $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
@@ -58,13 +58,12 @@ class TransactionalMutexTest extends TestCase
         $stmt->execute();
 
         $mutex = new TransactionalMutex($pdo);
-        $mutex->synchronized(function () {
+        $mutex->synchronized(function (): void {
         });
     }
 
     /**
      * Tests that an exception in the critical code causes a ROLLBACK.
-     *
      */
     public function testExceptionRollsback()
     {
@@ -78,7 +77,7 @@ class TransactionalMutexTest extends TestCase
         ');
 
         try {
-            $mutex->synchronized(function () use ($pdo) {
+            $mutex->synchronized(function () use ($pdo): void {
                 $pdo->exec('INSERT INTO testExceptionRollsback VALUES(1)');
                 throw new \DomainException();
             });
@@ -92,13 +91,13 @@ class TransactionalMutexTest extends TestCase
 
     /**
      * Tests that a ROLLBACK caused by an exception fails.
-     *
-     * @expectedException \malkusch\lock\exception\LockAcquireException
      */
     public function testFailExceptionRollsback()
     {
         $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
+
+        $this->expectException(LockAcquireException::class);
 
         $mutex->synchronized(function () use ($pdo) {
             // This will provoke the mutex' rollback to fail.
@@ -161,12 +160,12 @@ class TransactionalMutexTest extends TestCase
 
     /**
      * Tests failing a ROLLBACK after the failed COMMIT.
-     *
-     * @expectedException \malkusch\lock\exception\LockAcquireException
-     * @expectedExceptionMessage Could not roll back transaction:
      */
     public function testRollbackAfterFailedCommitFails()
     {
+        $this->expectException(LockAcquireException::class);
+        $this->expectExceptionMessage('Could not roll back transaction:');
+
         $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
 

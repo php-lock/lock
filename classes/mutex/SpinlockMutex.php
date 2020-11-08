@@ -30,7 +30,7 @@ abstract class SpinlockMutex extends LockMutex
     private $timeout;
 
     /**
-     * @var \malkusch\lock\util\Loop The loop.
+     * @var Loop The loop.
      */
     private $loop;
 

@@ -2,6 +2,9 @@
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\exception\MutexException;
 use PHPUnit\Framework\TestCase;
 use Redis;
 
@@ -31,7 +34,7 @@ class PHPRedisMutexTest extends TestCase
      */
     private $mutex;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -108,12 +111,11 @@ class PHPRedisMutexTest extends TestCase
         }
     }
 
-    /**
-     * @expectedException \malkusch\lock\exception\LockAcquireException
-     * @expectedExceptionCode \malkusch\lock\exception\MutexException::REDIS_NOT_ENOUGH_SERVERS
-     */
     public function testAddFails()
     {
+        $this->expectException(LockAcquireException::class);
+        $this->expectExceptionCode(MutexException::REDIS_NOT_ENOUGH_SERVERS);
+
         $this->closeMajorityConnections();
 
         $this->mutex->synchronized(function (): void {
@@ -123,11 +125,11 @@ class PHPRedisMutexTest extends TestCase
 
     /**
      * Tests evalScript() fails.
-     *
-     * @expectedException \malkusch\lock\exception\LockReleaseException
      */
     public function testEvalScriptFails()
     {
+        $this->expectException(LockReleaseException::class);
+
         $this->mutex->synchronized(function (): void {
             $this->closeMajorityConnections();
         });
