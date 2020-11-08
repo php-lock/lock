@@ -65,7 +65,7 @@ class PredisMutexTest extends TestCase
         $this->expectException(LockAcquireException::class);
 
         $this->mutex->synchronized(
-            function () {
+            function (): void {
                 $this->fail('Code execution is not expected');
             }
         );
