@@ -45,7 +45,7 @@ class MemcachedMutexTest extends TestCase
 
         $this->memcached->expects($this->atLeastOnce())
             ->method('add')
-            ->with('lock_test', true, 2)
+            ->with('php_malkusch_lock:test', true, 2)
             ->willReturn(false);
 
         $this->mutex->synchronized(function (): void {
@@ -62,12 +62,12 @@ class MemcachedMutexTest extends TestCase
 
         $this->memcached->expects($this->once())
             ->method('add')
-            ->with('lock_test', true, 2)
+            ->with('php_malkusch_lock:test', true, 2)
             ->willReturn(true);
 
         $this->memcached->expects($this->once())
             ->method('delete')
-            ->with('lock_test')
+            ->with('php_malkusch_lock:test')
             ->willReturn(false);
 
         $this->mutex->synchronized(function (): void {

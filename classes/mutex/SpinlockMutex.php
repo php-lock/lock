@@ -22,7 +22,7 @@ abstract class SpinlockMutex extends LockMutex
     /**
      * The prefix for the lock key.
      */
-    private const PREFIX = 'lock_';
+    private const PREFIX = 'php_malkusch_lock:';
 
     /**
      * @var int The timeout in seconds a lock may live.
