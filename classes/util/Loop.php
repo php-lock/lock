@@ -84,7 +84,7 @@ class Loop
         $maxWaitSecs = max(0.05, min(25, $this->timeout / 120)); // 50 ms to 25 s, based on timeout
 
         $result = null;
-        for ($i = 0; microtime(true) < $deadlineTs; ++$i) {
+        for ($i = 0; ; ++$i) {
             $result = $code();
             if (!$this->looping) {
                 break;
@@ -102,7 +102,7 @@ class Loop
             );
             $maxSecs = min($minSecs * 2, $maxWaitSecs);
             $sleepMicros = min(
-                (int)($remainingSecs * 1e6),
+                max(10, (int)($remainingSecs * 1e6)),
                 random_int((int)($minSecs * 1e6), (int)($maxSecs * 1e6))
             );
 
