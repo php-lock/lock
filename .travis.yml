@@ -48,4 +48,4 @@ before_script:
 script:
   - vendor/bin/phpunit 
   - vendor/bin/phpcs --standard=PSR2 classes/ tests/
-
+  - vendor/bin/phpstan analyse

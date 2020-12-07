@@ -57,6 +57,7 @@
         "johnkary/phpunit-speedtrap": "^3.0",
         "mikey179/vfsstream": "^1.6",
         "php-mock/php-mock-phpunit": "^2.1",
+        "phpstan/phpstan": "^0.12.58",
         "phpunit/phpunit": "^9.4",
         "predis/predis": "^1.1",
         "spatie/async": "^1.5",

@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 class LockMutexTest extends TestCase
 {
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject The SUT
+     * @var \PHPUnit\Framework\MockObject\MockObject|LockMutex The SUT
      */
     private $mutex;
 

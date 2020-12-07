@@ -22,7 +22,7 @@ class FlockMutexTest extends TestCase
     private $mutex;
 
     /**
-     * @var resource
+     * @var string
      */
     private $file;
 
@@ -31,7 +31,7 @@ class FlockMutexTest extends TestCase
         parent::setUp();
 
         $this->file = tempnam(sys_get_temp_dir(), 'flock-');
-        $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, 'r'), 1));
+        $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, 'r'), 1)); // @phpstan-ignore-line
     }
 
     protected function tearDown(): void
@@ -46,10 +46,10 @@ class FlockMutexTest extends TestCase
      */
     public function testCodeExecutedOutsideLockIsNotThrown(int $strategy)
     {
-        $this->mutex->strategy = $strategy;
+        $this->mutex->strategy = $strategy; // @phpstan-ignore-line
 
         $this->assertTrue($this->mutex->synchronized(function (): bool {
-            usleep(1.1e6);
+            usleep(1100 * 1000);
 
             return true;
         }));
@@ -66,7 +66,7 @@ class FlockMutexTest extends TestCase
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, LOCK_EX);
 
-        $this->mutex->strategy = $strategy;
+        $this->mutex->strategy = $strategy; // @phpstan-ignore-line
 
         try {
             $this->mutex->synchronized(
@@ -94,7 +94,7 @@ class FlockMutexTest extends TestCase
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, LOCK_EX);
 
-        $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK;
+        $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK; // @phpstan-ignore-line
 
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {

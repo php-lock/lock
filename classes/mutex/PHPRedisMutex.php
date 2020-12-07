@@ -35,7 +35,7 @@ class PHPRedisMutex extends RedisMutex
      * @param array<\Redis|\RedisCluster> $redisAPIs The Redis connections.
      * @param string $name The lock name.
      * @param int $timeout The time in seconds a lock expires after. Default is
-     * 3 seconds.
+     *                     3 seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
     public function __construct(array $redisAPIs, string $name, int $timeout = 3)
@@ -44,7 +44,7 @@ class PHPRedisMutex extends RedisMutex
     }
 
     /**
-     * @param \Redis|\RedisCluster $redisApi The Redis or RedisCluster connection.
+     * @param \Redis|\RedisCluster $redisAPI The Redis or RedisCluster connection.
      * @throws LockAcquireException
      */
     protected function add($redisAPI, string $key, string $value, int $expire): bool
