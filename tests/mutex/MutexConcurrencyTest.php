@@ -15,8 +15,8 @@ use Spatie\Async\Pool;
  *
  * - MEMCACHE_HOST
  * - REDIS_URIS - a comma separated list of redis:// URIs.
- * - MYSQL_DSN, MYSQL_USER
- * - PGSQL_DSN, PGSQL_USER
+ * - MYSQL_DSN, MYSQL_USER, MYSQL_PASSWORD
+ * - PGSQL_DSN, PGSQL_USER, PGSQL_PASSWORD
  *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
@@ -49,13 +49,14 @@ class MutexConcurrencyTest extends TestCase
      *
      * @param string $dsn The DSN.
      * @param string $user The user.
+     * @param string $password The password.
      *
      * @return \PDO The PDO.
      */
-    private function getPDO(string $dsn, string $user): \PDO
+    private function getPDO(string $dsn, string $user, string $password): \PDO
     {
         if ($this->pdo === null) {
-            $this->pdo = new \PDO($dsn, $user);
+            $this->pdo = new \PDO($dsn, $user, $password);
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         }
 
@@ -133,8 +134,8 @@ class MutexConcurrencyTest extends TestCase
             ];
         }, $this->provideMutexFactories());
 
-        $addPDO = function ($dsn, $user, $vendor) use (&$cases) {
-            $pdo = $this->getPDO($dsn, $user);
+        $addPDO = function ($dsn, $user, $password, $vendor) use (&$cases) {
+            $pdo = $this->getPDO($dsn, $user, $password);
 
             $options = ['mysql' => 'engine=InnoDB'];
             $option = $options[$vendor] ?? '';
@@ -148,12 +149,12 @@ class MutexConcurrencyTest extends TestCase
             $this->pdo = null;
 
             $cases[$vendor] = [
-                function ($increment) use ($dsn, $user) {
+                function ($increment) use ($dsn, $user, $password) {
                     // This prevents using a closed connection from a child.
                     if ($increment == 0) {
                         $this->pdo = null;
                     }
-                    $pdo = $this->getPDO($dsn, $user);
+                    $pdo = $this->getPDO($dsn, $user, $password);
                     $id = 1;
                     $select = $pdo->prepare('SELECT counter FROM counter WHERE id = ? FOR UPDATE');
                     $select->execute([$id]);
@@ -166,9 +167,9 @@ class MutexConcurrencyTest extends TestCase
 
                     return $counter;
                 },
-                function ($timeout = 3) use ($dsn, $user) {
+                function ($timeout = 3) use ($dsn, $user, $password) {
                     $this->pdo = null;
-                    $pdo = $this->getPDO($dsn, $user);
+                    $pdo = $this->getPDO($dsn, $user, $password);
 
                     return new TransactionalMutex($pdo, $timeout);
                 }
@@ -178,13 +179,15 @@ class MutexConcurrencyTest extends TestCase
         if (getenv('MYSQL_DSN')) {
             $dsn = getenv('MYSQL_DSN');
             $user = getenv('MYSQL_USER');
-            $addPDO($dsn, $user, 'mysql');
+            $password = getenv('MYSQL_PASSWORD');
+            $addPDO($dsn, $user, $password, 'mysql');
         }
 
         if (getenv('PGSQL_DSN')) {
             $dsn = getenv('PGSQL_DSN');
             $user = getenv('PGSQL_USER');
-            $addPDO($dsn, $user, 'postgres');
+            $password = getenv('PGSQL_PASSWORD');
+            $addPDO($dsn, $user, $password, 'postgres');
         }
 
         return $cases;
@@ -306,7 +309,7 @@ class MutexConcurrencyTest extends TestCase
 
         if (getenv('MYSQL_DSN')) {
             $cases['MySQLMutex'] = [function ($timeout = 3): Mutex {
-                $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'));
+                $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_USER'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new MySQLMutex($pdo, 'test', $timeout);
@@ -315,7 +318,7 @@ class MutexConcurrencyTest extends TestCase
 
         if (getenv('PGSQL_DSN')) {
             $cases['PgAdvisoryLockMutex'] = [function (): Mutex {
-                $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'));
+                $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new PgAdvisoryLockMutex($pdo, 'test');
