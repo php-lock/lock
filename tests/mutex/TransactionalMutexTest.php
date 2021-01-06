@@ -182,6 +182,7 @@ class TransactionalMutexTest extends TestCase
      *
      * - MYSQL_DSN
      * - MYSQL_USER
+     * - MYSQL_PASSWORD
      *
      * @return \PDO The MySQL PDO.
      */
@@ -193,7 +194,8 @@ class TransactionalMutexTest extends TestCase
 
         $dsn = getenv('MYSQL_DSN');
         $user = getenv('MYSQL_USER');
-        $pdo = new \PDO($dsn, $user);
+        $password = getenv('MYSQL_PASSWORD');
+        $pdo = new \PDO($dsn, $user, $password);
 
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 

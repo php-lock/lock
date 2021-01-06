@@ -16,8 +16,10 @@ env:
     - REDIS_URIS=redis://localhost:63791,redis://localhost:63792,redis://localhost:63793
     - MYSQL_DSN="mysql:host=localhost;dbname=test"
     - MYSQL_USER=travis
+    - MYSQL_PASSWORD=
     - PGSQL_DSN="pgsql:host=localhost;dbname=test;"
     - PGSQL_USER=postgres
+    - PGSQL_PASSWORD=
 
 services:
   - memcached

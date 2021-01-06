@@ -152,7 +152,7 @@ class MutexTest extends TestCase
 
         if (getenv('MYSQL_DSN')) {
             $cases['MySQLMutex'] = [function (): Mutex {
-                $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'));
+                $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new MySQLMutex($pdo, 'test' . time(), self::TIMEOUT);
@@ -161,7 +161,7 @@ class MutexTest extends TestCase
 
         if (getenv('PGSQL_DSN')) {
             $cases['PgAdvisoryLockMutex'] = [function (): Mutex {
-                $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'));
+                $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new PgAdvisoryLockMutex($pdo, 'test');
