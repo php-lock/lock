@@ -93,7 +93,7 @@ class SpinlockMutexTest extends TestCase
 //        );
 
         $mutex->synchronized(function () {
-            usleep(1e6 + 1);
+            usleep(1100 * 1000);
         });
     }
 

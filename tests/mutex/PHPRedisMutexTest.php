@@ -49,8 +49,10 @@ class PHPRedisMutexTest extends TestCase
 
                 public function close()
                 {
-                    parent::close();
+                    $res = parent::close();
                     $this->is_closed = true;
+
+                    return $res;
                 }
 
                 public function set($key, $value, $timeout = 0)
@@ -88,7 +90,7 @@ class PHPRedisMutexTest extends TestCase
 
     private function closeMajorityConnections()
     {
-        $numberToClose = ceil(count($this->connections) / 2);
+        $numberToClose = (int) ceil(count($this->connections) / 2);
 
         foreach ((array) array_rand($this->connections, $numberToClose) as $keyToClose) {
             $this->connections[$keyToClose]->close();
@@ -101,7 +103,7 @@ class PHPRedisMutexTest extends TestCase
             $this->markTestSkipped('Cannot test this with only a single Redis server');
         }
 
-        $numberToClose = ceil(count($this->connections) / 2) - 1;
+        $numberToClose = (int) ceil(count($this->connections) / 2) - 1;
         if (0 >= $numberToClose) {
             return;
         }

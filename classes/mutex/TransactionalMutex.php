@@ -106,7 +106,6 @@ class TransactionalMutex extends Mutex
      * @throws LockAcquireException The transaction was not commited.
      * @return mixed The return value of the execution block.
      * @SuppressWarnings(PHPMD)
-     *
      */
     public function synchronized(callable $code)
     {
@@ -129,7 +128,7 @@ class TransactionalMutex extends Mutex
                 $this->rollBack($e);
 
                 if (self::hasPDOException($e)) {
-                    return; // Replay
+                    return null; // Replay
                 } else {
                     throw $e;
                 }
@@ -140,10 +139,10 @@ class TransactionalMutex extends Mutex
     /**
      * Checks if an exception or any of its previous exceptions is a PDOException.
      *
-     * @param \Exception $exception The exception.
-     * @return boolean True if there's a PDOException.
+     * @param \Throwable $exception The exception.
+     * @return bool True if there's a PDOException.
      */
-    private static function hasPDOException(\Exception $exception)
+    private static function hasPDOException(\Throwable $exception)
     {
         if ($exception instanceof PDOException) {
             return true;

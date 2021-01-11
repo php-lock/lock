@@ -97,7 +97,7 @@ class Loop
         $result = null;
         for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) {
             $result = $code();
-            if (!$this->looping) {
+            if (!$this->looping) { // @phpstan-ignore-line
                 break;
             }
 

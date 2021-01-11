@@ -33,7 +33,7 @@ class SemaphoreMutex extends LockMutex
      * $mutex     = new SemaphoreMutex($semaphore);
      * </code>
      *
-     * @param resource semaphore The semaphore id.
+     * @param resource $semaphore The semaphore id.
      * @throws \InvalidArgumentException The semaphore id is not a valid resource.
      */
     public function __construct($semaphore)
