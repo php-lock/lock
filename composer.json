@@ -42,7 +42,7 @@
         }
     },
     "require": {
-        "php": "^7.2",
+        "php": "^7.2 || ^8.0",
         "psr/log": "^1"
     },
     "require-dev": {
@@ -55,7 +55,7 @@
         "eloquent/liberator": "^2.0",
         "friendsofphp/php-cs-fixer": "^2.16",
         "johnkary/phpunit-speedtrap": "^3.0",
-        "mikey179/vfsstream": "^1.6",
+        "mikey179/vfsstream": "^1.6.7",
         "php-mock/php-mock-phpunit": "^2.1",
         "phpstan/phpstan": "^0.12.58",
         "phpunit/phpunit": "^9.4",

@@ -18,7 +18,7 @@ use malkusch\lock\exception\LockReleaseException;
 class SemaphoreMutex extends LockMutex
 {
     /**
-     * @var resource The semaphore id.
+     * @var \SysvSemaphore|resource The semaphore id.
      */
     private $semaphore;
 
@@ -33,12 +33,12 @@ class SemaphoreMutex extends LockMutex
      * $mutex     = new SemaphoreMutex($semaphore);
      * </code>
      *
-     * @param resource $semaphore The semaphore id.
+     * @param \SysvSemaphore|resource $semaphore The semaphore id.
      * @throws \InvalidArgumentException The semaphore id is not a valid resource.
      */
     public function __construct($semaphore)
     {
-        if (!is_resource($semaphore)) {
+        if (!$semaphore instanceof \SysvSemaphore && !is_resource($semaphore)) {
             throw new InvalidArgumentException('The semaphore id is not a valid resource.');
         }
         $this->semaphore = $semaphore;
