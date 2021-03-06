@@ -292,11 +292,11 @@ class MutexConcurrencyTest extends TestCase
                                 $uri = parse_url($uri);
                                 $redis->connect($uri['host'], $uri['port'] ?? 6379);
                                 if (!empty($uri['pass'])) {
-                                    if (empty($uri['user'])) {
-                                        $redis->auth($uri['pass']);
-                                    } else {
-                                        $redis->auth([$uri['user'], $uri['pass']]); // @phpstan-ignore-line
-                                    }
+                                    $redis->auth(
+                                        empty($uri['user'])
+                                        ? $uri['pass']
+                                        : [$uri['user'], $uri['pass']]
+                                    );
                                 }
 
                                 return $redis;
