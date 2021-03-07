@@ -252,7 +252,7 @@ class MutexConcurrencyTest extends TestCase
 
             'semaphore' => [function ($timeout = 3) use ($filename): Mutex {
                 $semaphore = sem_get(ftok($filename, 'b'));
-                $this->assertTrue(is_resource($semaphore));
+                $this->assertTrue($semaphore instanceof \SysvSemaphore || is_resource($semaphore)); // @phpstan-ignore-line
 
                 return new SemaphoreMutex($semaphore);
             }],
@@ -290,10 +290,13 @@ class MutexConcurrencyTest extends TestCase
                                 $redis = new Redis();
 
                                 $uri = parse_url($uri);
-                                if (!empty($uri['port'])) {
-                                    $redis->connect($uri['host'], $uri['port']);
-                                } else {
-                                    $redis->connect($uri['host']);
+                                $redis->connect($uri['host'], $uri['port'] ?? 6379);
+                                if (!empty($uri['pass'])) {
+                                    $redis->auth(
+                                        empty($uri['user'])
+                                        ? $uri['pass']
+                                        : [$uri['user'], $uri['pass']]
+                                    );
                                 }
 
                                 return $redis;

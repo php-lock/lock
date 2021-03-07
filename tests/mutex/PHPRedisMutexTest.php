@@ -74,10 +74,13 @@ class PHPRedisMutexTest extends TestCase
                 }
             };
 
-            if (!empty($uri['port'])) {
-                $connection->connect($uri['host'], $uri['port']);
-            } else {
-                $connection->connect($uri['host']);
+            $connection->connect($uri['host'], $uri['port'] ?? 6379);
+            if (!empty($uri['pass'])) {
+                $connection->auth(
+                    empty($uri['user'])
+                    ? $uri['pass']
+                    : [$uri['user'], $uri['pass']]
+                );
             }
 
             $connection->flushAll(); // Clear any existing locks.

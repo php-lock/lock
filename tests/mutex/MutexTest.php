@@ -133,10 +133,13 @@ class MutexTest extends TestCase
                                 $redis = new Redis();
 
                                 $uri = parse_url($uri);
-                                if (!empty($uri['port'])) {
-                                    $redis->connect($uri['host'], $uri['port']);
-                                } else {
-                                    $redis->connect($uri['host']);
+                                $redis->connect($uri['host'], $uri['port'] ?? 6379);
+                                if (!empty($uri['pass'])) {
+                                    $redis->auth(
+                                        empty($uri['user'])
+                                        ? $uri['pass']
+                                        : [$uri['user'], $uri['pass']]
+                                    );
                                 }
 
                                 return $redis;
