@@ -3,6 +3,7 @@
 namespace malkusch\lock\mutex;
 
 use Eloquent\Liberator\Liberator;
+use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
 use Redis;
@@ -252,7 +253,13 @@ class MutexConcurrencyTest extends TestCase
 
             'semaphore' => [function ($timeout = 3) use ($filename): Mutex {
                 $semaphore = sem_get(ftok($filename, 'b'));
-                $this->assertTrue($semaphore instanceof \SysvSemaphore || is_resource($semaphore)); // @phpstan-ignore-line
+                $this->assertThat(
+                    $semaphore,
+                    $this->logicalOr(
+                        $this->isInstanceOf(\SysvSemaphore::class),
+                        new IsType(IsType::TYPE_RESOURCE)
+                    )
+                );
 
                 return new SemaphoreMutex($semaphore);
             }],
