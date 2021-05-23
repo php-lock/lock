@@ -58,7 +58,7 @@ class LoopTest extends TestCase
     /**
      * Tests exceeding the execution timeout.
      */
-    public function testExceedTimeout()
+    public function testExceedTimeoutIsAcceptableIfEndWasCalled()
     {
         $this->expectNotToPerformAssertions();
 
