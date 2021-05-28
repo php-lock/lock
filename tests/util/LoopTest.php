@@ -58,10 +58,9 @@ class LoopTest extends TestCase
     /**
      * Tests exceeding the execution timeout.
      */
-    public function testExceedTimeout()
+    public function testExceedTimeoutIsAcceptableIfEndWasCalled()
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1 seconds exceeded.');
+        $this->expectNotToPerformAssertions();
 
         $loop = new Loop(1);
         $loop->execute(function () use ($loop): void {

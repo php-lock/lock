@@ -39,7 +39,7 @@ class Loop
     /**
      * @var bool True while code execution is repeating.
      */
-    private $looping;
+    private $looping = false;
 
     /**
      * Sets the timeout. The default is 3 seconds.
@@ -57,7 +57,6 @@ class Loop
         }
 
         $this->timeout = $timeout;
-        $this->looping = false;
     }
 
     /**
@@ -98,7 +97,10 @@ class Loop
         for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) {
             $result = $code();
             if (!$this->looping) { // @phpstan-ignore-line
-                break;
+                /*
+                 * The $code callback has called $this->end() and the lock has been acquired.
+                 */
+                return $result;
             }
 
             // Calculate max time remaining, don't sleep any longer than that.
@@ -120,10 +122,6 @@ class Loop
             usleep($usecToSleep);
         }
 
-        if (microtime(true) >= $deadline) {
-            throw TimeoutException::create($this->timeout);
-        }
-
-        return $result;
+        throw TimeoutException::create($this->timeout);
     }
 }
