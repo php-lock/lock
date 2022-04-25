@@ -62,8 +62,9 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * be logged as warnings.
      *
      * @param LoggerInterface $logger The logger.
+     * @return void.
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
