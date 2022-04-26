@@ -43,7 +43,7 @@
     },
     "require": {
         "php": "^7.2 || ^8.0",
-        "psr/log": "^1"
+        "psr/log": "^1|^2|^3"
     },
     "require-dev": {
         "ext-memcached": "*",

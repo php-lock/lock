@@ -7,7 +7,7 @@ namespace malkusch\lock\mutex;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 
 /**
@@ -21,6 +21,8 @@ use Psr\Log\NullLogger;
  */
 abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var string The random value token for key identification.
      */
@@ -30,11 +32,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * @var array The Redis APIs.
      */
     private $redisAPIs;
-
-    /**
-     * @var LoggerInterface The logger.
-     */
-    private $logger;
 
     /**
      * Sets the Redis APIs.
@@ -51,21 +48,6 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 
         $this->redisAPIs = $redisAPIs;
         $this->logger = new NullLogger();
-    }
-
-    /**
-     * Sets a logger instance on the object
-     *
-     * RedLock is a fault tolerant lock algorithm. I.e. it does tolerate
-     * failing redis connections without breaking. If you want to get notified
-     * about such events you'll have to provide a logger. Those events will
-     * be logged as warnings.
-     *
-     * @param LoggerInterface $logger The logger.
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
     }
 
     protected function acquire(string $key, int $expire): bool
