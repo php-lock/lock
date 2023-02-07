@@ -350,7 +350,9 @@ interrupted, the lock is automatically released.
 
 Note that before MySQL 5.7.5 you cannot use nested locks, any new lock will
 silently release already held locks. You should probably refrain from using this
-mutex on MySQL versions < 5.7.5.
+mutex on MySQL versions < 5.7.5.  
+Also note that `GET_LOCK` is server wide and the MySQL manual suggests you
+namespace your locks eg `dbname.lockname`
 
 ```php
 $pdo = new PDO("mysql:host=localhost;dbname=test", "username");
