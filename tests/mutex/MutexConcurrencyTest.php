@@ -232,7 +232,7 @@ class MutexConcurrencyTest extends TestCase
             'flockWithTimoutPcntl' => [function ($timeout = 3) use ($filename): Mutex {
                 $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->stategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore-line
 
                 return $lock->popsValue();
             }],
@@ -240,7 +240,7 @@ class MutexConcurrencyTest extends TestCase
             'flockWithTimoutBusy' => [function ($timeout = 3) use ($filename): Mutex {
                 $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->stategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore-line
 
                 return $lock->popsValue();
             }],

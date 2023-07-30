@@ -54,7 +54,7 @@ class MutexTest extends TestCase
             'flockWithTimoutPcntl' => [function (): Mutex {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, 3));
-                $lock->stategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore-line
 
                 return $lock->popsValue();
             }],
@@ -62,7 +62,7 @@ class MutexTest extends TestCase
             'flockWithTimoutBusy' => [function ($timeout = 3): Mutex {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, 3));
-                $lock->stategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore-line
 
                 return $lock->popsValue();
             }],
