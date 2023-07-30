@@ -35,9 +35,11 @@ class PredisMutex extends RedisMutex
      */
     protected function add($redisAPI, string $key, string $value, float $expire): bool
     {
+        $expireMillis = (int) ceil($expire * 1000);
+
         /** @var ClientInterface $redisAPI */
         try {
-            return $redisAPI->set($key, $value, 'EX', $expire, 'NX') !== null;
+            return $redisAPI->set($key, $value, 'PX', $expireMillis, 'NX') !== null;
         } catch (PredisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s'",

@@ -45,10 +45,12 @@ class PHPRedisMutex extends RedisMutex
      */
     protected function add($redisAPI, string $key, string $value, float $expire): bool
     {
+        $expireMillis = (int) ceil($expire * 1000);
+
         /** @var \Redis $redisAPI */
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-            return $redisAPI->set($key, $value, ['nx', 'ex' => $expire]);
+            return $redisAPI->set($key, $value, ['nx', 'px' => $expireMillis]);
         } catch (RedisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s'",
