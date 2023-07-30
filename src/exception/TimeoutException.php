@@ -15,11 +15,16 @@ class TimeoutException extends LockAcquireException
     /**
      * Creates a new instance of the TimeoutException class.
      *
-     * @param int $timeout The timeout in seconds.
+     * @param float $timeout The timeout in seconds.
      * @return self A timeout has been exceeded exception.
      */
-    public static function create(int $timeout): self
+    public static function create(float $timeout): self
     {
-        return new self(\sprintf('Timeout of %d seconds exceeded.', $timeout));
+        $timeoutStr = (string) round($timeout, 6);
+        if (\is_finite($timeout) && strpos($timeoutStr, '.') === false) {
+            $timeoutStr .= '.0';
+        }
+
+        return new self(\sprintf('Timeout of %s seconds exceeded.', $timeoutStr));
     }
 }

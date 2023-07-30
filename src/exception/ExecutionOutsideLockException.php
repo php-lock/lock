@@ -22,18 +22,34 @@ class ExecutionOutsideLockException extends LockReleaseException
      * Creates a new instance of the ExecutionOutsideLockException class.
      *
      * @param float $elapsedTime Total elapsed time of the synchronized code
-     * callback execution.
-     * @param int $timeout The lock timeout in seconds.
+     *                           callback execution.
+     * @param float $timeout     The lock timeout in seconds.
      * @return self Execution outside lock exception.
      */
-    public static function create(float $elapsedTime, int $timeout): self
+    public static function create(float $elapsedTime, float $timeout): self
     {
+        $elapsedTimeStr = (string) round($elapsedTime, 6);
+        if (\is_finite($elapsedTime) && strpos($elapsedTimeStr, '.') === false) {
+            $elapsedTimeStr .= '.0';
+        }
+
+        $timeoutStr = (string) round($timeout, 6);
+        if (\is_finite($timeout) && strpos($timeoutStr, '.') === false) {
+            $timeoutStr .= '.0';
+        }
+
+        $overTime = round($elapsedTime, 6) - round($timeout, 6);
+        $overTimeStr = (string) round($overTime, 6);
+        if (\is_finite($timeout) && strpos($overTimeStr, '.') === false) {
+            $overTimeStr .= '.0';
+        }
+
         return new self(\sprintf(
-            'The code executed for %.2F seconds. But the timeout is %d ' .
-            'seconds. The last %.2F seconds were executed outside of the lock.',
-            $elapsedTime,
-            $timeout,
-            $elapsedTime - $timeout
+            'The code executed for %s seconds. But the timeout is %s ' .
+            'seconds. The last %s seconds were executed outside of the lock.',
+            $elapsedTimeStr,
+            $timeoutStr,
+            $overTimeStr
         ));
     }
 }

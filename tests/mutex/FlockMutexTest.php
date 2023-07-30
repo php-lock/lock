@@ -55,7 +55,7 @@ class FlockMutexTest extends TestCase
     public function testTimeoutOccurs(int $strategy)
     {
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1 seconds exceeded.');
+        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded.');
 
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, LOCK_EX);
