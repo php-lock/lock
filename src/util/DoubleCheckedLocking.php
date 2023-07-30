@@ -20,7 +20,7 @@ class DoubleCheckedLocking
     private $mutex;
 
     /**
-     * @var callable The check.
+     * @var callable(): bool The check.
      */
     private $check;
 
@@ -29,7 +29,7 @@ class DoubleCheckedLocking
      *
      * @param \malkusch\lock\mutex\Mutex $mutex Provides methods for exclusive
      * code execution.
-     * @param callable $check Callback that decides if the lock should be
+     * @param callable(): bool $check Callback that decides if the lock should be
      * acquired and if the critical code callback should be executed after
      * acquiring the lock.
      */
@@ -48,7 +48,8 @@ class DoubleCheckedLocking
      * critical code callback to indicate that processing did not occure or has
      * failed. It is up to the user to decide the last point.
      *
-     * @param callable $code The critical code callback.
+     * @template T
+     * @param callable(): T $code The critical code callback.
      * @throws \Exception The execution callback or the check threw an
      * exception.
      * @throws \malkusch\lock\exception\LockAcquireException The mutex could not
@@ -57,7 +58,7 @@ class DoubleCheckedLocking
      * be released.
      * @throws \malkusch\lock\exception\ExecutionOutsideLockException Some code
      * has been executed outside of the lock.
-     * @return mixed Boolean false if check did not pass or mixed for what ever
+     * @return T|false Boolean false if check did not pass or mixed for what ever
      * the critical code callback returns.
      */
     public function then(callable $code)

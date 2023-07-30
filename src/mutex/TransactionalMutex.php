@@ -97,10 +97,11 @@ class TransactionalMutex extends Mutex
      * If the code throws any other exception, the transaction is rolled back
      * and won't  be replayed.
      *
-     * @param callable $code The synchronized execution block.
+     * @template T
+     * @param callable(): T $code The synchronized execution block.
      * @throws \Exception The execution block threw an exception.
      * @throws LockAcquireException The transaction was not commited.
-     * @return mixed The return value of the execution block.
+     * @return T The return value of the execution block.
      * @SuppressWarnings(PHPMD)
      */
     public function synchronized(callable $code)

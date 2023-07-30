@@ -76,11 +76,12 @@ class Loop
      *
      * If the code throws an exception it will stop repeating the execution.
      *
-     * @param callable $code The to be executed code callback.
+     * @template T
+     * @param callable(): T $code The to be executed code callback.
      * @throws \Exception The execution callback threw an exception.
      * @throws \malkusch\lock\exception\TimeoutException The timeout has been
      * reached.
-     * @return mixed The return value of the executed code callback.
+     * @return T The return value of the executed code callback.
      *
      */
     public function execute(callable $code)

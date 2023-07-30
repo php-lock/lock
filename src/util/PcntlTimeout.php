@@ -55,12 +55,13 @@ final class PcntlTimeout
      * method. It will interfer with your application and lead to unexpected
      * behaviour.
      *
-     * @param  callable $code Executed code block
+     * @template T
+     * @param  callable(): T $code Executed code block
      * @throws \malkusch\lock\exception\DeadlineException Running the code hit
      * the deadline.
      * @throws \malkusch\lock\exception\LockAcquireException Installing the
      * timeout failed.
-     * @return mixed Return value of the executed block
+     * @return T Return value of the executed block
      */
     public function timeBoxed(callable $code)
     {

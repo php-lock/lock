@@ -68,10 +68,11 @@ class CASMutex extends Mutex
      * });
      * </code>
      *
-     * @param callable $code The synchronized execution block.
+     * @template T
+     * @param callable(): T $code The synchronized execution block.
      * @throws \Exception The execution block threw an exception.
      * @throws TimeoutException The timeout was reached.
-     * @return mixed The return value of the execution block.
+     * @return T The return value of the execution block.
      *
      */
     public function synchronized(callable $code)
