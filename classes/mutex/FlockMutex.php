@@ -102,7 +102,9 @@ class FlockMutex extends LockMutex
      */
     private function lockPcntl(): void
     {
-        $timebox = new PcntlTimeout($this->timeout);
+        $timeoutInt = (int) ceil($this->timeout);
+
+        $timebox = new PcntlTimeout($timeoutInt);
 
         try {
             $timebox->timeBoxed(
@@ -111,7 +113,7 @@ class FlockMutex extends LockMutex
                 }
             );
         } catch (DeadlineException $e) {
-            throw TimeoutException::create($this->timeout);
+            throw TimeoutException::create($timeoutInt);
         }
     }
 

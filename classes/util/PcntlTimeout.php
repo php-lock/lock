@@ -14,6 +14,8 @@ use RuntimeException;
  *
  * This class requires the pcntl module and supports the cli sapi only.
  *
+ * Only integer timeout is supported - https://github.com/php/php-src/issues/11828.
+ *
  * @author Markus Malkusch <markus@malkusch.de>
  * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
  * @license WTFPL
