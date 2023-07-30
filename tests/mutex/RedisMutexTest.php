@@ -201,8 +201,8 @@ class RedisMutexTest extends TestCase
     {
         // count, timeout, delay
         return [
-            [1, 1, 2.001],
-            [2, 1, 1.001],
+            [1, 1.2 - 1, 1.201],
+            [2, 1.2 - 1, 1.401],
         ];
     }
 
