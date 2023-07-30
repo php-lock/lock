@@ -37,7 +37,11 @@ class MemcachedMutex extends SpinlockMutex
 
     protected function acquire(string $key, float $expire): bool
     {
-        return $this->memcache->add($key, true, $expire);
+        // memcached supports only integer expire
+        // https://github.com/memcached/memcached/wiki/Commands#standard-protocol
+        $expireInt = (int) ceil($expire);
+
+        return $this->memcache->add($key, true, $expireInt);
     }
 
     protected function release(string $key): bool
