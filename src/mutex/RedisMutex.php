@@ -34,11 +34,11 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      *
      * @param array  $redisAPIs The Redis APIs.
      * @param string $name      The lock name.
-     * @param int    $timeout   The time in seconds a lock expires, default is 3.
+     * @param float  $timeout   The time in seconds a lock expires, default is 3.
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $redisAPIs, string $name, int $timeout = 3)
+    public function __construct(array $redisAPIs, string $name, float $timeout = 3)
     {
         parent::__construct($name, $timeout);
 
@@ -46,7 +46,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         $this->logger = new NullLogger();
     }
 
-    protected function acquire(string $key, int $expire): bool
+    protected function acquire(string $key, float $expire): bool
     {
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $time = microtime(true);
@@ -149,14 +149,14 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     /**
      * Sets the key only if such key doesn't exist at the server yet.
      *
-     * @param mixed $redisAPI The connected Redis API.
-     * @param string $key The key.
-     * @param string $value The value.
-     * @param int $expire The TTL seconds.
+     * @param mixed  $redisAPI The connected Redis API.
+     * @param string $key      The key.
+     * @param string $value    The value.
+     * @param float  $expire   The TTL seconds.
      *
      * @return bool True, if the key was set.
      */
-    abstract protected function add($redisAPI, string $key, string $value, int $expire): bool;
+    abstract protected function add($redisAPI, string $key, string $value, float $expire): bool;
 
     /**
      * @param mixed  $redisAPI The connected Redis API.

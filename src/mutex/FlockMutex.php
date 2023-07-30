@@ -16,7 +16,7 @@ use malkusch\lock\util\PcntlTimeout;
  */
 class FlockMutex extends LockMutex
 {
-    public const INFINITE_TIMEOUT = -1;
+    public const INFINITE_TIMEOUT = -1.0;
 
     /**
      * @internal
@@ -39,12 +39,12 @@ class FlockMutex extends LockMutex
     private $fileHandle;
 
     /**
-     * @var int
+     * @var float
      */
     private $timeout;
 
     /**
-     * @var int
+     * @var self::STRATEGY_*
      */
     private $strategy;
 
@@ -52,9 +52,9 @@ class FlockMutex extends LockMutex
      * Sets the file handle.
      *
      * @param resource $fileHandle The file handle.
-     * @param int $timeout
+     * @param float    $timeout
      */
-    public function __construct($fileHandle, int $timeout = self::INFINITE_TIMEOUT)
+    public function __construct($fileHandle, float $timeout = self::INFINITE_TIMEOUT)
     {
         if (!is_resource($fileHandle)) {
             throw new \InvalidArgumentException('The file handle is not a valid resource.');
@@ -65,9 +65,12 @@ class FlockMutex extends LockMutex
         $this->strategy = $this->determineLockingStrategy();
     }
 
-    private function determineLockingStrategy()
+    /**
+     * @return self::STRATEGY_*
+     */
+    private function determineLockingStrategy(): int
     {
-        if ($this->timeout == self::INFINITE_TIMEOUT) {
+        if ($this->timeout === self::INFINITE_TIMEOUT) {
             return self::STRATEGY_BLOCK;
         }
 

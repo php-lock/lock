@@ -27,10 +27,10 @@ class CASMutex extends Mutex
      *
      * The default is 3 seconds.
      *
-     * @param int $timeout The timeout in seconds.
+     * @param float $timeout The timeout in seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(int $timeout = 3)
+    public function __construct(float $timeout = 3)
     {
         $this->loop = new Loop($timeout);
     }

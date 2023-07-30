@@ -20,12 +20,12 @@ class PredisMutex extends RedisMutex
      * Sets the Redis connections.
      *
      * @param ClientInterface[] $clients The Redis clients.
-     * @param string   $name    The lock name.
-     * @param int      $timeout The time in seconds a lock expires, default is 3.
+     * @param string            $name    The lock name.
+     * @param float             $timeout The time in seconds a lock expires, default is 3.
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $clients, string $name, int $timeout = 3)
+    public function __construct(array $clients, string $name, float $timeout = 3)
     {
         parent::__construct($clients, $name, $timeout);
     }
@@ -33,7 +33,7 @@ class PredisMutex extends RedisMutex
     /**
      * @throws LockAcquireException
      */
-    protected function add($redisAPI, string $key, string $value, int $expire): bool
+    protected function add($redisAPI, string $key, string $value, float $expire): bool
     {
         /** @var ClientInterface $redisAPI */
         try {

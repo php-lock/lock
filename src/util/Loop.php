@@ -29,7 +29,7 @@ class Loop
     private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
     /**
-     * @var int The timeout in seconds.
+     * @var float The timeout in seconds.
      */
     private $timeout;
 
@@ -41,10 +41,10 @@ class Loop
     /**
      * Sets the timeout. The default is 3 seconds.
      *
-     * @param int $timeout The timeout in seconds. The default is 3 seconds.
+     * @param float $timeout The timeout in seconds. The default is 3 seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(int $timeout = 3)
+    public function __construct(float $timeout = 3)
     {
         if ($timeout <= 0) {
             throw new LengthException(\sprintf(

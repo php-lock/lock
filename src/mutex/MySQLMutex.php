@@ -20,11 +20,11 @@ class MySQLMutex extends LockMutex
      */
     private $name;
     /**
-     * @var int
+     * @var float
      */
     private $timeout;
 
-    public function __construct(\PDO $PDO, string $name, int $timeout = 0)
+    public function __construct(\PDO $PDO, string $name, float $timeout = 0)
     {
         $this->pdo = $PDO;
 
