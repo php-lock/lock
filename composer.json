@@ -1,6 +1,8 @@
 {
     "name": "malkusch/lock",
     "description": "Mutex library for exclusive code execution.",
+    "license": "WTFPL",
+    "type": "library",
     "keywords": [
         "mutex",
         "lock",
@@ -15,9 +17,6 @@
         "mysql",
         "postgresql"
     ],
-    "homepage": "https://github.com/malkusch/lock",
-    "license": "WTFPL",
-    "type": "library",
     "authors": [
         {
             "name": "Markus Malkusch",
@@ -29,21 +28,17 @@
             "name": "Willem Stuursma-Ruwen",
             "email": "willem@stuursma.name",
             "role": "Developer"
+        },
+        {
+            "name": "Michael Voříšek",
+            "email": "mvorisek@mvorisek.cz",
+            "role": "Developer"
         }
     ],
-    "autoload": {
-        "psr-4": {
-            "malkusch\\lock\\": "classes/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "malkusch\\lock\\": "tests/"
-        }
-    },
+    "homepage": "https://github.com/malkusch/lock",
     "require": {
         "php": "^7.2 || ^8.0",
-        "psr/log": "^1|^2|^3"
+        "psr/log": "^1 || ^2 || ^3"
     },
     "require-dev": {
         "ext-memcached": "*",
@@ -71,6 +66,16 @@
         "ext-sysvsem": "Enables locking using semaphores.",
         "predis/predis": "To use this library with predis."
     },
+    "autoload": {
+        "psr-4": {
+            "malkusch\\lock\\": "classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "malkusch\\lock\\": "tests/"
+        }
+    },
     "archive": {
         "exclude": [
             "/tests",
@@ -81,10 +86,10 @@
             "/.github"
         ]
     },
-    "scripts": {
-        "fix-cs": "vendor/bin/phpcbf --standard=PSR2 classes/ tests/"
-    },
     "config": {
         "sort-packages": true
+    },
+    "scripts": {
+        "fix-cs": "vendor/bin/phpcbf --standard=PSR2 classes/ tests/"
     }
 }
