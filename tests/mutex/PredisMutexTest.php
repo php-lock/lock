@@ -56,7 +56,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects($this->atLeastOnce())
             ->method('set')
-            ->with('lock_test', $this->isType('string'), 'EX', 4, 'NX')
+            ->with('lock_test', $this->isType('string'), 'PX', 4000, 'NX')
             ->willReturn(null);
 
         $this->logger->expects($this->never())
@@ -78,7 +78,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects($this->atLeastOnce())
             ->method('set')
-            ->with('lock_test', $this->isType('string'), 'EX', 4, 'NX')
+            ->with('lock_test', $this->isType('string'), 'PX', 4000, 'NX')
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects($this->once())
@@ -98,7 +98,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects($this->atLeastOnce())
             ->method('set')
-            ->with('lock_test', $this->isType('string'), 'EX', 4, 'NX')
+            ->with('lock_test', $this->isType('string'), 'PX', 4000, 'NX')
             ->willReturnSelf();
 
         $this->client->expects($this->once())
@@ -122,7 +122,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects($this->atLeastOnce())
             ->method('set')
-            ->with('lock_test', $this->isType('string'), 'EX', 4, 'NX')
+            ->with('lock_test', $this->isType('string'), 'PX', 4000, 'NX')
             ->willReturnSelf();
 
         $this->client->expects($this->once())
