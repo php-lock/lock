@@ -138,7 +138,7 @@ class RedisMutexTest extends TestCase
     public function testAcquireTooFewKeys($count, $available)
     {
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1 seconds exceeded.');
+        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded.');
 
         $mutex = $this->buildRedisMutex($count);
 
@@ -169,8 +169,13 @@ class RedisMutexTest extends TestCase
      */
     public function testTimingOut(int $count, int $timeout, int $delay)
     {
+        $timeoutStr = (string) round($timeout, 6);
+        if (strpos($timeoutStr, '.') === false) {
+            $timeoutStr .= '.0';
+        }
+
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage("Timeout of {$timeout} seconds exceeded.");
+        $this->expectExceptionMessage("Timeout of {$timeoutStr} seconds exceeded.");
 
         $mutex = $this->buildRedisMutex($count, $timeout);
 
