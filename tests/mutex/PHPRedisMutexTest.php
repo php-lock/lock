@@ -8,6 +8,40 @@ use malkusch\lock\exception\MutexException;
 use PHPUnit\Framework\TestCase;
 use Redis;
 
+if (PHP_MAJOR_VERSION >= 8) {
+    trait RedisTestTrait
+    {
+        public function eval($script, $args = [], $numKeys = 0): mixed
+        {
+            return $this->_eval($script, $args, $numKeys);
+        }
+
+        public function set($key, $value, $options = null): /* Redis|string| */ bool
+        {
+            return $this->_set($key, $value, $options);
+        }
+    }
+} else {
+    trait RedisTestTrait
+    {
+        /**
+         * @return mixed
+         */
+        public function eval($script, $args = [], $numKeys = 0)
+        {
+            return $this->_eval($script, $args, $numKeys);
+        }
+
+        /**
+         * @return Redis|string|bool
+         */
+        public function set($key, $value, $options = null)
+        {
+            return $this->_set($key, $value, $options);
+        }
+    }
+}
+
 /**
  * Tests for PHPRedisMutex.
  *
@@ -41,9 +75,11 @@ class PHPRedisMutexTest extends TestCase
 
             // original Redis::set and Redis::eval calls will reopen the connection
             $connection = new class extends Redis {
+                use RedisTestTrait;
+
                 private $is_closed = false;
 
-                public function close()
+                public function close(): bool
                 {
                     $res = parent::close();
                     $this->is_closed = true;
@@ -51,7 +87,7 @@ class PHPRedisMutexTest extends TestCase
                     return $res;
                 }
 
-                public function set($key, $value, $timeout = 0)
+                private function _set($key, $value, $timeout = 0)
                 {
                     if ($this->is_closed) {
                         throw new \RedisException('Connection is closed');
@@ -60,7 +96,7 @@ class PHPRedisMutexTest extends TestCase
                     return parent::set($key, $value, $timeout);
                 }
 
-                public function eval($script, $args = [], $numKeys = 0)
+                private function _eval($script, $args = [], $numKeys = 0)
                 {
                     if ($this->is_closed) {
                         throw new \RedisException('Connection is closed');
