@@ -31,10 +31,10 @@ class CASMutex extends Mutex
      *
      * The default is 3 seconds.
      *
-     * @param int $timeout The timeout in seconds.
+     * @param float $timeout The timeout in seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(int $timeout = 3)
+    public function __construct(float $timeout = 3)
     {
         $this->loop = new Loop($timeout);
     }
@@ -72,10 +72,11 @@ class CASMutex extends Mutex
      * });
      * </code>
      *
-     * @param callable $code The synchronized execution block.
+     * @template T
+     * @param callable(): T $code The synchronized execution block.
      * @throws \Exception The execution block threw an exception.
      * @throws TimeoutException The timeout was reached.
-     * @return mixed The return value of the execution block.
+     * @return T The return value of the execution block.
      *
      */
     public function synchronized(callable $code)

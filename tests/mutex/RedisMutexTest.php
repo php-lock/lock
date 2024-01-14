@@ -41,12 +41,12 @@ class RedisMutexTest extends TestCase
     /**
      * Builds a testable RedisMutex mock.
      *
-     * @param int $count The amount of redis apis.
-     * @param int $timeout The timeout.
+     * @param int   $count   The amount of redis apis.
+     * @param float $timeout The timeout.
      *
      * @return MockObject|RedisMutex
      */
-    private function buildRedisMutex(int $count, int $timeout = 1)
+    private function buildRedisMutex(int $count, float $timeout = 1)
     {
         $redisAPIs = array_map(
             function ($id): array {
@@ -138,7 +138,7 @@ class RedisMutexTest extends TestCase
     public function testAcquireTooFewKeys($count, $available)
     {
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1 seconds exceeded.');
+        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded.');
 
         $mutex = $this->buildRedisMutex($count);
 
@@ -161,23 +161,28 @@ class RedisMutexTest extends TestCase
     /**
      * Tests acquiring keys takes too long.
      *
-     * @param int $count The total count of servers.
-     * @param int $timeout The timeout in seconds.
-     * @param int $delay The delay in microseconds.
+     * @param int   $count   The total count of servers.
+     * @param float $timeout The timeout in seconds.
+     * @param float $delay   The delay in seconds.
      *
      * @dataProvider provideTestTimingOut
      */
-    public function testTimingOut(int $count, int $timeout, int $delay)
+    public function testTimingOut(int $count, float $timeout, float $delay)
     {
+        $timeoutStr = (string) round($timeout, 6);
+        if (strpos($timeoutStr, '.') === false) {
+            $timeoutStr .= '.0';
+        }
+
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage("Timeout of {$timeout} seconds exceeded.");
+        $this->expectExceptionMessage("Timeout of {$timeoutStr} seconds exceeded.");
 
         $mutex = $this->buildRedisMutex($count, $timeout);
 
         $mutex->expects($this->exactly($count))
             ->method('add')
             ->willReturnCallback(function () use ($delay): bool {
-                usleep($delay);
+                usleep((int) ($delay * 1e6));
 
                 return true;
             });
@@ -196,8 +201,8 @@ class RedisMutexTest extends TestCase
     {
         // count, timeout, delay
         return [
-            [1, 1, 2001000],
-            [2, 1, 1001000],
+            [1, 1.2 - 1, 1.201],
+            [2, 1.2 - 1, 1.401],
         ];
     }
 

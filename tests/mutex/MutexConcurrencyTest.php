@@ -203,18 +203,18 @@ class MutexConcurrencyTest extends TestCase
      */
     public function testExecutionIsSerializedWhenLocked(callable $mutexFactory)
     {
-        $timestamp = hrtime(true);
+        $time = \microtime(true);
 
-        $this->fork(5, function () use ($mutexFactory): void {
+        $this->fork(6, function () use ($mutexFactory): void {
             /** @var Mutex $mutex */
             $mutex = $mutexFactory();
             $mutex->synchronized(function (): void {
-                \usleep(200000);
+                \usleep(200 * 1000);
             });
         });
 
-        $delta = \hrtime(true) - $timestamp;
-        $this->assertGreaterThan(1e9, $delta);
+        $delta = \microtime(true) - $time;
+        $this->assertGreaterThan(1201 * 1000, $delta);
     }
 
     /**
@@ -238,7 +238,7 @@ class MutexConcurrencyTest extends TestCase
             'flockWithTimoutPcntl' => [function ($timeout = 3) use ($filename): Mutex {
                 $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->stategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore-line
 
                 return $lock->popsValue();
             }],
@@ -246,7 +246,7 @@ class MutexConcurrencyTest extends TestCase
             'flockWithTimoutBusy' => [function ($timeout = 3) use ($filename): Mutex {
                 $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->stategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore-line
 
                 return $lock->popsValue();
             }],

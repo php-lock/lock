@@ -44,12 +44,12 @@ class TransactionalMutex extends Mutex
      * As this implementation spans a transaction over a unit of work,
      * PDO::ATTR_AUTOCOMMIT SHOULD not be enabled.
      *
-     * @param \PDO $pdo     The PDO.
-     * @param int  $timeout The timeout in seconds, default is 3.
+     * @param \PDO  $pdo     The PDO.
+     * @param float $timeout The timeout in seconds, default is 3.
      *
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(\PDO $pdo, int $timeout = 3)
+    public function __construct(\PDO $pdo, float $timeout = 3)
     {
         if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== PDO::ERRMODE_EXCEPTION) {
             throw new InvalidArgumentException('The pdo must have PDO::ERRMODE_EXCEPTION set.');
@@ -101,10 +101,11 @@ class TransactionalMutex extends Mutex
      * If the code throws any other exception, the transaction is rolled back
      * and won't  be replayed.
      *
-     * @param callable $code The synchronized execution block.
+     * @template T
+     * @param callable(): T $code The synchronized execution block.
      * @throws \Exception The execution block threw an exception.
      * @throws LockAcquireException The transaction was not commited.
-     * @return mixed The return value of the execution block.
+     * @return T The return value of the execution block.
      * @SuppressWarnings(PHPMD)
      */
     public function synchronized(callable $code)
