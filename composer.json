@@ -34,7 +34,7 @@
     ],
     "homepage": "https://github.com/malkusch/lock",
     "require": {
-        "php": ">=7.2 <8.4",
+        "php": ">=7.3 <8.4",
         "psr/log": "^1 || ^2 || ^3"
     },
     "require-dev": {

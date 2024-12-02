@@ -11,11 +11,13 @@ use Redis;
 if (PHP_MAJOR_VERSION >= 8) {
     trait RedisTestTrait
     {
+        #[\Override]
         public function eval($script, $args = [], $numKeys = 0): mixed
         {
             return $this->_eval($script, $args, $numKeys);
         }
 
+        #[\Override]
         public function set($key, $value, $options = null): /* Redis|string| */ bool
         {
             return $this->_set($key, $value, $options);
@@ -27,6 +29,7 @@ if (PHP_MAJOR_VERSION >= 8) {
         /**
          * @return mixed
          */
+        #[\Override]
         public function eval($script, $args = [], $numKeys = 0)
         {
             return $this->_eval($script, $args, $numKeys);
@@ -35,6 +38,7 @@ if (PHP_MAJOR_VERSION >= 8) {
         /**
          * @return Redis|string|bool
          */
+        #[\Override]
         public function set($key, $value, $options = null)
         {
             return $this->_set($key, $value, $options);
