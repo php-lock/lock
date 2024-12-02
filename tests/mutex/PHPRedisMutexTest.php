@@ -15,10 +15,6 @@ use Redis;
  *
  * REDIS_URIS - a comma separated list of redis:// URIs.
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
- * @see PHPRedisMutex
  * @requires extension redis
  * @group redis
  */

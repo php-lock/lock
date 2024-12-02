@@ -8,10 +8,6 @@ use malkusch\lock\util\DoubleCheckedLocking;
 
 /**
  * The mutex provides methods for exclusive execution.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  */
 abstract class Mutex
 {

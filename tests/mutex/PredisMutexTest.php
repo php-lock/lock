@@ -13,9 +13,6 @@ use Psr\Log\LoggerInterface;
 /**
  * Tests for PredisMutex.
  *
- * @link    bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
- * @see     PredisMutex
  * @group   redis
  */
 class PredisMutexTest extends TestCase

@@ -14,11 +14,6 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests for RedisMutex.
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
- *
- * @see RedisMutex
  * @group redis
  */
 class RedisMutexTest extends TestCase

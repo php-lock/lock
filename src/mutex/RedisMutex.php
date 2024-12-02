@@ -13,11 +13,7 @@ use Psr\Log\NullLogger;
 /**
  * Mutex based on the Redlock algorithm.
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @license WTFPL
- *
  * @link http://redis.io/topics/distlock
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
  */
 abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 {

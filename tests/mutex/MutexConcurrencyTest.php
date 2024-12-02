@@ -18,12 +18,6 @@ use Spatie\Async\Pool;
  * - REDIS_URIS - a comma separated list of redis:// URIs.
  * - MYSQL_DSN, MYSQL_USER, MYSQL_PASSWORD
  * - PGSQL_DSN, PGSQL_USER, PGSQL_PASSWORD
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
- * @requires PHP
- * @see Mutex
  */
 class MutexConcurrencyTest extends TestCase
 {

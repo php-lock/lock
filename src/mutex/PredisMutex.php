@@ -12,11 +12,7 @@ use Predis\PredisException;
 /**
  * Mutex based on the Redlock algorithm using the Predis API.
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @license WTFPL
- *
  * @link http://redis.io/topics/distlock
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
  */
 class PredisMutex extends RedisMutex
 {

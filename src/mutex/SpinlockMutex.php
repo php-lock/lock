@@ -12,9 +12,6 @@ use malkusch\lock\util\Loop;
 /**
  * Spinlock implementation.
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  * @internal
  */
 abstract class SpinlockMutex extends LockMutex

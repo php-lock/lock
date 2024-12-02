@@ -10,9 +10,6 @@ use malkusch\lock\exception\TimeoutException;
 /**
  * Repeats executing a code until it was successful.
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  * @internal
  */
 class Loop

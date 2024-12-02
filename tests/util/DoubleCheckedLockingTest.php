@@ -8,11 +8,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for DoubleCheckedLocking.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
- * @see DoubleCheckedLocking
  */
 class DoubleCheckedLockingTest extends TestCase
 {

@@ -18,11 +18,7 @@ use RedisException;
  *
  * @see https://github.com/phpredis/phpredis/issues/1477
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @license WTFPL
- *
  * @link http://redis.io/topics/distlock
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
  */
 class PHPRedisMutex extends RedisMutex
 {

@@ -9,10 +9,6 @@ namespace malkusch\lock\exception;
  *
  * A timeout has been exceeded exception. Should only be used in contexts where
  * the lock is being acquired.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  */
 class TimeoutException extends LockAcquireException
 {

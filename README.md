@@ -2,7 +2,6 @@
 **[Installation](#installation)** |
 **[Usage](#usage)** |
 **[License and authors](#license-and-authors)** |
-**[Donations](#donations)**
 
 # php-lock/lock
 
@@ -20,7 +19,7 @@ php-lock/lock follows semantic versioning. Read more on [semver.org][1].
 
 ## Requirements
 
- - PHP 7.1 or above
+ - PHP 7.2 or above
  - Optionally [nrk/predis][2] to use the Predis locks.
  - Optionally the [php-pcntl][3] extension to enable locking with `flock()`
    without busy waiting in CLI scripts.
@@ -41,7 +40,7 @@ To use this library through [composer][4], run the following terminal command
 inside your repository's root folder.
 
 ```sh
-composer require "malkusch/lock"
+composer require malkusch/lock
 ```
 
 ## Usage
@@ -397,13 +396,9 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 ## License and authors
 
-This project is free and under the WTFPL.
+This project is free and under the MIT.
+
 Responsible for this project is Willem Stuursma-Ruwen <willem@stuursma.name>.
-
-## Donations
-
-If you like this project and feel generous donate a few Bitcoins here:
-[1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA](bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA)
 
 [1]: http://semver.org
 [2]: https://github.com/nrk/predis

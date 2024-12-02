@@ -18,10 +18,6 @@ use PDOException;
  * which parts of that code need to be locked (if at all).
  *
  * A failing transaction will be replayed.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  */
 class TransactionalMutex extends Mutex
 {

@@ -9,11 +9,6 @@ use PHPUnit\Framework\TestCase;
  * Tests for TransactionalMutex.
  *
  * Set the environment variables MYSQL_DSN, MYSQL_USER for this test.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
- * @see TransactionalMutex
  */
 class TransactionalMutexTest extends TestCase
 {

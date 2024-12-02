@@ -10,9 +10,6 @@ use Throwable;
 /**
  * Locking mutex.
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  * @internal
  */
 abstract class LockMutex extends Mutex
@@ -35,9 +32,6 @@ abstract class LockMutex extends Mutex
      */
     abstract protected function unlock(): void;
 
-    /**
-     * {@inheritDoc}
-     */
     public function synchronized(callable $code)
     {
         $this->lock();

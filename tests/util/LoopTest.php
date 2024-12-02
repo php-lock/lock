@@ -9,11 +9,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for Loop.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
- * @see Loop
  */
 class LoopTest extends TestCase
 {

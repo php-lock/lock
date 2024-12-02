@@ -10,10 +10,6 @@ use malkusch\lock\exception\LockReleaseException;
 
 /**
  * System V IPC based mutex implementation.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  */
 class SemaphoreMutex extends LockMutex
 {

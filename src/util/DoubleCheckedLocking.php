@@ -11,10 +11,6 @@ use malkusch\lock\mutex\Mutex;
  *
  * You should not instantiate this class directly. Use
  * {@link \malkusch\lock\mutex\Mutex::check()}.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  */
 class DoubleCheckedLocking
 {

@@ -13,11 +13,6 @@ use malkusch\lock\util\PcntlTimeout;
 
 /**
  * Flock() based mutex implementation.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
- * @see flock()
  */
 class FlockMutex extends LockMutex
 {

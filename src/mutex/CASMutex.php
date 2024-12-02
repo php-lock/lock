@@ -14,10 +14,6 @@ use malkusch\lock\util\Loop;
  * approach. I.e. it will repeat executing the code block until it wasn't
  * modified in between. Use this only when you know that concurrency is
  * a rare event.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  */
 class CASMutex extends Mutex
 {

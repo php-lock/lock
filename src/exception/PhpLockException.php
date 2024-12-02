@@ -7,9 +7,6 @@ namespace malkusch\lock\exception;
 /**
  * Common php-lock/lock exception interface.
  *
- * @author Petr Levtonov <petr@levtonov.com>
- * @license WTFPL
- *
  * @method string getMessage()
  * @method int getCode()
  * @method string getFile()

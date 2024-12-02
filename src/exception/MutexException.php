@@ -11,10 +11,6 @@ use RuntimeException;
  *
  * Generic exception for any other not covered reason. Usually extended by
  * child classes.
- *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  */
 class MutexException extends RuntimeException implements PhpLockException
 {

@@ -12,11 +12,7 @@ use PHPUnit\Framework\TestCase;
  *
  * Please provide the environment variable MEMCACHE_HOST.
  *
- * @author Markus Malkusch <markus@malkusch.de>
- * @link bitcoin:1P5FAZ4QhXCuwYPnLZdk3PJsqePbu1UDDA Donations
- * @license WTFPL
  * @requires extension memcached
- * @see MemcachedMutex
  */
 class MemcachedMutexTest extends TestCase
 {

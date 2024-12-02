@@ -1,6 +1,8 @@
 {
     "name": "malkusch/lock",
     "description": "Mutex library for exclusive code execution.",
+    "license": "MIT",
+    "type": "library",
     "keywords": [
         "mutex",
         "lock",
@@ -15,9 +17,6 @@
         "mysql",
         "postgresql"
     ],
-    "homepage": "https://github.com/malkusch/lock",
-    "license": "WTFPL",
-    "type": "library",
     "authors": [
         {
             "name": "Markus Malkusch",
@@ -31,6 +30,7 @@
             "role": "Developer"
         }
     ],
+    "homepage": "https://github.com/malkusch/lock",
     "autoload": {
         "psr-4": {
             "malkusch\\lock\\": "src/"
