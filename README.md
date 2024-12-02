@@ -342,7 +342,7 @@ $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
 #### MySQLMutex
 
 The **MySQLMutex** uses MySQL's
-[`GET_LOCK`](https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_get-lock)
+[`GET_LOCK`](https://dev.mysql.com/doc/refman/9.0/en/locking-functions.html#function_get-lock)
 function.
 
 It supports time outs. If the connection to the database server is lost or
@@ -351,6 +351,9 @@ interrupted, the lock is automatically released.
 Note that before MySQL 5.7.5 you cannot use nested locks, any new lock will
 silently release already held locks. You should probably refrain from using this
 mutex on MySQL versions < 5.7.5.
+
+Also note that `GET_LOCK` function is server wide and the MySQL manual suggests
+you to namespace your locks like `dbname.lockname`.
 
 ```php
 $pdo = new PDO("mysql:host=localhost;dbname=test", "username");
