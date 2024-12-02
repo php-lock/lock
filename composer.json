@@ -33,7 +33,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "malkusch\\lock\\": "classes/"
+            "malkusch\\lock\\": "src/"
         }
     },
     "autoload-dev": {
@@ -82,7 +82,7 @@
         ]
     },
     "scripts": {
-        "fix-cs": "vendor/bin/phpcbf --standard=PSR2 classes/ tests/"
+        "fix-cs": "vendor/bin/phpcbf --standard=PSR2 src/ tests/"
     },
     "config": {
         "sort-packages": true
