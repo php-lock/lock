@@ -21,29 +21,21 @@
         {
             "name": "Markus Malkusch",
             "email": "markus@malkusch.de",
-            "homepage": "http://markus.malkusch.de",
-            "role": "Developer"
+            "homepage": "http://markus.malkusch.de"
         },
         {
             "name": "Willem Stuursma-Ruwen",
-            "email": "willem@stuursma.name",
-            "role": "Developer"
+            "email": "willem@stuursma.name"
+        },
+        {
+            "name": "Michael Voříšek",
+            "homepage": "https://mvorisek.cz/"
         }
     ],
     "homepage": "https://github.com/malkusch/lock",
-    "autoload": {
-        "psr-4": {
-            "malkusch\\lock\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "malkusch\\lock\\": "tests/"
-        }
-    },
     "require": {
-        "php": "^7.2 || ^8.0",
-        "psr/log": "^1|^2|^3"
+        "php": ">=7.2 <8.4",
+        "psr/log": "^1 || ^2 || ^3"
     },
     "require-dev": {
         "ext-memcached": "*",
@@ -53,6 +45,7 @@
         "ext-pdo_sqlite": "*",
         "ext-sysvsem": "*",
         "eloquent/liberator": "^2.0",
+        "ergebnis/composer-normalize": "^2.13",
         "friendsofphp/php-cs-fixer": "^2.16",
         "johnkary/phpunit-speedtrap": "^3.0",
         "mikey179/vfsstream": "^1.6.7",
@@ -71,20 +64,26 @@
         "ext-sysvsem": "Enables locking using semaphores.",
         "predis/predis": "To use this library with predis."
     },
-    "archive": {
-        "exclude": [
-            "/tests",
-            "/.gitattributes",
-            "/.gitignore",
-            "/.travis.yml",
-            "/phpunit.xml",
-            "/.github"
-        ]
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "malkusch\\lock\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "malkusch\\lock\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true,
+            "phpstan/extension-installer": true
+        },
+        "sort-packages": true
     },
     "scripts": {
         "fix-cs": "vendor/bin/phpcbf --standard=PSR2 src/ tests/"
-    },
-    "config": {
-        "sort-packages": true
     }
 }

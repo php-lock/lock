@@ -91,7 +91,7 @@ class Loop
         $deadline = microtime(true) + $this->timeout;
 
         $result = null;
-        for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) {
+        for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) { // @phpstan-ignore-line
             $result = $code();
             if (!$this->looping) { // @phpstan-ignore-line
                 /*

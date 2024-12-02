@@ -1,0 +1,57 @@
+name: Unit
+
+on:
+  pull_request:
+  push:
+  schedule:
+    - cron: '0 0/2 * * *'
+
+jobs:
+  smoke-test:
+    name: Smoke
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.0']
+        type: ['Phpunit']
+        include:
+          - php: '8.0'
+            type: 'CodingStyle'
+          - php: '8.0'
+            type: 'StaticAnalysis'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure PHP
+        run: |
+          install-php-extensions memcached sysvsem
+          rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+          php --version
+
+      - name: Install PHP dependencies
+        run: |
+          if [ "${{ matrix.type }}" != "Phpunit" ] && [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpunit/phpunit ergebnis/phpunit-slow-test-detector --dev; fi
+          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer ergebnis/composer-normalize --dev; fi
+          if [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpstan/\* --dev; fi
+          composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: "Run tests (only for Phpunit)"
+        if: startsWith(matrix.type, 'Phpunit')
+        run: |
+          vendor/bin/phpunit --exclude-group none --no-coverage --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi) --filter '^(?!malkusch\\lock\\mutex\\PHPRedisMutexTest::)'
+
+      - name: Check Coding Style (only for CodingStyle)
+        if: matrix.type == 'CodingStyle'
+        run: |
+          vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --verbose
+          composer validate --strict --no-check-lock && composer normalize --dry-run --no-check-lock
+
+      - name: Run Static Analysis (only for StaticAnalysis)
+        if: matrix.type == 'StaticAnalysis'
+        run: |
+          echo "memory_limit = 2G" > /usr/local/etc/php/conf.d/custom-memory-limit.ini
+          vendor/bin/phpstan analyse -v
