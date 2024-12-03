@@ -55,7 +55,6 @@ class CASMutexTest extends TestCase
 
     /**
      * Tests notify() will stop the iteration and return the result.
-     *
      */
     public function testNotify()
     {
@@ -70,7 +69,6 @@ class CASMutexTest extends TestCase
 
     /**
      * Tests that the code is executed more times.
-     *
      */
     public function testIteration()
     {

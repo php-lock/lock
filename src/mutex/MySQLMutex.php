@@ -58,16 +58,12 @@ class MySQLMutex extends LockMutex
         $row = $statement->fetch();
 
         if ($row[0] == 1) {
-            /*
-             * Returns 1 if the lock was obtained successfully.
-             */
+            // Returns 1 if the lock was obtained successfully.
             return;
         }
 
         if ($row[0] === null) {
-            /*
-             *  NULL if an error occurred (such as running out of memory or the thread was killed with mysqladmin kill).
-             */
+            // NULL if an error occurred (such as running out of memory or the thread was killed with mysqladmin kill).
             throw new LockAcquireException('An error occurred while acquiring the lock');
         }
 
@@ -78,7 +74,7 @@ class MySQLMutex extends LockMutex
     {
         $statement = $this->pdo->prepare('DO RELEASE_LOCK(?)');
         $statement->execute([
-            $this->name
+            $this->name,
         ]);
     }
 }

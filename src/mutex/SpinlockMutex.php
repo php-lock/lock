@@ -22,31 +22,31 @@ abstract class SpinlockMutex extends LockMutex
     private const PREFIX = 'lock_';
 
     /**
-     * @var float The timeout in seconds a lock may live.
+     * @var float the timeout in seconds a lock may live
      */
     private $timeout;
 
     /**
-     * @var Loop The loop.
+     * @var Loop the loop
      */
     private $loop;
 
     /**
-     * @var string The lock key.
+     * @var string the lock key
      */
     private $key;
 
     /**
-     * @var double The timestamp when the lock was acquired.
+     * @var float the timestamp when the lock was acquired
      */
     private $acquired;
 
     /**
      * Sets the timeout.
      *
-     * @param float $timeout The time in seconds a lock expires, default is 3.
+     * @param float $timeout the time in seconds a lock expires, default is 3
      *
-     * @throws \LengthException The timeout must be greater than 0.
+     * @throws \LengthException the timeout must be greater than 0
      */
     public function __construct(string $name, float $timeout = 3)
     {
@@ -92,19 +92,21 @@ abstract class SpinlockMutex extends LockMutex
     /**
      * Tries to acquire a lock.
      *
-     * @param string $key    The lock key.
-     * @param float  $expire The timeout in seconds when a lock expires.
+     * @param string $key    the lock key
+     * @param float  $expire the timeout in seconds when a lock expires
      *
-     * @throws LockAcquireException An unexpected error happened.
-     * @return bool True, if the lock could be acquired.
+     * @return bool true, if the lock could be acquired
+     *
+     * @throws LockAcquireException an unexpected error happened
      */
     abstract protected function acquire(string $key, float $expire): bool;
 
     /**
      * Tries to release a lock.
      *
-     * @param string $key The lock key.
-     * @return bool True, if the lock could be released.
+     * @param string $key the lock key
+     *
+     * @return bool true, if the lock could be released
      */
     abstract protected function release(string $key): bool;
 }

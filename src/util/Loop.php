@@ -17,24 +17,24 @@ class Loop
     /**
      * Minimum time that we want to wait, between lock checks. In micro seconds.
      *
-     * @var double
+     * @var float
      */
     private const MINIMUM_WAIT_US = 1e4; // 0.01 seconds
 
     /**
      * Maximum time that we want to wait, between lock checks. In micro seconds.
      *
-     * @var double
+     * @var float
      */
     private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
     /**
-     * @var float The timeout in seconds.
+     * @var float the timeout in seconds
      */
     private $timeout;
 
     /**
-     * @var bool True while code execution is repeating.
+     * @var bool true while code execution is repeating
      */
     private $looping = false;
 
@@ -42,7 +42,8 @@ class Loop
      * Sets the timeout. The default is 3 seconds.
      *
      * @param float $timeout The timeout in seconds. The default is 3 seconds.
-     * @throws \LengthException The timeout must be greater than 0.
+     *
+     * @throws \LengthException the timeout must be greater than 0
      */
     public function __construct(float $timeout = 3)
     {
@@ -58,8 +59,6 @@ class Loop
 
     /**
      * Notifies that this was the last iteration.
-     *
-     * @return void
      */
     public function end(): void
     {
@@ -77,12 +76,14 @@ class Loop
      * If the code throws an exception it will stop repeating the execution.
      *
      * @template T
-     * @param callable(): T $code The to be executed code callback.
-     * @throws \Exception The execution callback threw an exception.
-     * @throws \malkusch\lock\exception\TimeoutException The timeout has been
-     * reached.
-     * @return T The return value of the executed code callback.
      *
+     * @param callable(): T $code the to be executed code callback
+     *
+     * @return T the return value of the executed code callback
+     *
+     * @throws \Exception                                the execution callback threw an exception
+     * @throws \malkusch\lock\exception\TimeoutException the timeout has been
+     *                                                   reached
      */
     public function execute(callable $code)
     {
@@ -95,14 +96,13 @@ class Loop
         for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) { // @phpstan-ignore-line
             $result = $code();
             if (!$this->looping) { // @phpstan-ignore-line
-                /*
-                 * The $code callback has called $this->end() and the lock has been acquired.
-                 */
+                // The $code callback has called $this->end() and the lock has been acquired.
+
                 return $result;
             }
 
             // Calculate max time remaining, don't sleep any longer than that.
-            $usecRemaining = intval(($deadline - microtime(true)) * 1e6);
+            $usecRemaining = (int) (($deadline - microtime(true)) * 1e6);
 
             // We've ran out of time.
             if ($usecRemaining <= 0) {
@@ -115,7 +115,7 @@ class Loop
             );
             $max = min($min * 2, self::MAXIMUM_WAIT_US);
 
-            $usecToSleep = min($usecRemaining, random_int((int)$min, (int)$max));
+            $usecToSleep = min($usecRemaining, random_int((int) $min, (int) $max));
 
             usleep($usecToSleep);
         }

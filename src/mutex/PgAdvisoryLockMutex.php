@@ -32,7 +32,7 @@ class PgAdvisoryLockMutex extends LockMutex
 
         $hashed_name = hash('sha256', $name, true);
 
-        if (false === $hashed_name) { // @phpstan-ignore-line
+        if ($hashed_name === false) { // @phpstan-ignore-line
             throw new RuntimeException('Unable to hash the key, sha256 algorithm is not supported.');
         }
 
@@ -57,7 +57,7 @@ class PgAdvisoryLockMutex extends LockMutex
         $statement = $this->pdo->prepare('SELECT pg_advisory_unlock(?,?)');
         $statement->execute([
             $this->key1,
-            $this->key2
+            $this->key2,
         ]);
     }
 }

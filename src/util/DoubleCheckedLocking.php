@@ -15,23 +15,23 @@ use malkusch\lock\mutex\Mutex;
 class DoubleCheckedLocking
 {
     /**
-     * @var \malkusch\lock\mutex\Mutex The mutex.
+     * @var \malkusch\lock\mutex\Mutex the mutex
      */
     private $mutex;
 
     /**
-     * @var callable(): bool The check.
+     * @var callable(): bool the check
      */
     private $check;
 
     /**
      * Constructs a new instance of the DoubleCheckedLocking pattern.
      *
-     * @param \malkusch\lock\mutex\Mutex $mutex Provides methods for exclusive
-     * code execution.
-     * @param callable(): bool $check Callback that decides if the lock should be
-     * acquired and if the critical code callback should be executed after
-     * acquiring the lock.
+     * @param \malkusch\lock\mutex\Mutex $mutex provides methods for exclusive
+     *                                          code execution
+     * @param callable(): bool           $check callback that decides if the lock should be
+     *                                          acquired and if the critical code callback should be executed after
+     *                                          acquiring the lock
      */
     public function __construct(Mutex $mutex, callable $check)
     {
@@ -49,17 +49,20 @@ class DoubleCheckedLocking
      * failed. It is up to the user to decide the last point.
      *
      * @template T
-     * @param callable(): T $code The critical code callback.
-     * @throws \Exception The execution callback or the check threw an
-     * exception.
-     * @throws \malkusch\lock\exception\LockAcquireException The mutex could not
-     * be acquired.
-     * @throws \malkusch\lock\exception\LockReleaseException The mutex could not
-     * be released.
-     * @throws \malkusch\lock\exception\ExecutionOutsideLockException Some code
-     * has been executed outside of the lock.
-     * @return T|false Boolean false if check did not pass or mixed for what ever
-     * the critical code callback returns.
+     *
+     * @param callable(): T $code the critical code callback
+     *
+     * @return T|false boolean false if check did not pass or mixed for what ever
+     *                 the critical code callback returns
+     *
+     * @throws \Exception                                             the execution callback or the check threw an
+     *                                                                exception
+     * @throws \malkusch\lock\exception\LockAcquireException          the mutex could not
+     *                                                                be acquired
+     * @throws \malkusch\lock\exception\LockReleaseException          the mutex could not
+     *                                                                be released
+     * @throws \malkusch\lock\exception\ExecutionOutsideLockException some code
+     *                                                                has been executed outside of the lock
      */
     public function then(callable $code)
     {

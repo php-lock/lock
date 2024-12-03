@@ -28,9 +28,10 @@ final class PcntlTimeout
     /**
      * Builds the timeout.
      *
-     * @param int $timeout Timeout in seconds.
-     * @throws \RuntimeException When the PCNTL module is not enabled.
-     * @throws \InvalidArgumentException When the timeout is zero or negative.
+     * @param int $timeout timeout in seconds
+     *
+     * @throws \RuntimeException         when the PCNTL module is not enabled
+     * @throws \InvalidArgumentException when the timeout is zero or negative
      */
     public function __construct(int $timeout)
     {
@@ -58,12 +59,15 @@ final class PcntlTimeout
      * behaviour.
      *
      * @template T
-     * @param  callable(): T $code Executed code block
-     * @throws \malkusch\lock\exception\DeadlineException Running the code hit
-     * the deadline.
-     * @throws \malkusch\lock\exception\LockAcquireException Installing the
-     * timeout failed.
+     *
+     * @param callable(): T $code Executed code block
+     *
      * @return T Return value of the executed block
+     *
+     * @throws \malkusch\lock\exception\DeadlineException    running the code hit
+     *                                                       the deadline
+     * @throws \malkusch\lock\exception\LockAcquireException installing the
+     *                                                       timeout failed
      */
     public function timeBoxed(callable $code)
     {
@@ -99,15 +103,15 @@ final class PcntlTimeout
      * This class requires the pcntl module. This method checks if
      * it is available.
      *
-     * @return bool TRUE if this class is supported by the PHP runtime.
+     * @return bool TRUE if this class is supported by the PHP runtime
      */
     public static function isSupported(): bool
     {
         return
-            PHP_SAPI === 'cli' &&
-            extension_loaded('pcntl') &&
-            function_exists('pcntl_alarm') &&
-            function_exists('pcntl_signal') &&
-            function_exists('pcntl_signal_dispatch');
+            PHP_SAPI === 'cli'
+            && extension_loaded('pcntl')
+            && function_exists('pcntl_alarm')
+            && function_exists('pcntl_signal')
+            && function_exists('pcntl_signal_dispatch');
     }
 }

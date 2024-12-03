@@ -22,15 +22,18 @@ abstract class Mutex
      * released as well.
      *
      * @template T
-     * @param callable(): T $code The synchronized execution callback.
-     * @throws \Exception The execution callback threw an exception.
-     * @throws \malkusch\lock\exception\LockAcquireException The mutex could not
-     * be acquired, no further side effects.
-     * @throws \malkusch\lock\exception\LockReleaseException The mutex could not
-     * be released, the code was already executed.
-     * @throws \malkusch\lock\exception\ExecutionOutsideLockException Some code
-     * has been executed outside of the lock.
-     * @return T The return value of the execution callback.
+     *
+     * @param callable(): T $code the synchronized execution callback
+     *
+     * @return T the return value of the execution callback
+     *
+     * @throws \Exception                                             the execution callback threw an exception
+     * @throws \malkusch\lock\exception\LockAcquireException          the mutex could not
+     *                                                                be acquired, no further side effects
+     * @throws \malkusch\lock\exception\LockReleaseException          the mutex could not
+     *                                                                be released, the code was already executed
+     * @throws \malkusch\lock\exception\ExecutionOutsideLockException some code
+     *                                                                has been executed outside of the lock
      */
     abstract public function synchronized(callable $code);
 
@@ -49,11 +52,12 @@ abstract class Mutex
      * });
      * </code>
      *
-     * @param callable(): bool $check Callback that decides if the lock should be
-     * acquired and if the synchronized callback should be executed after
-     * acquiring the lock.
-     * @return \malkusch\lock\util\DoubleCheckedLocking The double-checked
-     * locking pattern.
+     * @param callable(): bool $check callback that decides if the lock should be
+     *                                acquired and if the synchronized callback should be executed after
+     *                                acquiring the lock
+     *
+     * @return \malkusch\lock\util\DoubleCheckedLocking the double-checked
+     *                                                  locking pattern
      */
     public function check(callable $check): DoubleCheckedLocking
     {

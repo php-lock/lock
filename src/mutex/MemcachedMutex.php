@@ -12,7 +12,7 @@ use Memcached;
 class MemcachedMutex extends SpinlockMutex
 {
     /**
-     * @var Memcached The connected Memcached API.
+     * @var Memcached the connected Memcached API
      */
     private $memcache;
 
@@ -22,11 +22,11 @@ class MemcachedMutex extends SpinlockMutex
      * The Memcached API needs to have at least one server in its pool. I.e.
      * it has to be added with Memcached::addServer().
      *
-     * @param string    $name     The lock name.
-     * @param Memcached $memcache The connected Memcached API.
-     * @param float     $timeout  The time in seconds a lock expires, default is 3.
+     * @param string    $name     the lock name
+     * @param Memcached $memcache the connected Memcached API
+     * @param float     $timeout  the time in seconds a lock expires, default is 3
      *
-     * @throws \LengthException The timeout must be greater than 0.
+     * @throws \LengthException the timeout must be greater than 0
      */
     public function __construct(string $name, Memcached $memcache, float $timeout = 3)
     {

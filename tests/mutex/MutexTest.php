@@ -19,7 +19,7 @@ use Redis;
  */
 class MutexTest extends TestCase
 {
-    const TIMEOUT = 4;
+    protected const TIMEOUT = 4;
 
     public static function setUpBeforeClass(): void
     {
@@ -29,7 +29,7 @@ class MutexTest extends TestCase
     /**
      * Provides Mutex factories.
      *
-     * @return callable[][] The mutex factories.
+     * @return callable[][] the mutex factories
      */
     public function provideMutexFactories()
     {
@@ -143,7 +143,7 @@ class MutexTest extends TestCase
                         );
 
                         return new PHPRedisMutex($apis, 'test', self::TIMEOUT);
-                    }
+                    },
                 ];
             }
         }
@@ -172,7 +172,8 @@ class MutexTest extends TestCase
     /**
      * Tests synchronized() executes the code and returns its result.
      *
-     * @param callable $mutexFactory The Mutex factory.
+     * @param callable $mutexFactory the Mutex factory
+     *
      * @dataProvider provideMutexFactories
      */
     public function testSynchronizedDelegates(callable $mutexFactory)
@@ -188,24 +189,24 @@ class MutexTest extends TestCase
     /**
      * Tests that synchronized() released the lock.
      *
-     * @param callable $mutexFactory The Mutex factory.
+     * @param callable $mutexFactory the Mutex factory
+     *
      * @dataProvider provideMutexFactories
      */
     public function testRelease(callable $mutexFactory)
     {
         $mutex = call_user_func($mutexFactory);
-        $mutex->synchronized(function () {
-        });
+        $mutex->synchronized(function () {});
 
         $this->expectNotToPerformAssertions();
-        $mutex->synchronized(function () {
-        });
+        $mutex->synchronized(function () {});
     }
 
     /**
      * Tests synchronized() rethrows the exception of the code.
      *
-     * @param callable $mutexFactory The Mutex factory.
+     * @param callable $mutexFactory the Mutex factory
+     *
      * @dataProvider provideMutexFactories
      */
     public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)

@@ -15,8 +15,9 @@ class TimeoutException extends LockAcquireException
     /**
      * Creates a new instance of the TimeoutException class.
      *
-     * @param float $timeout The timeout in seconds.
-     * @return self A timeout has been exceeded exception.
+     * @param float $timeout the timeout in seconds
+     *
+     * @return self a timeout has been exceeded exception
      */
     public static function create(float $timeout): self
     {

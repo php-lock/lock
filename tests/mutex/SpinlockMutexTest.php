@@ -67,7 +67,6 @@ class SpinlockMutexTest extends TestCase
 
     /**
      * Tests executing code which exceeds the timeout fails.
-     *
      */
     public function testExecuteTooLong()
     {
@@ -94,7 +93,6 @@ class SpinlockMutexTest extends TestCase
 
     /**
      * Tests executing code which barely doesn't hit the timeout.
-     *
      */
     public function testExecuteBarelySucceeds()
     {
@@ -118,8 +116,7 @@ class SpinlockMutexTest extends TestCase
         $mutex->expects($this->any())->method('acquire')->willReturn(true);
         $mutex->expects($this->any())->method('release')->willReturn(false);
 
-        $mutex->synchronized(function () {
-        });
+        $mutex->synchronized(function () {});
     }
 
     /**

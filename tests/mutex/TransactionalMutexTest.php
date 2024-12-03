@@ -15,7 +15,8 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests building the mutex with an invalid error mode.
      *
-     * @param int $mode The invalid error mode.
+     * @param int $mode the invalid error mode
+     *
      * @dataProvider provideTestInvalidErrorMode
      */
     public function testInvalidErrorMode(int $mode)
@@ -53,8 +54,7 @@ class TransactionalMutexTest extends TestCase
         $stmt->execute();
 
         $mutex = new TransactionalMutex($pdo);
-        $mutex->synchronized(function (): void {
-        });
+        $mutex->synchronized(function (): void {});
     }
 
     /**
@@ -74,6 +74,7 @@ class TransactionalMutexTest extends TestCase
         try {
             $mutex->synchronized(function () use ($pdo): void {
                 $pdo->exec('INSERT INTO testExceptionRollsback VALUES(1)');
+
                 throw new \DomainException();
             });
         } catch (\DomainException $e) {
@@ -105,7 +106,8 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests replaying the transaction.
      *
-     * @param \Exception $exception The thrown exception.
+     * @param \Exception $exception the thrown exception
+     *
      * @dataProvider provideTestReplayTransaction
      */
     public function testReplayTransaction(\Exception $exception)
@@ -143,7 +145,7 @@ class TransactionalMutexTest extends TestCase
     /**
      * Returns test cases for testReplayTransaction().
      *
-     * @return \Exception[][] Test cases.
+     * @return \Exception[][] test cases
      */
     public function provideTestReplayTransaction()
     {
@@ -179,7 +181,7 @@ class TransactionalMutexTest extends TestCase
      * - MYSQL_USER
      * - MYSQL_PASSWORD
      *
-     * @return \PDO The MySQL PDO.
+     * @return \PDO the MySQL PDO
      */
     private function buildMySqlPdo()
     {

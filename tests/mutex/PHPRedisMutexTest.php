@@ -54,6 +54,7 @@ if (PHP_MAJOR_VERSION >= 8) {
  * REDIS_URIS - a comma separated list of redis:// URIs.
  *
  * @requires extension redis
+ *
  * @group redis
  */
 class PHPRedisMutexTest extends TestCase
@@ -64,7 +65,7 @@ class PHPRedisMutexTest extends TestCase
     private $connections = [];
 
     /**
-     * @var PHPRedisMutex The SUT.
+     * @var PHPRedisMutex the SUT
      */
     private $mutex;
 
@@ -223,24 +224,24 @@ class PHPRedisMutexTest extends TestCase
         if (defined('Redis::SERIALIZER_IGBINARY')) {
             $options[] = [
                 constant('Redis::SERIALIZER_IGBINARY'),
-                Redis::COMPRESSION_NONE
+                Redis::COMPRESSION_NONE,
             ];
         }
 
         if (defined('Redis::COMPRESSION_LZF')) {
             $options[] = [
                 Redis::SERIALIZER_NONE,
-                constant('Redis::COMPRESSION_LZF')
+                constant('Redis::COMPRESSION_LZF'),
             ];
             $options[] = [
                 Redis::SERIALIZER_PHP,
-                constant('Redis::COMPRESSION_LZF')
+                constant('Redis::COMPRESSION_LZF'),
             ];
 
             if (defined('Redis::SERIALIZER_IGBINARY')) {
                 $options[] = [
                     constant('Redis::SERIALIZER_IGBINARY'),
-                    constant('Redis::COMPRESSION_LZF')
+                    constant('Redis::COMPRESSION_LZF'),
                 ];
             }
         }

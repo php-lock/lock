@@ -66,7 +66,6 @@ class MemcachedMutexTest extends TestCase
             ->with('lock_test')
             ->willReturn(false);
 
-        $this->mutex->synchronized(function (): void {
-        });
+        $this->mutex->synchronized(function (): void {});
     }
 }

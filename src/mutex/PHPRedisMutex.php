@@ -17,8 +17,7 @@ use RedisException;
  * least phpredis-4.3.0 is required! For reason, see github issue link.
  *
  * @see https://github.com/phpredis/phpredis/issues/1477
- *
- * @link http://redis.io/topics/distlock
+ * @see http://redis.io/topics/distlock
  */
 class PHPRedisMutex extends RedisMutex
 {
@@ -28,11 +27,12 @@ class PHPRedisMutex extends RedisMutex
      * The Redis APIs needs to be connected. I.e. Redis::connect() was
      * called already.
      *
-     * @param array<\Redis|\RedisCluster> $redisAPIs The Redis connections.
-     * @param string                      $name      The lock name.
+     * @param array<\Redis|\RedisCluster> $redisAPIs the Redis connections
+     * @param string                      $name      the lock name
      * @param float                       $timeout   The time in seconds a lock expires after. Default is
      *                                               3 seconds.
-     * @throws \LengthException The timeout must be greater than 0.
+     *
+     * @throws \LengthException the timeout must be greater than 0
      */
     public function __construct(array $redisAPIs, string $name, float $timeout = 3)
     {
@@ -40,7 +40,8 @@ class PHPRedisMutex extends RedisMutex
     }
 
     /**
-     * @param \Redis|\RedisCluster $redisAPI The Redis or RedisCluster connection.
+     * @param \Redis|\RedisCluster $redisAPI the Redis or RedisCluster connection
+     *
      * @throws LockAcquireException
      */
     protected function add($redisAPI, string $key, string $value, float $expire): bool
@@ -56,12 +57,14 @@ class PHPRedisMutex extends RedisMutex
                 "Failed to acquire lock for key '%s'",
                 $key
             );
+
             throw new LockAcquireException($message, 0, $e);
         }
     }
 
     /**
-     * @param \Redis|\RedisCluster $redis The Redis or RedisCluster connection.
+     * @param \Redis|\RedisCluster $redis the Redis or RedisCluster connection
+     *
      * @throws LockReleaseException
      */
     protected function evalScript($redis, string $script, int $numkeys, array $arguments)
@@ -94,8 +97,9 @@ class PHPRedisMutex extends RedisMutex
     /**
      * Determines if lzf compression is enabled for the given connection.
      *
-     * @param  \Redis|\RedisCluster $redis The Redis or RedisCluster connection.
-     * @return bool TRUE if lzf compression is enabled, false otherwise.
+     * @param \Redis|\RedisCluster $redis the Redis or RedisCluster connection
+     *
+     * @return bool TRUE if lzf compression is enabled, false otherwise
      */
     private function hasLzfCompression($redis): bool
     {
@@ -103,6 +107,6 @@ class PHPRedisMutex extends RedisMutex
             return false;
         }
 
-        return Redis::COMPRESSION_LZF === $redis->getOption(Redis::OPT_COMPRESSION);
+        return $redis->getOption(Redis::OPT_COMPRESSION) === Redis::COMPRESSION_LZF;
     }
 }

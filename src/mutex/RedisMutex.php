@@ -13,30 +13,30 @@ use Psr\Log\NullLogger;
 /**
  * Mutex based on the Redlock algorithm.
  *
- * @link http://redis.io/topics/distlock
+ * @see http://redis.io/topics/distlock
  */
 abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     /**
-     * @var string The random value token for key identification.
+     * @var string the random value token for key identification
      */
     private $token;
 
     /**
-     * @var array The Redis APIs.
+     * @var array the Redis APIs
      */
     private $redisAPIs;
 
     /**
      * Sets the Redis APIs.
      *
-     * @param array  $redisAPIs The Redis APIs.
-     * @param string $name      The lock name.
-     * @param float  $timeout   The time in seconds a lock expires, default is 3.
+     * @param array  $redisAPIs the Redis APIs
+     * @param string $name      the lock name
+     * @param float  $timeout   the time in seconds a lock expires, default is 3
      *
-     * @throws \LengthException The timeout must be greater than 0.
+     * @throws \LengthException the timeout must be greater than 0
      */
     public function __construct(array $redisAPIs, string $name, float $timeout = 3)
     {
@@ -67,7 +67,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                     'key' => $key,
                     'index' => $index,
                     'token' => $this->token,
-                    'exception' => $exception
+                    'exception' => $exception,
                 ];
                 $this->logger->warning('Could not set {key} = {token} at server #{index}.', $context);
 
@@ -89,7 +89,8 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 
         // In addition to RedLock it's an exception if too many servers fail.
         if (!$this->isMajority(count($this->redisAPIs) - $errored)) {
-            assert(!is_null($exception)); // The last exception for some context.
+            assert($exception !== null); // The last exception for some context.
+
             throw new LockAcquireException(
                 "It's not possible to acquire a lock because at least half of the Redis server are not available.",
                 LockAcquireException::REDIS_NOT_ENOUGH_SERVERS,
@@ -126,7 +127,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                     'key' => $key,
                     'index' => $index,
                     'token' => $this->token,
-                    'exception' => $e
+                    'exception' => $e,
                 ];
                 $this->logger->warning('Could not unset {key} = {token} at server #{index}.', $context);
             }
@@ -138,8 +139,9 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     /**
      * Returns if a count is the majority of all servers.
      *
-     * @param int $count The count.
-     * @return bool True if the count is the majority.
+     * @param int $count the count
+     *
+     * @return bool true if the count is the majority
      */
     private function isMajority(int $count): bool
     {
@@ -149,23 +151,24 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     /**
      * Sets the key only if such key doesn't exist at the server yet.
      *
-     * @param mixed  $redisAPI The connected Redis API.
-     * @param string $key      The key.
-     * @param string $value    The value.
-     * @param float  $expire   The TTL seconds.
+     * @param mixed  $redisAPI the connected Redis API
+     * @param string $key      the key
+     * @param string $value    the value
+     * @param float  $expire   the TTL seconds
      *
-     * @return bool True, if the key was set.
+     * @return bool true, if the key was set
      */
     abstract protected function add($redisAPI, string $key, string $value, float $expire): bool;
 
     /**
-     * @param mixed  $redisAPI The connected Redis API.
-     * @param string $script The Lua script.
-     * @param int    $numkeys The number of values in $arguments that represent Redis key names.
-     * @param array  $arguments Keys and values.
+     * @param mixed  $redisAPI  the connected Redis API
+     * @param string $script    the Lua script
+     * @param int    $numkeys   the number of values in $arguments that represent Redis key names
+     * @param array  $arguments keys and values
      *
-     * @throws LockReleaseException An unexpected error happened.
-     * @return mixed The script result, or false if executing failed.
+     * @return mixed the script result, or false if executing failed
+     *
+     * @throws LockReleaseException an unexpected error happened
      */
     abstract protected function evalScript($redisAPI, string $script, int $numkeys, array $arguments);
 }

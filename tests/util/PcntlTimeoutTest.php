@@ -7,14 +7,14 @@ use malkusch\lock\exception\LockAcquireException;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for PcntlTimeout
+ * Tests for PcntlTimeout.
  *
  * @requires pcntl
  */
 class PcntlTimeoutTest extends TestCase
 {
     /**
-     * A long running system call should be interrupted
+     * A long running system call should be interrupted.
      */
     public function testShouldTimeout()
     {
@@ -28,7 +28,7 @@ class PcntlTimeoutTest extends TestCase
     }
 
     /**
-     * A short running system call should complete its execution
+     * A short running system call should complete its execution.
      */
     public function testShouldNotTimeout()
     {
@@ -42,7 +42,7 @@ class PcntlTimeoutTest extends TestCase
     }
 
     /**
-     * When a previous scheduled alarm exists, it should fail
+     * When a previous scheduled alarm exists, it should fail.
      */
     public function testShouldFailOnExistingAlarm()
     {
@@ -61,15 +61,13 @@ class PcntlTimeoutTest extends TestCase
     }
 
     /**
-     * After not timing out, there should be no alarm scheduled
-     *
+     * After not timing out, there should be no alarm scheduled.
      */
     public function testShouldResetAlarmWhenNotTimeout()
     {
         $timeout = new PcntlTimeout(3);
 
-        $timeout->timeBoxed(function () {
-        });
+        $timeout->timeBoxed(function () {});
 
         $this->assertEquals(0, pcntl_alarm(0));
     }

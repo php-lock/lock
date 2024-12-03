@@ -21,20 +21,20 @@ class FlockMutex extends LockMutex
     /**
      * @internal
      */
-    const STRATEGY_BLOCK = 1;
+    public const STRATEGY_BLOCK = 1;
 
     /**
      * @internal
      */
-    const STRATEGY_PCNTL = 2;
+    public const STRATEGY_PCNTL = 2;
 
     /**
      * @internal
      */
-    const STRATEGY_BUSY = 3;
+    public const STRATEGY_BUSY = 3;
 
     /**
-     * @var resource $fileHandle The file handle.
+     * @var resource the file handle
      */
     private $fileHandle;
 
@@ -51,8 +51,7 @@ class FlockMutex extends LockMutex
     /**
      * Sets the file handle.
      *
-     * @param resource $fileHandle The file handle.
-     * @param float    $timeout
+     * @param resource $fileHandle the file handle
      */
     public function __construct($fileHandle, float $timeout = self::INFINITE_TIMEOUT)
     {
@@ -128,17 +127,15 @@ class FlockMutex extends LockMutex
 
     /**
      * @throws LockAcquireException
-     * @return bool
      */
     private function acquireNonBlockingLock(): bool
     {
-        if (!flock($this->fileHandle, LOCK_EX|LOCK_NB, $wouldBlock)) {
+        if (!flock($this->fileHandle, LOCK_EX | LOCK_NB, $wouldBlock)) {
             if ($wouldBlock) {
-                /*
-                 * Another process holds the lock.
-                 */
+                // Another process holds the lock.
                 return false;
             }
+
             throw new LockAcquireException('Failed to lock the file.');
         }
 

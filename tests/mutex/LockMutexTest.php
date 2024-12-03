@@ -47,13 +47,11 @@ class LockMutexTest extends TestCase
         $this->mutex->expects($this->once())
             ->method('unlock');
 
-        $this->mutex->synchronized(function (): void {
-        });
+        $this->mutex->synchronized(function (): void {});
     }
 
     /**
      * Tests unlock() is called after an exception.
-     *
      */
     public function testUnlockAfterException()
     {
@@ -77,8 +75,7 @@ class LockMutexTest extends TestCase
             ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
-        $this->mutex->synchronized(function () {
-        });
+        $this->mutex->synchronized(function () {});
     }
 
     /**

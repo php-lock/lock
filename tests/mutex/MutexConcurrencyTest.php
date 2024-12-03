@@ -26,7 +26,7 @@ class MutexConcurrencyTest extends TestCase
      */
     private static $temporaryFiles = [];
     /**
-     * @var \PDO|null The pdo instance.
+     * @var \PDO|null the pdo instance
      */
     private $pdo;
 
@@ -42,11 +42,11 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Gets a PDO instance.
      *
-     * @param string $dsn The DSN.
-     * @param string $user The user.
-     * @param string $password The password.
+     * @param string $dsn      the DSN
+     * @param string $user     the user
+     * @param string $password the password
      *
-     * @return \PDO The PDO.
+     * @return \PDO the PDO
      */
     private function getPDO(string $dsn, string $user, string $password): \PDO
     {
@@ -61,8 +61,8 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Forks, runs code in the children and wait until all finished.
      *
-     * @param int $concurrency The amount of forks.
-     * @param callable $code The code for the fork.
+     * @param int      $concurrency the amount of forks
+     * @param callable $code        the code for the fork
      */
     private function fork(int $concurrency, callable $code)
     {
@@ -78,10 +78,11 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Tests high contention empirically.
      *
-     * @param callable $code         The counter code.
-     * @param callable $mutexFactory The mutex factory.
+     * @param callable $code         the counter code
+     * @param callable $mutexFactory the mutex factory
      *
      * @dataProvider provideTestHighContention
+     *
      * @slowThreshold 1000
      */
     public function testHighContention(callable $code, callable $mutexFactory)
@@ -125,7 +126,7 @@ class MutexConcurrencyTest extends TestCase
 
                     return $counter;
                 },
-                $mutexFactory[0]
+                $mutexFactory[0],
             ];
         }, $this->provideMutexFactories());
 
@@ -134,7 +135,7 @@ class MutexConcurrencyTest extends TestCase
 
             $options = ['mysql' => 'engine=InnoDB'];
             $option = $options[$vendor] ?? '';
-            $pdo->exec("CREATE TABLE IF NOT EXISTS counter(id INT PRIMARY KEY, counter INT) $option");
+            $pdo->exec("CREATE TABLE IF NOT EXISTS counter(id INT PRIMARY KEY, counter INT) {$option}");
 
             $pdo->beginTransaction();
             $pdo->exec('DELETE FROM counter');
@@ -167,7 +168,7 @@ class MutexConcurrencyTest extends TestCase
                     $pdo = $this->getPDO($dsn, $user, $password);
 
                     return new TransactionalMutex($pdo, $timeout);
-                }
+                },
             ];
         };
 
@@ -191,8 +192,10 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Tests that five processes run sequentially.
      *
-     * @param callable $mutexFactory The Mutex factory.
+     * @param callable $mutexFactory the Mutex factory
+     *
      * @dataProvider provideMutexFactories
+     *
      * @slowThreshold 2000
      */
     public function testExecutionIsSerializedWhenLocked(callable $mutexFactory)
@@ -214,7 +217,7 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Provides Mutex factories.
      *
-     * @return callable[][] The mutex factories.
+     * @return callable[][] the mutex factories
      */
     public function provideMutexFactories()
     {
@@ -306,7 +309,7 @@ class MutexConcurrencyTest extends TestCase
                         );
 
                         return new PHPRedisMutex($apis, 'test', $timeout);
-                    }
+                    },
                 ];
             }
         }

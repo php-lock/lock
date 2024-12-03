@@ -36,8 +36,8 @@ class RedisMutexTest extends TestCase
     /**
      * Builds a testable RedisMutex mock.
      *
-     * @param int   $count   The amount of redis apis.
-     * @param float $timeout The timeout.
+     * @param int   $count   the amount of redis apis
+     * @param float $timeout the timeout
      *
      * @return MockObject|RedisMutex
      */
@@ -56,8 +56,8 @@ class RedisMutexTest extends TestCase
     /**
      * Tests acquire() fails because too few servers are available.
      *
-     * @param int $count The total count of servers
-     * @param int $available The count of available servers.
+     * @param int $count     The total count of servers
+     * @param int $available the count of available servers
      *
      * @dataProvider provideMinority
      */
@@ -91,8 +91,8 @@ class RedisMutexTest extends TestCase
     /**
      * Tests synchronized() does work if the majority of servers is up.
      *
-     * @param int $count The total count of servers
-     * @param int $available The count of available servers.
+     * @param int $count     The total count of servers
+     * @param int $available the count of available servers
      *
      * @dataProvider provideMajority
      */
@@ -118,15 +118,14 @@ class RedisMutexTest extends TestCase
                 }
             );
 
-        $mutex->synchronized(function () {
-        });
+        $mutex->synchronized(function () {});
     }
 
     /**
      * Tests too few keys could be acquired.
      *
-     * @param int $count The total count of servers
-     * @param int $available The count of available servers.
+     * @param int $count     The total count of servers
+     * @param int $available the count of available servers
      *
      * @dataProvider provideMinority
      */
@@ -156,9 +155,9 @@ class RedisMutexTest extends TestCase
     /**
      * Tests acquiring keys takes too long.
      *
-     * @param int   $count   The total count of servers.
-     * @param float $timeout The timeout in seconds.
-     * @param float $delay   The delay in seconds.
+     * @param int   $count   the total count of servers
+     * @param float $timeout the timeout in seconds
+     * @param float $delay   the delay in seconds
      *
      * @dataProvider provideTestTimingOut
      */
@@ -190,7 +189,7 @@ class RedisMutexTest extends TestCase
     /**
      * Returns test cases for testTimingOut().
      *
-     * @return array Test cases.
+     * @return array test cases
      */
     public function provideTestTimingOut()
     {
@@ -204,8 +203,8 @@ class RedisMutexTest extends TestCase
     /**
      * Tests synchronized() works if the majority of keys was acquired.
      *
-     * @param int $count The total count of servers
-     * @param int $available The count of available servers.
+     * @param int $count     The total count of servers
+     * @param int $available the count of available servers
      *
      * @dataProvider provideMajority
      */
@@ -227,15 +226,14 @@ class RedisMutexTest extends TestCase
                 }
             );
 
-        $mutex->synchronized(function (): void {
-        });
+        $mutex->synchronized(function (): void {});
     }
 
     /**
      * Tests releasing fails because too few servers are available.
      *
-     * @param int $count The total count of servers
-     * @param int $available The count of available servers.
+     * @param int $count     The total count of servers
+     * @param int $available the count of available servers
      *
      * @dataProvider provideMinority
      */
@@ -263,15 +261,14 @@ class RedisMutexTest extends TestCase
 
         $this->expectException(LockReleaseException::class);
 
-        $mutex->synchronized(function (): void {
-        });
+        $mutex->synchronized(function (): void {});
     }
 
     /**
      * Tests releasing too few keys.
      *
-     * @param int $count The total count of servers
-     * @param int $available The count of available servers.
+     * @param int $count     The total count of servers
+     * @param int $available the count of available servers
      *
      * @dataProvider provideMinority
      */
@@ -295,14 +292,13 @@ class RedisMutexTest extends TestCase
 
         $this->expectException(LockReleaseException::class);
 
-        $mutex->synchronized(function (): void {
-        });
+        $mutex->synchronized(function (): void {});
     }
 
     /**
      * Provides test cases with too few.
      *
-     * @return int[][] Test cases.
+     * @return int[][] test cases
      */
     public function provideMinority()
     {
@@ -322,7 +318,7 @@ class RedisMutexTest extends TestCase
     /**
      * Provides test cases with enough.
      *
-     * @return int[][] Test cases.
+     * @return int[][] test cases
      */
     public function provideMajority()
     {

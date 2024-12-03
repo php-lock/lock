@@ -22,12 +22,12 @@ use PDOException;
 class TransactionalMutex extends Mutex
 {
     /**
-     * @var \PDO $pdo The PDO.
+     * @var \PDO the PDO
      */
     private $pdo;
 
     /**
-     * @var Loop The loop.
+     * @var Loop the loop
      */
     private $loop;
 
@@ -40,10 +40,10 @@ class TransactionalMutex extends Mutex
      * As this implementation spans a transaction over a unit of work,
      * PDO::ATTR_AUTOCOMMIT SHOULD not be enabled.
      *
-     * @param \PDO  $pdo     The PDO.
-     * @param float $timeout The timeout in seconds, default is 3.
+     * @param \PDO  $pdo     the PDO
+     * @param float $timeout the timeout in seconds, default is 3
      *
-     * @throws \LengthException The timeout must be greater than 0.
+     * @throws \LengthException the timeout must be greater than 0
      */
     public function __construct(\PDO $pdo, float $timeout = 3)
     {
@@ -98,11 +98,13 @@ class TransactionalMutex extends Mutex
      * and won't  be replayed.
      *
      * @template T
-     * @param callable(): T $code The synchronized execution block.
-     * @throws \Exception The execution block threw an exception.
-     * @throws LockAcquireException The transaction was not commited.
-     * @return T The return value of the execution block.
-     * @SuppressWarnings(PHPMD)
+     *
+     * @param callable(): T $code the synchronized execution block
+     *
+     * @return T the return value of the execution block
+     *
+     * @throws \Exception           the execution block threw an exception
+     * @throws LockAcquireException the transaction was not commited
      */
     public function synchronized(callable $code)
     {
@@ -136,8 +138,9 @@ class TransactionalMutex extends Mutex
     /**
      * Checks if an exception or any of its previous exceptions is a PDOException.
      *
-     * @param \Throwable $exception The exception.
-     * @return bool True if there's a PDOException.
+     * @param \Throwable $exception the exception
+     *
+     * @return bool true if there's a PDOException
      */
     private static function hasPDOException(\Throwable $exception)
     {
@@ -154,9 +157,9 @@ class TransactionalMutex extends Mutex
     /**
      * Rolls back a transaction.
      *
-     * @param \Exception $exception The causing exception.
+     * @param \Exception $exception the causing exception
      *
-     * @throws LockAcquireException The roll back failed.
+     * @throws LockAcquireException the roll back failed
      */
     private function rollBack(\Exception $exception)
     {

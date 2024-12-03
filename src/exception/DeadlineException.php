@@ -9,6 +9,4 @@ use RuntimeException;
 /**
  * Deadline exception.
  */
-class DeadlineException extends RuntimeException implements PhpLockException
-{
-}
+class DeadlineException extends RuntimeException implements PhpLockException {}

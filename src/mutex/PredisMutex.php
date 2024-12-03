@@ -12,18 +12,18 @@ use Predis\PredisException;
 /**
  * Mutex based on the Redlock algorithm using the Predis API.
  *
- * @link http://redis.io/topics/distlock
+ * @see http://redis.io/topics/distlock
  */
 class PredisMutex extends RedisMutex
 {
     /**
      * Sets the Redis connections.
      *
-     * @param ClientInterface[] $clients The Redis clients.
-     * @param string            $name    The lock name.
-     * @param float             $timeout The time in seconds a lock expires, default is 3.
+     * @param ClientInterface[] $clients the Redis clients
+     * @param string            $name    the lock name
+     * @param float             $timeout the time in seconds a lock expires, default is 3
      *
-     * @throws \LengthException The timeout must be greater than 0.
+     * @throws \LengthException the timeout must be greater than 0
      */
     public function __construct(array $clients, string $name, float $timeout = 3)
     {
@@ -45,6 +45,7 @@ class PredisMutex extends RedisMutex
                 "Failed to acquire lock for key '%s'",
                 $key
             );
+
             throw new LockAcquireException($message, 0, $e);
         }
     }
