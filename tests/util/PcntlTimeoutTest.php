@@ -1,57 +1,63 @@
 <?php
 
-namespace malkusch\lock\Tests\util;
-
-use malkusch\lock\exception\DeadlineException;
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\util\PcntlTimeout;
-use PHPUnit\Framework\TestCase;
+namespace malkusch\lock\util;
 
 /**
+ * Tests for PcntlTimeout
+ *
+ * @author Markus Malkusch <markus@malkusch.de>
+ * @link bitcoin:1335STSwu9hST4vcMRppEPgENMHD2r1REK Donations
+ * @license WTFPL
+ * @see PcntlTimeout
  * @requires pcntl
  */
-class PcntlTimeoutTest extends TestCase
+class PcntlTimeoutTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * A long running system call should be interrupted.
-     */
-    public function testShouldTimeout(): void
-    {
-        $this->expectException(DeadlineException::class);
 
+    /**
+     * A long running system call should be interrupted
+     *
+     * @test
+     * @expectedException malkusch\lock\exception\TimeoutException
+     */
+    public function shouldTimeout()
+    {
         $timeout = new PcntlTimeout(1);
 
-        $timeout->timeBoxed(static function () {
+        $timeout->timeBoxed(function () {
             sleep(2);
         });
     }
 
     /**
-     * A short running system call should complete its execution.
+     * A short running system call should complete its execution
+     *
+     * @test
      */
-    public function testShouldNotTimeout(): void
+    public function shouldNotTimeout()
     {
         $timeout = new PcntlTimeout(1);
 
-        $result = $timeout->timeBoxed(static function () {
+        $result = $timeout->timeBoxed(function () {
             return 42;
         });
 
-        self::assertSame(42, $result);
+        $this->assertEquals(42, $result);
     }
 
     /**
-     * When a previous scheduled alarm exists, it should fail.
+     * When a previous scheduled alarm exists, it should fail
+     *
+     * @test
+     * @expectedException malkusch\lock\exception\LockAcquireException
      */
-    public function testShouldFailOnExistingAlarm(): void
+    public function shouldFailOnExistingAlarm()
     {
-        $this->expectException(LockAcquireException::class);
-
         try {
             pcntl_alarm(1);
             $timeout = new PcntlTimeout(1);
 
-            $timeout->timeBoxed(static function () {
+            $timeout->timeBoxed(function () {
                 sleep(1);
             });
         } finally {
@@ -60,14 +66,17 @@ class PcntlTimeoutTest extends TestCase
     }
 
     /**
-     * After not timing out, there should be no alarm scheduled.
+     * After not timing out, there should be no alarm scheduled
+     *
+     * @test
      */
-    public function testShouldResetAlarmWhenNotTimeout(): void
+    public function shouldResetAlarmWhenNotTimeout()
     {
         $timeout = new PcntlTimeout(3);
 
-        $timeout->timeBoxed(static function () {});
+        $timeout->timeBoxed(function () {
+        });
 
-        self::assertSame(0, pcntl_alarm(0));
+        $this->assertEquals(0, pcntl_alarm(0));
     }
 }
