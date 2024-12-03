@@ -20,6 +20,7 @@ class RedisMutexTest extends TestCase
 {
     use PHPMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,7 +62,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMinorityCases
      */
-    public function testTooFewServerToAcquire(int $count, int $available)
+    public function testTooFewServerToAcquire(int $count, int $available): void
     {
         $this->expectException(LockAcquireException::class);
         $this->expectExceptionCode(MutexException::REDIS_NOT_ENOUGH_SERVERS);
@@ -96,7 +97,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMajorityCases
      */
-    public function testFaultTolerance(int $count, int $available)
+    public function testFaultTolerance(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects(self::exactly($count))
@@ -129,7 +130,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMinorityCases
      */
-    public function testAcquireTooFewKeys($count, $available)
+    public function testAcquireTooFewKeys($count, $available): void
     {
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded.');
@@ -161,7 +162,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideTimingOutCases
      */
-    public function testTimingOut(int $count, float $timeout, float $delay)
+    public function testTimingOut(int $count, float $timeout, float $delay): void
     {
         $timeoutStr = (string) round($timeout, 6);
         if (strpos($timeoutStr, '.') === false) {
@@ -189,7 +190,7 @@ class RedisMutexTest extends TestCase
     /**
      * Returns test cases for testTimingOut().
      *
-     * @return array test cases
+     * @return iterable<list<mixed>>
      */
     public static function provideTimingOutCases(): iterable
     {
@@ -208,7 +209,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMajorityCases
      */
-    public function testAcquireWithMajority(int $count, int $available)
+    public function testAcquireWithMajority(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects(self::exactly($count))
@@ -237,7 +238,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMinorityCases
      */
-    public function testTooFewServersToRelease(int $count, int $available)
+    public function testTooFewServersToRelease(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);
         $mutex->expects(self::exactly($count))

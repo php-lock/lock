@@ -6,19 +6,24 @@ use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\exception\MutexException;
 use PHPUnit\Framework\TestCase;
-use Redis;
 
 if (\PHP_MAJOR_VERSION >= 8) {
     trait RedisTestTrait
     {
-        #[\Override]
+        /**
+         * @param list<mixed> $args
+         */
+        #[\Override] // @phpstan-ignore method.childParameterType
         public function eval($script, $args = [], $numKeys = 0): mixed
         {
             return $this->_eval($script, $args, $numKeys);
         }
 
+        /**
+         * @param mixed $options
+         */
         #[\Override]
-        public function set($key, $value, $options = null): /* Redis|string| */ bool
+        public function set($key, $value, $options = null): /* \Redis|string| */ bool
         {
             return $this->_set($key, $value, $options);
         }
@@ -59,21 +64,18 @@ if (\PHP_MAJOR_VERSION >= 8) {
  */
 class PHPRedisMutexTest extends TestCase
 {
-    /**
-     * @var \Redis[]
-     */
+    /** @var \Redis[] */
     private $connections = [];
 
-    /**
-     * @var PHPRedisMutex the SUT
-     */
+    /** @var PHPRedisMutex the SUT */
     private $mutex;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $uris = explode(',', getenv('REDIS_URIS') ?: 'redis://localhost');
+        $uris = explode(',', getenv('REDIS_URIS') ?: 'redis://localhost'); // @phpstan-ignore ternary.shortNotAllowed
 
         foreach ($uris as $redisUri) {
             $uri = parse_url($redisUri);
@@ -82,8 +84,10 @@ class PHPRedisMutexTest extends TestCase
             $connection = new class extends \Redis {
                 use RedisTestTrait;
 
+                /** @var bool */
                 private $is_closed = false;
 
+                #[\Override]
                 public function close(): bool
                 {
                     $res = parent::close();
@@ -92,7 +96,13 @@ class PHPRedisMutexTest extends TestCase
                     return $res;
                 }
 
-                private function _set($key, $value, $timeout = 0)
+                /**
+                 * @param mixed $value
+                 * @param mixed $timeout
+                 *
+                 * @return \Redis|string|bool
+                 */
+                private function _set(string $key, $value, $timeout = 0)
                 {
                     if ($this->is_closed) {
                         throw new \RedisException('Connection is closed');
@@ -101,7 +111,12 @@ class PHPRedisMutexTest extends TestCase
                     return parent::set($key, $value, $timeout);
                 }
 
-                private function _eval($script, $args = [], $numKeys = 0)
+                /**
+                 * @param list<mixed> $args
+                 *
+                 * @return mixed
+                 */
+                private function _eval(string $script, array $args = [], int $numKeys = 0)
                 {
                     if ($this->is_closed) {
                         throw new \RedisException('Connection is closed');
@@ -128,7 +143,7 @@ class PHPRedisMutexTest extends TestCase
         $this->mutex = new PHPRedisMutex($this->connections, 'test');
     }
 
-    private function closeMajorityConnections()
+    private function closeMajorityConnections(): void
     {
         $numberToClose = (int) ceil(count($this->connections) / 2);
 
@@ -137,7 +152,7 @@ class PHPRedisMutexTest extends TestCase
         }
     }
 
-    private function closeMinorityConnections()
+    private function closeMinorityConnections(): void
     {
         if (count($this->connections) === 1) {
             self::markTestSkipped('Cannot test this with only a single Redis server');
@@ -153,7 +168,7 @@ class PHPRedisMutexTest extends TestCase
         }
     }
 
-    public function testAddFails()
+    public function testAddFails(): void
     {
         $this->expectException(LockAcquireException::class);
         $this->expectExceptionCode(MutexException::REDIS_NOT_ENOUGH_SERVERS);
@@ -168,7 +183,7 @@ class PHPRedisMutexTest extends TestCase
     /**
      * Tests evalScript() fails.
      */
-    public function testEvalScriptFails()
+    public function testEvalScriptFails(): void
     {
         $this->expectException(LockReleaseException::class);
 
@@ -178,9 +193,12 @@ class PHPRedisMutexTest extends TestCase
     }
 
     /**
+     * @param \Redis::SERIALIZER_*  $serializer
+     * @param \Redis::COMPRESSION_* $compressor
+     *
      * @dataProvider provideSerializersAndCompressorsCases
      */
-    public function testSerializersAndCompressors($serializer, $compressor)
+    public function testSerializersAndCompressors($serializer, $compressor): void
     {
         foreach ($this->connections as $connection) {
             $connection->setOption(\Redis::OPT_SERIALIZER, $serializer);
@@ -192,7 +210,7 @@ class PHPRedisMutexTest extends TestCase
         }));
     }
 
-    public function testResistantToPartialClusterFailuresForAcquiringLock()
+    public function testResistantToPartialClusterFailuresForAcquiringLock(): void
     {
         $this->closeMinorityConnections();
 
@@ -201,15 +219,18 @@ class PHPRedisMutexTest extends TestCase
         }));
     }
 
-    public function testResistantToPartialClusterFailuresForReleasingLock()
+    public function testResistantToPartialClusterFailuresForReleasingLock(): void
     {
-        self::assertNull($this->mutex->synchronized(function () {
+        self::assertNull($this->mutex->synchronized(function () { // @phpstan-ignore staticMethod.alreadyNarrowedType
             $this->closeMinorityConnections();
 
             return null;
         }));
     }
 
+    /**
+     * @return iterable<list<mixed>>
+     */
     public static function provideSerializersAndCompressorsCases(): iterable
     {
         if (!class_exists(\Redis::class)) {

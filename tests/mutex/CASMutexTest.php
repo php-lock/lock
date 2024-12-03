@@ -7,13 +7,11 @@ use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Tests for CASMutex.
- */
 class CASMutexTest extends TestCase
 {
     use PHPMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -30,7 +28,7 @@ class CASMutexTest extends TestCase
     /**
      * Tests exceeding the execution timeout.
      */
-    public function testExceedTimeout()
+    public function testExceedTimeout(): void
     {
         $this->expectException(LockAcquireException::class);
 
@@ -43,7 +41,7 @@ class CASMutexTest extends TestCase
     /**
      * Tests that an exception would stop any further iteration.
      */
-    public function testExceptionStopsIteration()
+    public function testExceptionStopsIteration(): void
     {
         $this->expectException(\DomainException::class);
 
@@ -56,7 +54,7 @@ class CASMutexTest extends TestCase
     /**
      * Tests notify() will stop the iteration and return the result.
      */
-    public function testNotify()
+    public function testNotify(): void
     {
         $i = 0;
         $mutex = new CASMutex();
@@ -70,7 +68,7 @@ class CASMutexTest extends TestCase
     /**
      * Tests that the code is executed more times.
      */
-    public function testIteration()
+    public function testIteration(): void
     {
         $i = 0;
         $mutex = new CASMutex();

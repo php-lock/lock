@@ -11,13 +11,11 @@ use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Tests for SpinlockMutex.
- */
 class SpinlockMutexTest extends TestCase
 {
     use PHPMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -34,7 +32,7 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests failing to acquire the lock.
      */
-    public function testFailAcquireLock()
+    public function testFailAcquireLock(): void
     {
         $this->expectException(LockAcquireException::class);
 
@@ -51,7 +49,7 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests failing to acquire the lock due to a timeout.
      */
-    public function testAcquireTimesOut()
+    public function testAcquireTimesOut(): void
     {
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of 3.0 seconds exceeded.');
@@ -69,10 +67,10 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests executing code which exceeds the timeout fails.
      */
-    public function testExecuteTooLong()
+    public function testExecuteTooLong(): void
     {
         /** @var SpinlockMutex|MockObject $mutex */
-        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 0.5]);
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 0.5]); // @phpstan-ignore varTag.nativeType
         $mutex->expects(self::any())
             ->method('acquire')
             ->willReturn(true);
@@ -95,7 +93,7 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests executing code which barely doesn't hit the timeout.
      */
-    public function testExecuteBarelySucceeds()
+    public function testExecuteBarelySucceeds(): void
     {
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 0.5]);
         $mutex->expects(self::any())->method('acquire')->willReturn(true);
@@ -109,7 +107,7 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests failing to release a lock.
      */
-    public function testFailReleasingLock()
+    public function testFailReleasingLock(): void
     {
         $this->expectException(LockReleaseException::class);
 
@@ -123,7 +121,7 @@ class SpinlockMutexTest extends TestCase
     /**
      * Tests executing exactly until the timeout will leave the key one more second.
      */
-    public function testExecuteTimeoutLeavesOneSecondForKeyToExpire()
+    public function testExecuteTimeoutLeavesOneSecondForKeyToExpire(): void
     {
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 0.2]);
         $mutex->expects(self::once())

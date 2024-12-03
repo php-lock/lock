@@ -33,6 +33,7 @@ class PredisMutex extends RedisMutex
     /**
      * @throws LockAcquireException
      */
+    #[\Override]
     protected function add($redisAPI, string $key, string $value, float $expire): bool
     {
         $expireMillis = (int) ceil($expire * 1000);
@@ -50,9 +51,7 @@ class PredisMutex extends RedisMutex
         }
     }
 
-    /**
-     * @throws LockReleaseException
-     */
+    #[\Override]
     protected function evalScript($client, string $script, int $numkeys, array $arguments)
     {
         /** @var ClientInterface $client */

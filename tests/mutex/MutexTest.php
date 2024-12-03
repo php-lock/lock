@@ -6,7 +6,6 @@ use Eloquent\Liberator\Liberator;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
-use Redis;
 
 /**
  * Tests for Mutex.
@@ -20,6 +19,7 @@ class MutexTest extends TestCase
 {
     protected const TIMEOUT = 4;
 
+    #[\Override]
     public static function setUpBeforeClass(): void
     {
         vfsStream::setup('test');
@@ -53,7 +53,7 @@ class MutexTest extends TestCase
             'flockWithTimoutPcntl' => [static function (): Mutex {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, 3));
-                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore property.notFound
 
                 return $lock->popsValue();
             }],
@@ -61,7 +61,7 @@ class MutexTest extends TestCase
             'flockWithTimoutBusy' => [static function ($timeout = 3): Mutex {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, 3));
-                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore property.notFound
 
                 return $lock->popsValue();
             }],
@@ -175,7 +175,7 @@ class MutexTest extends TestCase
      *
      * @dataProvider provideMutexFactoriesCases
      */
-    public function testSynchronizedDelegates(callable $mutexFactory)
+    public function testSynchronizedDelegates(callable $mutexFactory): void
     {
         /** @var Mutex $mutex */
         $mutex = $mutexFactory();
@@ -192,7 +192,7 @@ class MutexTest extends TestCase
      *
      * @dataProvider provideMutexFactoriesCases
      */
-    public function testRelease(callable $mutexFactory)
+    public function testRelease(callable $mutexFactory): void
     {
         $mutex = call_user_func($mutexFactory);
         $mutex->synchronized(static function () {});
@@ -208,7 +208,7 @@ class MutexTest extends TestCase
      *
      * @dataProvider provideMutexFactoriesCases
      */
-    public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)
+    public function testSynchronizedPassesExceptionThrough(callable $mutexFactory): void
     {
         $this->expectException(\DomainException::class);
 

@@ -6,19 +6,13 @@ namespace malkusch\lock\mutex;
 
 class PgAdvisoryLockMutex extends LockMutex
 {
-    /**
-     * @var \PDO
-     */
+    /** @var \PDO */
     private $pdo;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $key1;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $key2;
 
     /**
@@ -30,16 +24,13 @@ class PgAdvisoryLockMutex extends LockMutex
 
         $hashed_name = hash('sha256', $name, true);
 
-        if ($hashed_name === false) { // @phpstan-ignore-line
-            throw new \RuntimeException('Unable to hash the key, sha256 algorithm is not supported.');
-        }
-
         [$bytes1, $bytes2] = str_split($hashed_name, 4);
 
         $this->key1 = unpack('i', $bytes1)[1];
         $this->key2 = unpack('i', $bytes2)[1];
     }
 
+    #[\Override]
     public function lock(): void
     {
         $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?,?)');
@@ -50,6 +41,7 @@ class PgAdvisoryLockMutex extends LockMutex
         ]);
     }
 
+    #[\Override]
     public function unlock(): void
     {
         $statement = $this->pdo->prepare('SELECT pg_advisory_unlock(?,?)');

@@ -16,16 +16,13 @@ use PHPUnit\Framework\TestCase;
  */
 class MemcachedMutexTest extends TestCase
 {
-    /**
-     * @var \Memcached|MockObject
-     */
+    /** @var \Memcached|MockObject */
     protected $memcached;
 
-    /**
-     * @var MemcachedMutex
-     */
+    /** @var MemcachedMutex */
     private $mutex;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->memcached = $this->createMock(\Memcached::class);
@@ -35,7 +32,7 @@ class MemcachedMutexTest extends TestCase
     /**
      * Tests failing to acquire the lock within the timeout.
      */
-    public function testFailAcquireLock()
+    public function testFailAcquireLock(): void
     {
         $this->expectException(TimeoutException::class);
 
@@ -52,7 +49,7 @@ class MemcachedMutexTest extends TestCase
     /**
      * Tests failing to release a lock.
      */
-    public function testFailReleasingLock()
+    public function testFailReleasingLock(): void
     {
         $this->expectException(LockReleaseException::class);
 

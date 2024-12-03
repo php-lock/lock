@@ -9,18 +9,12 @@ use malkusch\lock\exception\TimeoutException;
 
 class MySQLMutex extends LockMutex
 {
-    /**
-     * @var \PDO
-     */
+    /** @var \PDO */
     private $pdo;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $name;
-    /**
-     * @var float
-     */
+    /** @var float */
     private $timeout;
 
     public function __construct(\PDO $PDO, string $name, float $timeout = 0)
@@ -35,9 +29,7 @@ class MySQLMutex extends LockMutex
         $this->timeout = $timeout;
     }
 
-    /**
-     * @throws LockAcquireException
-     */
+    #[\Override]
     public function lock(): void
     {
         $statement = $this->pdo->prepare('SELECT GET_LOCK(?,?)');
@@ -69,6 +61,7 @@ class MySQLMutex extends LockMutex
         throw TimeoutException::create($this->timeout);
     }
 
+    #[\Override]
     public function unlock(): void
     {
         $statement = $this->pdo->prepare('DO RELEASE_LOCK(?)');

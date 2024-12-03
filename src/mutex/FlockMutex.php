@@ -33,19 +33,13 @@ class FlockMutex extends LockMutex
      */
     public const STRATEGY_BUSY = 3;
 
-    /**
-     * @var resource the file handle
-     */
+    /** @var resource the file handle */
     private $fileHandle;
 
-    /**
-     * @var float
-     */
+    /** @var float */
     private $timeout;
 
-    /**
-     * @var self::STRATEGY_*
-     */
+    /** @var self::STRATEGY_* */
     private $strategy;
 
     /**
@@ -115,7 +109,7 @@ class FlockMutex extends LockMutex
      * @throws TimeoutException
      * @throws LockAcquireException
      */
-    private function lockBusy()
+    private function lockBusy(): void
     {
         $loop = new Loop($this->timeout);
         $loop->execute(function () use ($loop): void {
@@ -131,7 +125,7 @@ class FlockMutex extends LockMutex
     private function acquireNonBlockingLock(): bool
     {
         if (!flock($this->fileHandle, \LOCK_EX | \LOCK_NB, $wouldBlock)) {
-            if ($wouldBlock) {
+            if ($wouldBlock) { // @phpstan-ignore if.condNotBoolean
                 // Another process holds the lock.
                 return false;
             }
@@ -146,6 +140,7 @@ class FlockMutex extends LockMutex
      * @throws LockAcquireException
      * @throws TimeoutException
      */
+    #[\Override]
     protected function lock(): void
     {
         switch ($this->strategy) {
@@ -163,12 +158,10 @@ class FlockMutex extends LockMutex
                 return;
         }
 
-        throw new \RuntimeException("Unknown strategy '{$this->strategy}'.'");
+        throw new \RuntimeException("Unknown strategy '{$this->strategy}'.'"); // @phpstan-ignore deadCode.unreachable
     }
 
-    /**
-     * @throws LockReleaseException
-     */
+    #[\Override]
     protected function unlock(): void
     {
         if (!flock($this->fileHandle, \LOCK_UN)) {

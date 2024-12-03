@@ -7,16 +7,13 @@ use PHPUnit\Framework\TestCase;
 
 class PgAdvisoryLockMutexTest extends TestCase
 {
-    /**
-     * @var \PDO|MockObject
-     */
+    /** @var \PDO|MockObject */
     private $pdo;
 
-    /**
-     * @var PgAdvisoryLockMutex
-     */
+    /** @var PgAdvisoryLockMutex */
     private $mutex;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,7 +23,7 @@ class PgAdvisoryLockMutexTest extends TestCase
         $this->mutex = new PgAdvisoryLockMutex($this->pdo, 'test' . uniqid());
     }
 
-    public function testAcquireLock()
+    public function testAcquireLock(): void
     {
         $statement = $this->createMock(\PDOStatement::class);
 
@@ -56,7 +53,7 @@ class PgAdvisoryLockMutexTest extends TestCase
         $this->mutex->lock();
     }
 
-    public function testReleaseLock()
+    public function testReleaseLock(): void
     {
         $statement = $this->createMock(\PDOStatement::class);
 

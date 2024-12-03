@@ -17,14 +17,10 @@ use malkusch\lock\mutex\Mutex;
  */
 class DoubleCheckedLocking
 {
-    /**
-     * @var Mutex the mutex
-     */
+    /** @var Mutex the mutex */
     private $mutex;
 
-    /**
-     * @var callable(): bool the check
-     */
+    /** @var callable(): bool the check */
     private $check;
 
     /**

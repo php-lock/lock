@@ -7,13 +7,11 @@ use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Tests for Loop.
- */
 class LoopTest extends TestCase
 {
     use PHPMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -29,7 +27,7 @@ class LoopTest extends TestCase
     /**
      * Test an invalid timeout.
      */
-    public function testInvalidTimeout()
+    public function testInvalidTimeout(): void
     {
         $this->expectException(\LengthException::class);
 
@@ -39,7 +37,7 @@ class LoopTest extends TestCase
     /**
      * Tests execution within the timeout.
      */
-    public function testExecutionWithinTimeout()
+    public function testExecutionWithinTimeout(): void
     {
         $this->expectNotToPerformAssertions();
 
@@ -53,7 +51,7 @@ class LoopTest extends TestCase
     /**
      * Tests execution within the timeout without calling end().
      */
-    public function testExecutionWithinTimeoutWithoutExplicitEnd()
+    public function testExecutionWithinTimeoutWithoutExplicitEnd(): void
     {
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded.');
@@ -67,7 +65,7 @@ class LoopTest extends TestCase
     /**
      * Tests exceeding the execution timeout.
      */
-    public function testExceedTimeoutIsAcceptableIfEndWasCalled()
+    public function testExceedTimeoutIsAcceptableIfEndWasCalled(): void
     {
         $this->expectNotToPerformAssertions();
 
@@ -81,7 +79,7 @@ class LoopTest extends TestCase
     /**
      * Tests exceeding the execution timeout without calling end().
      */
-    public function testExceedTimeoutWithoutExplicitEnd()
+    public function testExceedTimeoutWithoutExplicitEnd(): void
     {
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded.');
@@ -95,7 +93,7 @@ class LoopTest extends TestCase
     /**
      * Tests that an exception would stop any further iteration.
      */
-    public function testExceptionStopsIteration()
+    public function testExceptionStopsIteration(): void
     {
         $this->expectException(\DomainException::class);
 
@@ -108,7 +106,7 @@ class LoopTest extends TestCase
     /**
      * Tests end() will stop the iteration and return the result.
      */
-    public function testEnd()
+    public function testEnd(): void
     {
         $i = 0;
         $loop = new Loop();
@@ -122,7 +120,7 @@ class LoopTest extends TestCase
     /**
      * Tests that the code is executed more times.
      */
-    public function testIteration()
+    public function testIteration(): void
     {
         $i = 0;
         $loop = new Loop();

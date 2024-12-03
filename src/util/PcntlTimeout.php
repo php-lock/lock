@@ -18,9 +18,7 @@ use malkusch\lock\exception\LockAcquireException;
  */
 final class PcntlTimeout
 {
-    /**
-     * @var int Timeout in seconds
-     */
+    /** @var int Timeout in seconds */
     private $timeout;
 
     /**
@@ -80,7 +78,7 @@ final class PcntlTimeout
         }
 
         $oldAlarm = pcntl_alarm($this->timeout);
-        if ($oldAlarm != 0) {
+        if ($oldAlarm !== 0) {
             throw new LockAcquireException('Existing alarm was not expected');
         }
 

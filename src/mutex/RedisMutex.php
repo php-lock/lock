@@ -19,22 +19,18 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    /**
-     * @var string the random value token for key identification
-     */
+    /** @var string the random value token for key identification */
     private $token;
 
-    /**
-     * @var array the Redis APIs
-     */
+    /** @var array<int, mixed> the Redis APIs */
     private $redisAPIs;
 
     /**
      * Sets the Redis APIs.
      *
-     * @param array  $redisAPIs the Redis APIs
-     * @param string $name      the lock name
-     * @param float  $timeout   the time in seconds a lock expires, default is 3
+     * @param array<int, mixed> $redisAPIs the Redis APIs
+     * @param string            $name      the lock name
+     * @param float             $timeout   the time in seconds a lock expires, default is 3
      *
      * @throws \LengthException the timeout must be greater than 0
      */
@@ -46,6 +42,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         $this->logger = new NullLogger();
     }
 
+    #[\Override]
     protected function acquire(string $key, float $expire): bool
     {
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
@@ -101,6 +98,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         return false;
     }
 
+    #[\Override]
     protected function release(string $key): bool
     {
         /*
@@ -161,10 +159,10 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     abstract protected function add($redisAPI, string $key, string $value, float $expire): bool;
 
     /**
-     * @param mixed  $redisAPI  the connected Redis API
-     * @param string $script    the Lua script
-     * @param int    $numkeys   the number of values in $arguments that represent Redis key names
-     * @param array  $arguments keys and values
+     * @param mixed       $redisAPI  the connected Redis API
+     * @param string      $script    the Lua script
+     * @param int         $numkeys   the number of values in $arguments that represent Redis key names
+     * @param list<mixed> $arguments keys and values
      *
      * @return mixed the script result, or false if executing failed
      *

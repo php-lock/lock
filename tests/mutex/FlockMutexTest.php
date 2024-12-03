@@ -10,24 +10,22 @@ use PHPUnit\Framework\TestCase;
 
 class FlockMutexTest extends TestCase
 {
-    /**
-     * @var FlockMutex
-     */
+    /** @var FlockMutex */
     private $mutex;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $file;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->file = tempnam(sys_get_temp_dir(), 'flock-');
-        $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, 'r'), 1)); // @phpstan-ignore-line
+        $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, 'r'), 1)); // @phpstan-ignore assign.propertyType
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         unlink($this->file);
@@ -36,13 +34,15 @@ class FlockMutexTest extends TestCase
     }
 
     /**
-     * @dataProvider dpTimeoutableStrategiesCases
+     * @param FlockMutex::STRATEGY_* $strategy
+     *
+     * @dataProvider provideTimeoutableStrategiesCases
      */
-    public function testCodeExecutedOutsideLockIsNotThrown(int $strategy)
+    public function testCodeExecutedOutsideLockIsNotThrown(int $strategy): void
     {
-        $this->mutex->strategy = $strategy; // @phpstan-ignore-line
+        $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
 
-        self::assertTrue($this->mutex->synchronized(static function (): bool {
+        self::assertTrue($this->mutex->synchronized(static function (): bool { // @phpstan-ignore staticMethod.alreadyNarrowedType
             usleep(1100 * 1000);
 
             return true;
@@ -50,9 +50,11 @@ class FlockMutexTest extends TestCase
     }
 
     /**
-     * @dataProvider dpTimeoutableStrategiesCases
+     * @param FlockMutex::STRATEGY_* $strategy
+     *
+     * @dataProvider provideTimeoutableStrategiesCases
      */
-    public function testTimeoutOccurs(int $strategy)
+    public function testTimeoutOccurs(int $strategy): void
     {
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded.');
@@ -60,7 +62,7 @@ class FlockMutexTest extends TestCase
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, \LOCK_EX);
 
-        $this->mutex->strategy = $strategy; // @phpstan-ignore-line
+        $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
 
         try {
             $this->mutex->synchronized(
@@ -73,7 +75,10 @@ class FlockMutexTest extends TestCase
         }
     }
 
-    public static function dpTimeoutableStrategiesCases(): iterable
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideTimeoutableStrategiesCases(): iterable
     {
         return [
             [FlockMutex::STRATEGY_PCNTL],
@@ -81,14 +86,14 @@ class FlockMutexTest extends TestCase
         ];
     }
 
-    public function testNoTimeoutWaitsForever()
+    public function testNoTimeoutWaitsForever(): void
     {
         $this->expectException(DeadlineException::class);
 
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, \LOCK_EX);
 
-        $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK; // @phpstan-ignore-line
+        $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK; // @phpstan-ignore property.private
 
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {

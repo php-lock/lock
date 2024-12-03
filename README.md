@@ -1,7 +1,7 @@
 **[Requirements](#requirements)** |
 **[Installation](#installation)** |
 **[Usage](#usage)** |
-**[License and authors](#license-and-authors)** |
+**[License](#license)** |
 
 # php-lock/lock
 
@@ -119,7 +119,7 @@ $newBalance = $mutex->check(function () use ($bankAccount, $amount): bool {
     return $balance;
 });
 
-if (false === $newBalance) {
+if ($newBalance === false) {
     if ($balance < 0) {
         throw new \DomainException('You have no credit.');
     }
@@ -143,11 +143,11 @@ try {
             throw new \DomainException();
         }
 
-        return "result";
+        return 'result';
     });
 } catch (LockReleaseException $unlockException) {
     if ($unlockException->getCodeException() !== null) {
-        $codeException = $unlockException->getCodeException()
+        $codeException = $unlockException->getCodeException();
         // do something with the code exception
     } else {
         $code_result = $unlockException->getCodeResult();
@@ -190,9 +190,9 @@ Example:
 ```php
 $mutex = new CASMutex();
 $mutex->synchronized(function () use ($memcached, $mutex, $amount): void {
-    $balance = $memcached->get("balance", null, $casToken);
+    $balance = $memcached->get('balance', null, $casToken);
     $balance -= $amount;
-    if (!$memcached->cas($casToken, "balance", $balance)) {
+    if (!$memcached->cas($casToken, 'balance', $balance)) {
         return;
     }
     $mutex->notify();
@@ -206,12 +206,12 @@ The **FlockMutex** is a lock implementation based on
 
 Example:
 ```php
-$mutex = new FlockMutex(fopen(__FILE__, "r"));
+$mutex = new FlockMutex(fopen(__FILE__, 'r'));
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
+        throw new \DomainException('You have no credit.');
     }
     $bankAccount->setBalance($balance);
 });
@@ -228,14 +228,14 @@ The **MemcachedMutex** is a spinlock implementation which uses the
 Example:
 ```php
 $memcache = new \Memcached();
-$memcache->addServer("localhost", 11211);
+$memcache->addServer('localhost', 11211);
 
-$mutex = new MemcachedMutex("balance", $memcache);
+$mutex = new MemcachedMutex('balance', $memcache);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
+        throw new \DomainException('You have no credit.');
     }
     $bankAccount->setBalance($balance);
 });
@@ -255,14 +255,14 @@ continue to function as long as a majority of the servers still works.
 Example:
 ```php
 $redis = new Redis();
-$redis->connect("localhost");
+$redis->connect('localhost');
 
-$mutex = new PHPRedisMutex([$redis], "balance");
+$mutex = new PHPRedisMutex([$redis], 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
+        throw new \DomainException('You have no credit.');
     }
     $bankAccount->setBalance($balance);
 });
@@ -276,14 +276,14 @@ The **PredisMutex** is the distributed lock implementation of
 
 Example:
 ```php
-$redis = new Client("redis://localhost");
+$redis = new Client('redis://localhost');
 
-$mutex = new PredisMutex([$redis], "balance");
+$mutex = new PredisMutex([$redis], 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
+        throw new \DomainException('You have no credit.');
     }
     $bankAccount->setBalance($balance);
 });
@@ -296,13 +296,13 @@ The **SemaphoreMutex** is a lock implementation based on
 
 Example:
 ```php
-$semaphore = sem_get(ftok(__FILE__, "a"));
+$semaphore = sem_get(ftok(__FILE__, 'a'));
 $mutex = new SemaphoreMutex($semaphore);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
+        throw new \DomainException('You have no credit.');
     }
     $bankAccount->setBalance($balance);
 });
@@ -324,16 +324,16 @@ Example:
 $mutex = new TransactionalMutex($pdo);
 $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
     $select = $pdo->prepare(
-        "SELECT balance FROM account WHERE id = ? FOR UPDATE"
+        'SELECT balance FROM account WHERE id = ? FOR UPDATE'
     );
     $select->execute([$accountId]);
     $balance = $select->fetchColumn();
 
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
+        throw new \DomainException('You have no credit.');
     }
-    $pdo->prepare("UPDATE account SET balance = ? WHERE id = ?")
+    $pdo->prepare('UPDATE account SET balance = ? WHERE id = ?')
         ->execute([$balance, $accountId]);
 });
 ```
@@ -355,14 +355,14 @@ Also note that `GET_LOCK` function is server wide and the MySQL manual suggests
 you to namespace your locks like `dbname.lockname`.
 
 ```php
-$pdo = new PDO("mysql:host=localhost;dbname=test", "username");
+$pdo = new PDO('mysql:host=localhost;dbname=test', 'username');
 
-$mutex = new MySQLMutex($pdo, "balance", 15);
+$mutex = new MySQLMutex($pdo, 'balance', 15);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
+        throw new \DomainException('You have no credit.');
     }
     $bankAccount->setBalance($balance);
 });
@@ -381,24 +381,22 @@ No time outs are supported. If the connection to the database server is lost or
 interrupted, the lock is automatically released.
 
 ```php
-$pdo = new PDO("pgsql:host=localhost;dbname=test;", "username");
+$pdo = new PDO('pgsql:host=localhost;dbname=test;', 'username');
 
-$mutex = new PgAdvisoryLockMutex($pdo, "balance");
+$mutex = new PgAdvisoryLockMutex($pdo, 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException("You have no credit.");
+        throw new \DomainException('You have no credit.');
     }
     $bankAccount->setBalance($balance);
 });
 ```
 
-## License and authors
+## License
 
-This project is free and under the MIT.
-
-Responsible for this project is Willem Stuursma-Ruwen <willem@stuursma.name>.
+This project is free and is licensed under the MIT.
 
 [1]: http://semver.org
 [2]: https://github.com/nrk/predis

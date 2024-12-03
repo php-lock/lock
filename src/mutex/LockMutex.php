@@ -30,6 +30,7 @@ abstract class LockMutex extends Mutex
      */
     abstract protected function unlock(): void;
 
+    #[\Override]
     public function synchronized(callable $code)
     {
         $this->lock();

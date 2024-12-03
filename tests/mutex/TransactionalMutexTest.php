@@ -19,7 +19,7 @@ class TransactionalMutexTest extends TestCase
      *
      * @dataProvider provideInvalidErrorModeCases
      */
-    public function testInvalidErrorMode(int $mode)
+    public function testInvalidErrorMode(int $mode): void
     {
         $this->expectException(\InvalidArgumentException::class);
 
@@ -30,6 +30,8 @@ class TransactionalMutexTest extends TestCase
 
     /**
      * Returns test cases for testInvalidErrorMode().
+     *
+     * @return iterable<list<mixed>>
      */
     public static function provideInvalidErrorModeCases(): iterable
     {
@@ -42,7 +44,7 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests BEGIN fails.
      */
-    public function testBeginFails()
+    public function testBeginFails(): void
     {
         $this->expectException(LockAcquireException::class);
         $this->expectExceptionMessage('Could not begin transaction.');
@@ -60,7 +62,7 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests that an exception in the critical code causes a ROLLBACK.
      */
-    public function testExceptionRollsback()
+    public function testExceptionRollsback(): void
     {
         $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
@@ -88,7 +90,7 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests that a ROLLBACK caused by an exception fails.
      */
-    public function testFailExceptionRollsback()
+    public function testFailExceptionRollsback(): void
     {
         $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
@@ -110,7 +112,7 @@ class TransactionalMutexTest extends TestCase
      *
      * @dataProvider provideReplayTransactionCases
      */
-    public function testReplayTransaction(\Exception $exception)
+    public function testReplayTransaction(\Exception $exception): void
     {
         $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
@@ -158,7 +160,7 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests failing a ROLLBACK after the failed COMMIT.
      */
-    public function testRollbackAfterFailedCommitFails()
+    public function testRollbackAfterFailedCommitFails(): void
     {
         $this->expectException(LockAcquireException::class);
         $this->expectExceptionMessage('Could not roll back transaction:');

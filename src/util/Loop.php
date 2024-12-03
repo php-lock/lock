@@ -27,14 +27,10 @@ class Loop
      */
     private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
-    /**
-     * @var float the timeout in seconds
-     */
+    /** @var float the timeout in seconds */
     private $timeout;
 
-    /**
-     * @var bool true while code execution is repeating
-     */
+    /** @var bool true while code execution is repeating */
     private $looping = false;
 
     /**
@@ -91,9 +87,9 @@ class Loop
         $deadline = microtime(true) + $this->timeout;
 
         $result = null;
-        for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) { // @phpstan-ignore-line
+        for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) { // @phpstan-ignore booleanAnd.leftAlwaysTrue
             $result = $code();
-            if (!$this->looping) { // @phpstan-ignore-line
+            if (!$this->looping) { // @phpstan-ignore booleanNot.alwaysFalse
                 // The $code callback has called $this->end() and the lock has been acquired.
 
                 return $result;

@@ -6,7 +6,6 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
-use Redis;
 
 /**
  * Mutex based on the Redlock algorithm using the phpredis extension.
@@ -42,6 +41,7 @@ class PHPRedisMutex extends RedisMutex
      *
      * @throws LockAcquireException
      */
+    #[\Override] // @phpstan-ignore method.childParameterType
     protected function add($redisAPI, string $key, string $value, float $expire): bool
     {
         $expireMillis = (int) ceil($expire * 1000);
@@ -62,9 +62,8 @@ class PHPRedisMutex extends RedisMutex
 
     /**
      * @param \Redis|\RedisCluster $redis the Redis or RedisCluster connection
-     *
-     * @throws LockReleaseException
      */
+    #[\Override] // @phpstan-ignore method.childParameterType
     protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
         for ($i = $numkeys; $i < count($arguments); ++$i) {

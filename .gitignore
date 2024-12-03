@@ -1,4 +1,12 @@
+/coverage
 /vendor
 /composer.lock
+.idea
+nbproject
+.vscode
+.DS_Store
+
+*.local
+*.cache
+
 /phpunit.xml
-/.phpunit.result.cache

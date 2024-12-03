@@ -7,16 +7,12 @@ use malkusch\lock\exception\LockReleaseException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Tests for LockMutex.
- */
 class LockMutexTest extends TestCase
 {
-    /**
-     * @var MockObject|LockMutex The SUT
-     */
+    /** @var MockObject|LockMutex The SUT */
     private $mutex;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -27,7 +23,7 @@ class LockMutexTest extends TestCase
     /**
      * Tests lock() fails and the code is not executed.
      */
-    public function testLockFails()
+    public function testLockFails(): void
     {
         $this->expectException(LockAcquireException::class);
 
@@ -43,7 +39,7 @@ class LockMutexTest extends TestCase
     /**
      * Tests unlock() is called after the code was executed.
      */
-    public function testUnlockAfterCode()
+    public function testUnlockAfterCode(): void
     {
         $this->mutex->expects(self::once())
             ->method('unlock');
@@ -54,7 +50,7 @@ class LockMutexTest extends TestCase
     /**
      * Tests unlock() is called after an exception.
      */
-    public function testUnlockAfterException()
+    public function testUnlockAfterException(): void
     {
         $this->mutex->expects(self::once())
             ->method('unlock');
@@ -68,7 +64,7 @@ class LockMutexTest extends TestCase
     /**
      * Tests unlock() fails after the code was executed.
      */
-    public function testUnlockFailsAfterCode()
+    public function testUnlockFailsAfterCode(): void
     {
         $this->expectException(LockReleaseException::class);
 
@@ -82,7 +78,7 @@ class LockMutexTest extends TestCase
     /**
      * Tests unlock() fails after the code threw an exception.
      */
-    public function testUnlockFailsAfterException()
+    public function testUnlockFailsAfterException(): void
     {
         $this->expectException(LockReleaseException::class);
 
@@ -98,7 +94,7 @@ class LockMutexTest extends TestCase
     /**
      * Tests the code result is available in LockReleaseException.
      */
-    public function testCodeResultAvailableAfterFailedUnlock()
+    public function testCodeResultAvailableAfterFailedUnlock(): void
     {
         $this->mutex->expects(self::once())
             ->method('unlock')
@@ -117,7 +113,7 @@ class LockMutexTest extends TestCase
     /**
      * Tests the code exception is available in LockReleaseException.
      */
-    public function testCodeExceptionAvailableAfterFailedUnlock()
+    public function testCodeExceptionAvailableAfterFailedUnlock(): void
     {
         $this->mutex->expects(self::once())
             ->method('unlock')

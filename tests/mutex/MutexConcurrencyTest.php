@@ -6,7 +6,6 @@ use Eloquent\Liberator\Liberator;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
-use Redis;
 use Spatie\Async\Pool;
 
 /**
@@ -21,20 +20,18 @@ use Spatie\Async\Pool;
  */
 class MutexConcurrencyTest extends TestCase
 {
-    /**
-     * @var array
-     */
-    private static $temporaryFiles = [];
-    /**
-     * @var \PDO|null the pdo instance
-     */
+    /** @var list<string> */
+    protected static $temporaryFiles = [];
+    /** @var \PDO|null the pdo instance */
     private $pdo;
 
+    #[\Override]
     public static function tearDownAfterClass(): void
     {
         foreach (self::$temporaryFiles as $temporaryFile) {
             unlink($temporaryFile);
         }
+        self::$temporaryFiles = [];
 
         parent::tearDownAfterClass();
     }
@@ -64,7 +61,7 @@ class MutexConcurrencyTest extends TestCase
      * @param int      $concurrency the amount of forks
      * @param callable $code        the code for the fork
      */
-    private function fork(int $concurrency, callable $code)
+    private function fork(int $concurrency, callable $code): void
     {
         $pool = Pool::create();
 
@@ -85,7 +82,7 @@ class MutexConcurrencyTest extends TestCase
      *
      * @slowThreshold 1000
      */
-    public function testHighContention(callable $code, callable $mutexFactory)
+    public function testHighContention(callable $code, callable $mutexFactory): void
     {
         $concurrency = 10;
         $iterations = 1000 / $concurrency;
@@ -107,6 +104,8 @@ class MutexConcurrencyTest extends TestCase
 
     /**
      * Returns test cases for testHighContention().
+     *
+     * @return iterable<list<mixed>>
      */
     public function provideHighContentionCases(): iterable
     {
@@ -198,7 +197,7 @@ class MutexConcurrencyTest extends TestCase
      *
      * @slowThreshold 2000
      */
-    public function testExecutionIsSerializedWhenLocked(callable $mutexFactory)
+    public function testExecutionIsSerializedWhenLocked(callable $mutexFactory): void
     {
         $time = \microtime(true);
 
@@ -235,7 +234,7 @@ class MutexConcurrencyTest extends TestCase
             'flockWithTimoutPcntl' => [static function ($timeout = 3) use ($filename): Mutex {
                 $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore property.notFound
 
                 return $lock->popsValue();
             }],
@@ -243,7 +242,7 @@ class MutexConcurrencyTest extends TestCase
             'flockWithTimoutBusy' => [static function ($timeout = 3) use ($filename): Mutex {
                 $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore-line
+                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore property.notFound
 
                 return $lock->popsValue();
             }],

@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace malkusch\lock\mutex;
 
-use Memcached;
-
 /**
  * Memcached based spinlock implementation.
  */
 class MemcachedMutex extends SpinlockMutex
 {
-    /**
-     * @var \Memcached the connected Memcached API
-     */
+    /** @var \Memcached the connected Memcached API */
     private $memcache;
 
     /**
@@ -35,6 +31,7 @@ class MemcachedMutex extends SpinlockMutex
         $this->memcache = $memcache;
     }
 
+    #[\Override]
     protected function acquire(string $key, float $expire): bool
     {
         // memcached supports only integer expire
@@ -44,6 +41,7 @@ class MemcachedMutex extends SpinlockMutex
         return $this->memcache->add($key, true, $expireInt);
     }
 
+    #[\Override]
     protected function release(string $key): bool
     {
         return $this->memcache->delete($key);

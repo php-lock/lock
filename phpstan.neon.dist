@@ -1,9 +1,33 @@
-parameters:
-    level: 5
-    paths:
-        - ./
-    excludes_analyse:
-        - vendor/
+includes:
+    - phar://phpstan.phar/conf/bleedingEdge.neon
 
-    # TODO review once we drop PHP 7.x support
-    treatPhpDocTypesAsCertain: false
+parameters:
+    level: 6
+    checkMissingOverrideMethodAttribute: true
+    paths:
+        - .
+    excludePaths:
+        - vendor
+
+    ignoreErrors:
+        # TODO
+        -
+            path: '*'
+            identifier: equal.notAllowed
+            message: '~^Loose comparison via "==" is not allowed\.$~'
+            count: 4
+        -
+            path: 'src/mutex/RedisMutex.php'
+            identifier: if.condNotBoolean
+            message: '~^Only booleans are allowed in an if condition, mixed given\.$~'
+            count: 1
+        -
+            path: 'src/mutex/TransactionalMutex.php'
+            identifier: if.condNotBoolean
+            message: '~^Only booleans are allowed in an if condition, mixed given\.$~'
+            count: 1
+        -
+            path: 'tests/mutex/*Test.php'
+            identifier: empty.notAllowed
+            message: '~^Construct empty\(\) is not allowed\. Use more strict comparison\.$~'
+            count: 6

@@ -16,29 +16,19 @@ use malkusch\lock\util\Loop;
  */
 abstract class SpinlockMutex extends LockMutex
 {
-    /**
-     * The prefix for the lock key.
-     */
+    /** The prefix for the lock key. */
     private const PREFIX = 'lock_';
 
-    /**
-     * @var float the timeout in seconds a lock may live
-     */
+    /** @var float the timeout in seconds a lock may live */
     private $timeout;
 
-    /**
-     * @var Loop the loop
-     */
+    /** @var Loop the loop */
     private $loop;
 
-    /**
-     * @var string the lock key
-     */
+    /** @var string the lock key */
     private $key;
 
-    /**
-     * @var float the timestamp when the lock was acquired
-     */
+    /** @var float the timestamp when the lock was acquired */
     private $acquired;
 
     /**
@@ -55,6 +45,7 @@ abstract class SpinlockMutex extends LockMutex
         $this->key = self::PREFIX . $name;
     }
 
+    #[\Override]
     protected function lock(): void
     {
         $this->loop->execute(function (): void {
@@ -73,6 +64,7 @@ abstract class SpinlockMutex extends LockMutex
         });
     }
 
+    #[\Override]
     protected function unlock(): void
     {
         $elapsed_time = microtime(true) - $this->acquired;

@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace malkusch\lock\mutex;
 
-use Exception;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\util\Loop;
-use PDO;
-use PDOException;
 
 /**
  * Serialization is delegated to the DBS.
@@ -20,14 +17,10 @@ use PDOException;
  */
 class TransactionalMutex extends Mutex
 {
-    /**
-     * @var \PDO the PDO
-     */
+    /** @var \PDO the PDO */
     private $pdo;
 
-    /**
-     * @var Loop the loop
-     */
+    /** @var Loop the loop */
     private $loop;
 
     /**
@@ -95,16 +88,8 @@ class TransactionalMutex extends Mutex
      *
      * If the code throws any other exception, the transaction is rolled back
      * and won't  be replayed.
-     *
-     * @template T
-     *
-     * @param callable(): T $code the synchronized execution block
-     *
-     * @return T the return value of the execution block
-     *
-     * @throws \Exception           the execution block threw an exception
-     * @throws LockAcquireException the transaction was not commited
      */
+    #[\Override]
     public function synchronized(callable $code)
     {
         return $this->loop->execute(function () use ($code) {
@@ -160,7 +145,7 @@ class TransactionalMutex extends Mutex
      *
      * @throws LockAcquireException the roll back failed
      */
-    private function rollBack(\Exception $exception)
+    private function rollBack(\Exception $exception): void
     {
         try {
             $this->pdo->rollBack();

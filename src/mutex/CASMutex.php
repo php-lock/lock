@@ -17,9 +17,7 @@ use malkusch\lock\util\Loop;
  */
 class CASMutex extends Mutex
 {
-    /**
-     * @var Loop the loop
-     */
+    /** @var Loop the loop */
     private $loop;
 
     /**
@@ -63,21 +61,15 @@ class CASMutex extends Mutex
      *     $balance -= $amount;
      *     if (!$memcached->cas($casToken, 'balance', $balance)) {
      *         return;
-     *
      *     }
      *     $mutex->notify();
      * });
      * </code>
      *
-     * @template T
-     *
-     * @param callable(): T $code the synchronized execution block
-     *
-     * @return T the return value of the execution block
-     *
      * @throws \Exception       the execution block threw an exception
      * @throws TimeoutException the timeout was reached
      */
+    #[\Override]
     public function synchronized(callable $code)
     {
         return $this->loop->execute($code);

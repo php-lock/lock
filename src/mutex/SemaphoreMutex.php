@@ -12,9 +12,7 @@ use malkusch\lock\exception\LockReleaseException;
  */
 class SemaphoreMutex extends LockMutex
 {
-    /**
-     * @var \SysvSemaphore|resource the semaphore id
-     */
+    /** @var \SysvSemaphore|resource the semaphore id */
     private $semaphore;
 
     /**
@@ -24,8 +22,8 @@ class SemaphoreMutex extends LockMutex
      *
      * Example:
      * <code>
-     * $semaphore = sem_get(ftok(__FILE__, "a"));
-     * $mutex     = new SemaphoreMutex($semaphore);
+     * $semaphore = sem_get(ftok(__FILE__, 'a'));
+     * $mutex = new SemaphoreMutex($semaphore);
      * </code>
      *
      * @param \SysvSemaphore|resource $semaphore the semaphore id
@@ -43,6 +41,7 @@ class SemaphoreMutex extends LockMutex
     /**
      * @internal
      */
+    #[\Override]
     protected function lock(): void
     {
         if (!sem_acquire($this->semaphore)) {
@@ -53,6 +52,7 @@ class SemaphoreMutex extends LockMutex
     /**
      * @internal
      */
+    #[\Override]
     protected function unlock(): void
     {
         if (!sem_release($this->semaphore)) {

@@ -6,16 +6,12 @@ use malkusch\lock\mutex\Mutex;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Tests for DoubleCheckedLocking.
- */
 class DoubleCheckedLockingTest extends TestCase
 {
-    /**
-     * @var Mutex|MockObject the Mutex mock
-     */
+    /** @var Mutex|MockObject the Mutex mock */
     private $mutex;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,7 +22,7 @@ class DoubleCheckedLockingTest extends TestCase
     /**
      * Tests that the lock will not be acquired for a failing test.
      */
-    public function testCheckFailsAcquiresNoLock()
+    public function testCheckFailsAcquiresNoLock(): void
     {
         $this->mutex->expects(self::never())->method('synchronized');
 
@@ -39,13 +35,13 @@ class DoubleCheckedLockingTest extends TestCase
         });
 
         // Failed check should return false.
-        self::assertFalse($result);
+        self::assertFalse($result); // @phpstan-ignore staticMethod.impossibleType
     }
 
     /**
      * Tests that the check and execution are in the same lock.
      */
-    public function testLockedCheckAndExecution()
+    public function testLockedCheckAndExecution(): void
     {
         $lock = 0;
         $check = 0;
@@ -88,7 +84,7 @@ class DoubleCheckedLockingTest extends TestCase
      *
      * @dataProvider provideCodeNotExecutedCases
      */
-    public function testCodeNotExecuted(callable $check)
+    public function testCodeNotExecuted(callable $check): void
     {
         $this->mutex->expects(self::any())
             ->method('synchronized')
@@ -102,7 +98,7 @@ class DoubleCheckedLockingTest extends TestCase
         });
 
         // Each failed check should return false.
-        self::assertFalse($result);
+        self::assertFalse($result); // @phpstan-ignore staticMethod.impossibleType
     }
 
     /**
@@ -131,7 +127,7 @@ class DoubleCheckedLockingTest extends TestCase
     /**
      * Tests that the code executed if the checks are true.
      */
-    public function testCodeExecuted()
+    public function testCodeExecuted(): void
     {
         $this->mutex->expects(self::once())
             ->method('synchronized')

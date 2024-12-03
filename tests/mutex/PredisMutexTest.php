@@ -13,30 +13,25 @@ use Psr\Log\LoggerInterface;
 /**
  * Tests for PredisMutex.
  *
- * @group   redis
+ * @group redis
  */
 class PredisMutexTest extends TestCase
 {
-    /**
-     * @var ClientInterface|MockObject
-     */
+    /** @var ClientInterface|MockObject */
     private $client;
 
-    /**
-     * @var PredisMutex
-     */
+    /** @var PredisMutex */
     private $mutex;
 
-    /**
-     * @var LoggerInterface|MockObject
-     */
+    /** @var LoggerInterface|MockObject */
     private $logger;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->client = $this->getMockBuilder(ClientInterface::class)
+        $this->client = $this->getMockBuilder(ClientInterface::class) // @phpstan-ignore method.deprecated
             ->setMethods(array_merge(get_class_methods(ClientInterface::class), ['set', 'eval']))
             ->getMock();
 
@@ -49,7 +44,7 @@ class PredisMutexTest extends TestCase
     /**
      * Tests add() fails.
      */
-    public function testAddFailsToSetKey()
+    public function testAddFailsToSetKey(): void
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
@@ -71,7 +66,7 @@ class PredisMutexTest extends TestCase
     /**
      * Tests add() errors.
      */
-    public function testAddErrors()
+    public function testAddErrors(): void
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
@@ -91,7 +86,7 @@ class PredisMutexTest extends TestCase
         );
     }
 
-    public function testWorksNormally()
+    public function testWorksNormally(): void
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
@@ -115,7 +110,7 @@ class PredisMutexTest extends TestCase
     /**
      * Tests evalScript() fails.
      */
-    public function testEvalScriptFails()
+    public function testEvalScriptFails(): void
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')

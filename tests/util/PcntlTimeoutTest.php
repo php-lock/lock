@@ -16,7 +16,7 @@ class PcntlTimeoutTest extends TestCase
     /**
      * A long running system call should be interrupted.
      */
-    public function testShouldTimeout()
+    public function testShouldTimeout(): void
     {
         $this->expectException(DeadlineException::class);
 
@@ -30,7 +30,7 @@ class PcntlTimeoutTest extends TestCase
     /**
      * A short running system call should complete its execution.
      */
-    public function testShouldNotTimeout()
+    public function testShouldNotTimeout(): void
     {
         $timeout = new PcntlTimeout(1);
 
@@ -44,7 +44,7 @@ class PcntlTimeoutTest extends TestCase
     /**
      * When a previous scheduled alarm exists, it should fail.
      */
-    public function testShouldFailOnExistingAlarm()
+    public function testShouldFailOnExistingAlarm(): void
     {
         $this->expectException(LockAcquireException::class);
 
@@ -63,7 +63,7 @@ class PcntlTimeoutTest extends TestCase
     /**
      * After not timing out, there should be no alarm scheduled.
      */
-    public function testShouldResetAlarmWhenNotTimeout()
+    public function testShouldResetAlarmWhenNotTimeout(): void
     {
         $timeout = new PcntlTimeout(3);
 
