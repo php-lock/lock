@@ -44,7 +44,7 @@ class MemcachedMutexTest extends TestCase
             ->with('lock_test', true, 2)
             ->willReturn(false);
 
-        $this->mutex->synchronized(function (): void {
+        $this->mutex->synchronized(static function (): void {
             self::fail('execution is not expected');
         });
     }
@@ -66,6 +66,6 @@ class MemcachedMutexTest extends TestCase
             ->with('lock_test')
             ->willReturn(false);
 
-        $this->mutex->synchronized(function (): void {});
+        $this->mutex->synchronized(static function (): void {});
     }
 }

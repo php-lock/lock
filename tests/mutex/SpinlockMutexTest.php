@@ -8,6 +8,7 @@ use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\exception\TimeoutException;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -42,7 +43,7 @@ class SpinlockMutexTest extends TestCase
             ->method('acquire')
             ->willThrowException(new LockAcquireException());
 
-        $mutex->synchronized(function () {
+        $mutex->synchronized(static function () {
             self::fail('execution is not expected');
         });
     }
@@ -60,7 +61,7 @@ class SpinlockMutexTest extends TestCase
             ->method('acquire')
             ->willReturn(false);
 
-        $mutex->synchronized(function () {
+        $mutex->synchronized(static function () {
             self::fail('execution is not expected');
         });
     }
@@ -70,7 +71,7 @@ class SpinlockMutexTest extends TestCase
      */
     public function testExecuteTooLong()
     {
-        /** @var SpinlockMutex|\PHPUnit\Framework\MockObject\MockObject $mutex */
+        /** @var SpinlockMutex|MockObject $mutex */
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 0.5]);
         $mutex->expects(self::any())
             ->method('acquire')
@@ -86,7 +87,7 @@ class SpinlockMutexTest extends TestCase
             'seconds. The last 0\.0\d+ seconds were executed outside of the lock./'
         );
 
-        $mutex->synchronized(function () {
+        $mutex->synchronized(static function () {
             usleep(501 * 1000);
         });
     }
@@ -100,7 +101,7 @@ class SpinlockMutexTest extends TestCase
         $mutex->expects(self::any())->method('acquire')->willReturn(true);
         $mutex->expects(self::once())->method('release')->willReturn(true);
 
-        $mutex->synchronized(function () {
+        $mutex->synchronized(static function () {
             usleep(499 * 1000);
         });
     }
@@ -116,7 +117,7 @@ class SpinlockMutexTest extends TestCase
         $mutex->expects(self::any())->method('acquire')->willReturn(true);
         $mutex->expects(self::any())->method('release')->willReturn(false);
 
-        $mutex->synchronized(function () {});
+        $mutex->synchronized(static function () {});
     }
 
     /**
@@ -132,7 +133,7 @@ class SpinlockMutexTest extends TestCase
 
         $mutex->expects(self::once())->method('release')->willReturn(true);
 
-        $mutex->synchronized(function () {
+        $mutex->synchronized(static function () {
             usleep(199 * 1000);
         });
     }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace malkusch\lock\util;
 
+use malkusch\lock\exception\ExecutionOutsideLockException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\mutex\Mutex;
 
 /**
@@ -15,7 +18,7 @@ use malkusch\lock\mutex\Mutex;
 class DoubleCheckedLocking
 {
     /**
-     * @var \malkusch\lock\mutex\Mutex the mutex
+     * @var Mutex the mutex
      */
     private $mutex;
 
@@ -27,11 +30,9 @@ class DoubleCheckedLocking
     /**
      * Constructs a new instance of the DoubleCheckedLocking pattern.
      *
-     * @param \malkusch\lock\mutex\Mutex $mutex provides methods for exclusive
-     *                                          code execution
-     * @param callable(): bool           $check callback that decides if the lock should be
-     *                                          acquired and if the critical code callback should be executed after
-     *                                          acquiring the lock
+     * @param Mutex            $mutex provides methods for exclusive code execution
+     * @param callable(): bool $check callback that decides if the lock should be acquired and if the critical code
+     *                                callback should be executed after acquiring the lock
      */
     public function __construct(Mutex $mutex, callable $check)
     {
@@ -52,17 +53,12 @@ class DoubleCheckedLocking
      *
      * @param callable(): T $code the critical code callback
      *
-     * @return T|false boolean false if check did not pass or mixed for what ever
-     *                 the critical code callback returns
+     * @return T|false boolean false if check did not pass or mixed for what ever the critical code callback returns
      *
-     * @throws \Exception                                             the execution callback or the check threw an
-     *                                                                exception
-     * @throws \malkusch\lock\exception\LockAcquireException          the mutex could not
-     *                                                                be acquired
-     * @throws \malkusch\lock\exception\LockReleaseException          the mutex could not
-     *                                                                be released
-     * @throws \malkusch\lock\exception\ExecutionOutsideLockException some code
-     *                                                                has been executed outside of the lock
+     * @throws \Exception                    the execution callback or the check threw an exception
+     * @throws LockAcquireException          the mutex could not be acquired
+     * @throws LockReleaseException          the mutex could not be released
+     * @throws ExecutionOutsideLockException some code has been executed outside of the lock
      */
     public function then(callable $code)
     {

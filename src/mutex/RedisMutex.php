@@ -59,7 +59,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         foreach ($this->redisAPIs as $index => $redisAPI) {
             try {
                 if ($this->add($redisAPI, $key, $this->token, $expire)) {
-                    $acquired++;
+                    ++$acquired;
                 }
             } catch (LockAcquireException $exception) {
                 // todo if there is only one redis server, throw immediately.
@@ -71,7 +71,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                 ];
                 $this->logger->warning('Could not set {key} = {token} at server #{index}.', $context);
 
-                $errored++;
+                ++$errored;
             }
         }
 
@@ -119,7 +119,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         foreach ($this->redisAPIs as $index => $redisAPI) {
             try {
                 if ($this->evalScript($redisAPI, $script, 1, [$key, $this->token])) {
-                    $released++;
+                    ++$released;
                 }
             } catch (LockReleaseException $e) {
                 // todo throw if there is only one redis server

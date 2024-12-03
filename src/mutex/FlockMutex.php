@@ -85,7 +85,7 @@ class FlockMutex extends LockMutex
      */
     private function lockBlocking(): void
     {
-        if (!flock($this->fileHandle, LOCK_EX)) {
+        if (!flock($this->fileHandle, \LOCK_EX)) {
             throw new LockAcquireException('Failed to lock the file.');
         }
     }
@@ -130,7 +130,7 @@ class FlockMutex extends LockMutex
      */
     private function acquireNonBlockingLock(): bool
     {
-        if (!flock($this->fileHandle, LOCK_EX | LOCK_NB, $wouldBlock)) {
+        if (!flock($this->fileHandle, \LOCK_EX | \LOCK_NB, $wouldBlock)) {
             if ($wouldBlock) {
                 // Another process holds the lock.
                 return false;
@@ -171,7 +171,7 @@ class FlockMutex extends LockMutex
      */
     protected function unlock(): void
     {
-        if (!flock($this->fileHandle, LOCK_UN)) {
+        if (!flock($this->fileHandle, \LOCK_UN)) {
             throw new LockReleaseException('Failed to unlock the file.');
         }
     }

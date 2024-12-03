@@ -42,7 +42,7 @@ class FlockMutexTest extends TestCase
     {
         $this->mutex->strategy = $strategy; // @phpstan-ignore-line
 
-        self::assertTrue($this->mutex->synchronized(function (): bool {
+        self::assertTrue($this->mutex->synchronized(static function (): bool {
             usleep(1100 * 1000);
 
             return true;
@@ -58,13 +58,13 @@ class FlockMutexTest extends TestCase
         $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded.');
 
         $another_resource = fopen($this->file, 'r');
-        flock($another_resource, LOCK_EX);
+        flock($another_resource, \LOCK_EX);
 
         $this->mutex->strategy = $strategy; // @phpstan-ignore-line
 
         try {
             $this->mutex->synchronized(
-                function () {
+                static function () {
                     self::fail('Did not expect code to be executed');
                 }
             );
@@ -86,13 +86,13 @@ class FlockMutexTest extends TestCase
         $this->expectException(DeadlineException::class);
 
         $another_resource = fopen($this->file, 'r');
-        flock($another_resource, LOCK_EX);
+        flock($another_resource, \LOCK_EX);
 
         $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK; // @phpstan-ignore-line
 
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {
-            $this->mutex->synchronized(function (): void {
+            $this->mutex->synchronized(static function (): void {
                 self::fail('Did not expect code execution.');
             });
         });

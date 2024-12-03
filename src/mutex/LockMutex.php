@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
-use Throwable;
 
 /**
  * Locking mutex.
@@ -19,16 +19,14 @@ abstract class LockMutex extends Mutex
      *
      * This method blocks until the lock was acquired.
      *
-     * @throws \malkusch\lock\exception\LockAcquireException the lock could not
-     *                                                       be acquired
+     * @throws LockAcquireException the lock could not be acquired
      */
     abstract protected function lock(): void;
 
     /**
      * Releases the lock.
      *
-     * @throws \malkusch\lock\exception\LockReleaseException the lock could not
-     *                                                       be released
+     * @throws LockReleaseException the lock could not be released
      */
     abstract protected function unlock(): void;
 
@@ -40,7 +38,7 @@ abstract class LockMutex extends Mutex
         $codeException = null;
         try {
             $codeResult = $code();
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $codeException = $exception;
 
             throw $exception;

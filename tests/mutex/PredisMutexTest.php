@@ -62,7 +62,7 @@ class PredisMutexTest extends TestCase
         $this->expectException(LockAcquireException::class);
 
         $this->mutex->synchronized(
-            function (): void {
+            static function (): void {
                 self::fail('Code execution is not expected');
             }
         );
@@ -85,7 +85,7 @@ class PredisMutexTest extends TestCase
         $this->expectException(LockAcquireException::class);
 
         $this->mutex->synchronized(
-            function () {
+            static function () {
                 self::fail('Code execution is not expected');
             }
         );
@@ -105,7 +105,7 @@ class PredisMutexTest extends TestCase
 
         $executed = false;
 
-        $this->mutex->synchronized(function () use (&$executed): void {
+        $this->mutex->synchronized(static function () use (&$executed): void {
             $executed = true;
         });
 
@@ -135,7 +135,7 @@ class PredisMutexTest extends TestCase
 
         $this->expectException(LockReleaseException::class);
 
-        $this->mutex->synchronized(function () use (&$executed): void {
+        $this->mutex->synchronized(static function () use (&$executed): void {
             $executed = true;
         });
 

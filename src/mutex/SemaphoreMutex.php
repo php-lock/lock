@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace malkusch\lock\mutex;
 
-use InvalidArgumentException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 
@@ -36,7 +35,7 @@ class SemaphoreMutex extends LockMutex
     public function __construct($semaphore)
     {
         if (!$semaphore instanceof \SysvSemaphore && !is_resource($semaphore)) {
-            throw new InvalidArgumentException('The semaphore id is not a valid resource.');
+            throw new \InvalidArgumentException('The semaphore id is not a valid resource.');
         }
         $this->semaphore = $semaphore;
     }

@@ -2,12 +2,13 @@
 
 namespace malkusch\lock\mutex;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class PgAdvisoryLockMutexTest extends TestCase
 {
     /**
-     * @var \PDO|\PHPUnit\Framework\MockObject\MockObject
+     * @var \PDO|MockObject
      */
     private $pdo;
 
@@ -40,7 +41,7 @@ class PgAdvisoryLockMutexTest extends TestCase
                 self::logicalAnd(
                     self::isType('array'),
                     self::countOf(2),
-                    self::callback(function (...$arguments): bool {
+                    self::callback(static function (...$arguments): bool {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {
@@ -70,7 +71,7 @@ class PgAdvisoryLockMutexTest extends TestCase
                 self::logicalAnd(
                     self::isType('array'),
                     self::countOf(2),
-                    self::callback(function (...$arguments): bool {
+                    self::callback(static function (...$arguments): bool {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {

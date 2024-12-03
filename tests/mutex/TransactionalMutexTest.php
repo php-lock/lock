@@ -54,7 +54,7 @@ class TransactionalMutexTest extends TestCase
         $stmt->execute();
 
         $mutex = new TransactionalMutex($pdo);
-        $mutex->synchronized(function (): void {});
+        $mutex->synchronized(static function (): void {});
     }
 
     /**
@@ -72,7 +72,7 @@ class TransactionalMutexTest extends TestCase
         ');
 
         try {
-            $mutex->synchronized(function () use ($pdo): void {
+            $mutex->synchronized(static function () use ($pdo): void {
                 $pdo->exec('INSERT INTO testExceptionRollsback VALUES(1)');
 
                 throw new \DomainException();
@@ -95,7 +95,7 @@ class TransactionalMutexTest extends TestCase
 
         $this->expectException(LockAcquireException::class);
 
-        $mutex->synchronized(function () use ($pdo) {
+        $mutex->synchronized(static function () use ($pdo) {
             // This will provoke the mutex' rollback to fail.
             $pdo->rollBack();
 
@@ -122,8 +122,8 @@ class TransactionalMutexTest extends TestCase
         ');
 
         $i = 0;
-        $mutex->synchronized(function () use ($pdo, &$i, $exception) {
-            $i++;
+        $mutex->synchronized(static function () use ($pdo, &$i, $exception) {
+            ++$i;
 
             $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
             self::assertEquals(0, $count);
@@ -139,7 +139,7 @@ class TransactionalMutexTest extends TestCase
         $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
         self::assertEquals(1, $count);
 
-        self::assertEquals(5, $i);
+        self::assertSame(5, $i);
     }
 
     /**
@@ -166,7 +166,7 @@ class TransactionalMutexTest extends TestCase
         $pdo = $this->buildMySqlPdo();
         $mutex = new TransactionalMutex($pdo);
 
-        $mutex->synchronized(function () use ($pdo) {
+        $mutex->synchronized(static function () use ($pdo) {
             // This will provoke the mutex' commit and rollback to fail.
             $pdo->rollBack();
         });

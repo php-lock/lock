@@ -44,7 +44,7 @@ class LoopTest extends TestCase
         $this->expectNotToPerformAssertions();
 
         $loop = new Loop(0.5);
-        $loop->execute(function () use ($loop): void {
+        $loop->execute(static function () use ($loop): void {
             usleep(499 * 1000);
             $loop->end();
         });
@@ -59,7 +59,7 @@ class LoopTest extends TestCase
         $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded.');
 
         $loop = new Loop(0.5);
-        $loop->execute(function (): void {
+        $loop->execute(static function (): void {
             usleep(10 * 1000);
         });
     }
@@ -72,7 +72,7 @@ class LoopTest extends TestCase
         $this->expectNotToPerformAssertions();
 
         $loop = new Loop(0.5);
-        $loop->execute(function () use ($loop): void {
+        $loop->execute(static function () use ($loop): void {
             usleep(501 * 1000);
             $loop->end();
         });
@@ -87,7 +87,7 @@ class LoopTest extends TestCase
         $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded.');
 
         $loop = new Loop(0.5);
-        $loop->execute(function (): void {
+        $loop->execute(static function (): void {
             usleep(501 * 1000);
         });
     }
@@ -100,7 +100,7 @@ class LoopTest extends TestCase
         $this->expectException(\DomainException::class);
 
         $loop = new Loop();
-        $loop->execute(function () {
+        $loop->execute(static function () {
             throw new \DomainException();
         });
     }
@@ -112,11 +112,11 @@ class LoopTest extends TestCase
     {
         $i = 0;
         $loop = new Loop();
-        $loop->execute(function () use ($loop, &$i) {
-            $i++;
+        $loop->execute(static function () use ($loop, &$i) {
+            ++$i;
             $loop->end();
         });
-        self::assertEquals(1, $i);
+        self::assertSame(1, $i);
     }
 
     /**
@@ -126,8 +126,8 @@ class LoopTest extends TestCase
     {
         $i = 0;
         $loop = new Loop();
-        $loop->execute(function () use ($loop, &$i): void {
-            $i++;
+        $loop->execute(static function () use ($loop, &$i): void {
+            ++$i;
             if ($i > 1) {
                 $loop->end();
             }

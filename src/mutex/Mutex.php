@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\exception\ExecutionOutsideLockException;
+use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\util\DoubleCheckedLocking;
 
 /**
@@ -27,13 +30,10 @@ abstract class Mutex
      *
      * @return T the return value of the execution callback
      *
-     * @throws \Exception                                             the execution callback threw an exception
-     * @throws \malkusch\lock\exception\LockAcquireException          the mutex could not
-     *                                                                be acquired, no further side effects
-     * @throws \malkusch\lock\exception\LockReleaseException          the mutex could not
-     *                                                                be released, the code was already executed
-     * @throws \malkusch\lock\exception\ExecutionOutsideLockException some code
-     *                                                                has been executed outside of the lock
+     * @throws \Exception                    the execution callback threw an exception
+     * @throws LockAcquireException          the mutex could not be acquired, no further side effects
+     * @throws LockReleaseException          the mutex could not be released, the code was already executed
+     * @throws ExecutionOutsideLockException some code has been executed outside of the lock
      */
     abstract public function synchronized(callable $code);
 
@@ -45,19 +45,17 @@ abstract class Mutex
      *
      * Example:
      * <code>
-     * $result = $mutex->check(function () use ($bankAccount, $amount) {
+     * $result = $mutex->check(static function () use ($bankAccount, $amount) {
      *     return $bankAccount->getBalance() >= $amount;
-     * })->then(function () use ($bankAccount, $amount) {
+     * })->then(static function () use ($bankAccount, $amount) {
      *     return $bankAccount->withdraw($amount);
      * });
      * </code>
      *
-     * @param callable(): bool $check callback that decides if the lock should be
-     *                                acquired and if the synchronized callback should be executed after
-     *                                acquiring the lock
+     * @param callable(): bool $check callback that decides if the lock should be acquired and if the synchronized
+     *                                callback should be executed after acquiring the lock
      *
-     * @return \malkusch\lock\util\DoubleCheckedLocking the double-checked
-     *                                                  locking pattern
+     * @return DoubleCheckedLocking the double-checked locking pattern
      */
     public function check(callable $check): DoubleCheckedLocking
     {

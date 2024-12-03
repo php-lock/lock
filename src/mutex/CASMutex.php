@@ -58,10 +58,10 @@ class CASMutex extends Mutex
      * Example:
      * <code>
      * $mutex = new CASMutex();
-     * $mutex->synchronized(function () use ($memcached, $mutex, $amount) {
-     *     $balance = $memcached->get("balance", null, $casToken);
+     * $mutex->synchronized(static function () use ($memcached, $mutex, $amount) {
+     *     $balance = $memcached->get('balance', null, $casToken);
      *     $balance -= $amount;
-     *     if (!$memcached->cas($casToken, "balance", $balance)) {
+     *     if (!$memcached->cas($casToken, 'balance', $balance)) {
      *         return;
      *
      *     }

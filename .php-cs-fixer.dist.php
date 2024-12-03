@@ -32,7 +32,12 @@ return (new Config())
             'equal' => false,
             'identical' => false,
         ],
-        'native_constant_invocation' => true,
+        'native_constant_invocation' => [
+            'include' => [
+                // https://github.com/php/php-src/blob/php-8.4.0/ext/pcntl/pcntl.stub.php#L201
+                'SIGALRM',
+            ],
+        ],
         'native_function_invocation' => false,
         'void_return' => false,
         'blank_line_before_statement' => [
@@ -57,18 +62,12 @@ return (new Config())
         // also prevent bounding of unwanted variables for GC
         'use_arrow_functions' => false,
 
-        // TODO disable too strict rules for now - remove once the CS is updated
+        // TODO disable too strict rules for now
         'declare_strict_types' => false,
-        'fully_qualified_strict_types' => false,
         'general_phpdoc_annotation_remove' => false,
-        'global_namespace_import' => false,
-        'increment_style' => false,
-        'native_constant_invocation' => false,
-        'no_useless_else' => false,
         'php_unit_data_provider_static' => false,
         'php_unit_strict' => false,
         'phpdoc_to_comment' => false,
-        'static_lambda' => false,
         'strict_comparison' => false,
     ])
     ->setFinder($finder)

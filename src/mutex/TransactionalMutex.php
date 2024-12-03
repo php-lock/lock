@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace malkusch\lock\mutex;
 
 use Exception;
-use InvalidArgumentException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\util\Loop;
 use PDO;
@@ -47,8 +46,8 @@ class TransactionalMutex extends Mutex
      */
     public function __construct(\PDO $pdo, float $timeout = 3)
     {
-        if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== PDO::ERRMODE_EXCEPTION) {
-            throw new InvalidArgumentException('The pdo must have PDO::ERRMODE_EXCEPTION set.');
+        if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
+            throw new \InvalidArgumentException('The pdo must have PDO::ERRMODE_EXCEPTION set.');
         }
         self::checkAutocommit($pdo);
 
@@ -66,15 +65,15 @@ class TransactionalMutex extends Mutex
         $vendor = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
         // MySQL turns autocommit off during a transaction.
-        if ($vendor == 'mysql') {
+        if ($vendor === 'mysql') {
             return;
         }
 
         try {
             if ($pdo->getAttribute(\PDO::ATTR_AUTOCOMMIT)) {
-                throw new InvalidArgumentException('PDO::ATTR_AUTOCOMMIT should be disabled.');
+                throw new \InvalidArgumentException('PDO::ATTR_AUTOCOMMIT should be disabled.');
             }
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             /*
              * Ignore this, as some drivers would throw an exception for an
              * unsupported attribute (e.g. Postgres).
@@ -112,7 +111,7 @@ class TransactionalMutex extends Mutex
             try {
                 // BEGIN
                 $this->pdo->beginTransaction();
-            } catch (PDOException $e) {
+            } catch (\PDOException $e) {
                 throw new LockAcquireException('Could not begin transaction.', 0, $e);
             }
 
@@ -123,14 +122,14 @@ class TransactionalMutex extends Mutex
                 $this->loop->end();
 
                 return $result;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->rollBack($e);
 
                 if (self::hasPDOException($e)) {
                     return null; // Replay
-                } else {
-                    throw $e;
                 }
+
+                throw $e;
             }
         });
     }
@@ -144,7 +143,7 @@ class TransactionalMutex extends Mutex
      */
     private static function hasPDOException(\Throwable $exception)
     {
-        if ($exception instanceof PDOException) {
+        if ($exception instanceof \PDOException) {
             return true;
         }
         if ($exception->getPrevious() === null) {

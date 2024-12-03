@@ -22,7 +22,7 @@ class PcntlTimeoutTest extends TestCase
 
         $timeout = new PcntlTimeout(1);
 
-        $timeout->timeBoxed(function () {
+        $timeout->timeBoxed(static function () {
             sleep(2);
         });
     }
@@ -34,11 +34,11 @@ class PcntlTimeoutTest extends TestCase
     {
         $timeout = new PcntlTimeout(1);
 
-        $result = $timeout->timeBoxed(function () {
+        $result = $timeout->timeBoxed(static function () {
             return 42;
         });
 
-        self::assertEquals(42, $result);
+        self::assertSame(42, $result);
     }
 
     /**
@@ -52,7 +52,7 @@ class PcntlTimeoutTest extends TestCase
             pcntl_alarm(1);
             $timeout = new PcntlTimeout(1);
 
-            $timeout->timeBoxed(function () {
+            $timeout->timeBoxed(static function () {
                 sleep(1);
             });
         } finally {
@@ -67,8 +67,8 @@ class PcntlTimeoutTest extends TestCase
     {
         $timeout = new PcntlTimeout(3);
 
-        $timeout->timeBoxed(function () {});
+        $timeout->timeBoxed(static function () {});
 
-        self::assertEquals(0, pcntl_alarm(0));
+        self::assertSame(0, pcntl_alarm(0));
     }
 }

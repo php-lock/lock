@@ -21,8 +21,7 @@ class ExecutionOutsideLockException extends LockReleaseException
     /**
      * Creates a new instance of the ExecutionOutsideLockException class.
      *
-     * @param float $elapsedTime total elapsed time of the synchronized code
-     *                           callback execution
+     * @param float $elapsedTime total elapsed time of the synchronized code callback execution
      * @param float $timeout     the lock timeout in seconds
      *
      * @return self execution outside lock exception

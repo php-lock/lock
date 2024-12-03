@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace malkusch\lock\exception;
 
-use RuntimeException;
-
 /**
  * Mutex exception.
  *
  * Generic exception for any other not covered reason. Usually extended by
  * child classes.
  */
-class MutexException extends RuntimeException implements PhpLockException
+class MutexException extends \RuntimeException implements PhpLockException
 {
     /**
      * @var int not enough redis servers

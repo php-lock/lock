@@ -30,11 +30,11 @@ class DoubleCheckedLockingTest extends TestCase
     {
         $this->mutex->expects(self::never())->method('synchronized');
 
-        $checkedLocking = new DoubleCheckedLocking($this->mutex, function (): bool {
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function (): bool {
             return false;
         });
 
-        $result = $checkedLocking->then(function (): void {
+        $result = $checkedLocking->then(static function (): void {
             self::fail();
         });
 
@@ -52,24 +52,24 @@ class DoubleCheckedLockingTest extends TestCase
 
         $this->mutex->expects(self::once())
             ->method('synchronized')
-            ->willReturnCallback(function (callable $block) use (&$lock) {
-                $lock++;
+            ->willReturnCallback(static function (callable $block) use (&$lock) {
+                ++$lock;
                 $result = $block();
-                $lock++;
+                ++$lock;
 
                 return $result;
             });
 
-        $checkedLocking = new DoubleCheckedLocking($this->mutex, function () use (&$lock, &$check): bool {
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function () use (&$lock, &$check): bool {
             if ($check == 1) {
                 self::assertSame(1, $lock);
             }
-            $check++;
+            ++$check;
 
             return true;
         });
 
-        $result = $checkedLocking->then(function () use (&$lock) {
+        $result = $checkedLocking->then(static function () use (&$lock) {
             self::assertSame(1, $lock);
 
             return 'test';
@@ -92,12 +92,12 @@ class DoubleCheckedLockingTest extends TestCase
     {
         $this->mutex->expects(self::any())
             ->method('synchronized')
-            ->willReturnCallback(function (callable $block) {
+            ->willReturnCallback(static function (callable $block) {
                 return $block();
             });
 
         $checkedLocking = new DoubleCheckedLocking($this->mutex, $check);
-        $result = $checkedLocking->then(function (): void {
+        $result = $checkedLocking->then(static function (): void {
             self::fail();
         });
 
@@ -115,13 +115,13 @@ class DoubleCheckedLockingTest extends TestCase
         $checkCounter = 0;
 
         return [
-            [function (): bool {
+            [static function (): bool {
                 return false;
             }],
 
-            [function () use (&$checkCounter): bool {
+            [static function () use (&$checkCounter): bool {
                 $result = $checkCounter == 0;
-                $checkCounter++;
+                ++$checkCounter;
 
                 return $result;
             }],
@@ -135,22 +135,22 @@ class DoubleCheckedLockingTest extends TestCase
     {
         $this->mutex->expects(self::once())
             ->method('synchronized')
-            ->willReturnCallback(function (callable $block) {
+            ->willReturnCallback(static function (callable $block) {
                 return $block();
             });
 
-        $checkedLocking = new DoubleCheckedLocking($this->mutex, function (): bool {
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function (): bool {
             return true;
         });
 
         $executed = false;
-        $result = $checkedLocking->then(function () use (&$executed) {
+        $result = $checkedLocking->then(static function () use (&$executed) {
             $executed = true;
 
             return 'test';
         });
 
         self::assertTrue($executed);
-        self::assertEquals('test', $result);
+        self::assertSame('test', $result);
     }
 }

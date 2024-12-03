@@ -35,7 +35,7 @@ class CASMutexTest extends TestCase
         $this->expectException(LockAcquireException::class);
 
         $mutex = new CASMutex(1);
-        $mutex->synchronized(function (): void {
+        $mutex->synchronized(static function (): void {
             sleep(2);
         });
     }
@@ -48,7 +48,7 @@ class CASMutexTest extends TestCase
         $this->expectException(\DomainException::class);
 
         $mutex = new CASMutex();
-        $mutex->synchronized(function () {
+        $mutex->synchronized(static function () {
             throw new \DomainException();
         });
     }
@@ -60,11 +60,11 @@ class CASMutexTest extends TestCase
     {
         $i = 0;
         $mutex = new CASMutex();
-        $mutex->synchronized(function () use ($mutex, &$i) {
-            $i++;
+        $mutex->synchronized(static function () use ($mutex, &$i) {
+            ++$i;
             $mutex->notify();
         });
-        self::assertEquals(1, $i);
+        self::assertSame(1, $i);
     }
 
     /**
@@ -74,12 +74,12 @@ class CASMutexTest extends TestCase
     {
         $i = 0;
         $mutex = new CASMutex();
-        $mutex->synchronized(function () use ($mutex, &$i): void {
-            $i++;
+        $mutex->synchronized(static function () use ($mutex, &$i): void {
+            ++$i;
             if ($i > 1) {
                 $mutex->notify();
             }
         });
-        self::assertEquals(2, $i);
+        self::assertSame(2, $i);
     }
 }

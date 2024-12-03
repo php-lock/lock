@@ -7,7 +7,6 @@ namespace malkusch\lock\mutex;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use Redis;
-use RedisException;
 
 /**
  * Mutex based on the Redlock algorithm using the phpredis extension.
@@ -29,8 +28,7 @@ class PHPRedisMutex extends RedisMutex
      *
      * @param array<\Redis|\RedisCluster> $redisAPIs the Redis connections
      * @param string                      $name      the lock name
-     * @param float                       $timeout   The time in seconds a lock expires after. Default is
-     *                                               3 seconds.
+     * @param float                       $timeout   The time in seconds a lock expires after. Default is 3 seconds.
      *
      * @throws \LengthException the timeout must be greater than 0
      */
@@ -52,7 +50,7 @@ class PHPRedisMutex extends RedisMutex
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
             return $redisAPI->set($key, $value, ['nx', 'px' => $expireMillis]);
-        } catch (RedisException $e) {
+        } catch (\RedisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s'",
                 $key
@@ -69,7 +67,7 @@ class PHPRedisMutex extends RedisMutex
      */
     protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
-        for ($i = $numkeys; $i < count($arguments); $i++) {
+        for ($i = $numkeys; $i < count($arguments); ++$i) {
             /*
              * If a serialization mode such as "php" or "igbinary" is enabled, the arguments must be
              * serialized by us, because phpredis does not do this for the eval command.
@@ -89,7 +87,7 @@ class PHPRedisMutex extends RedisMutex
 
         try {
             return $redis->eval($script, $arguments, $numkeys);
-        } catch (RedisException $e) {
+        } catch (\RedisException $e) {
             throw new LockReleaseException('Failed to release lock', 0, $e);
         }
     }
@@ -107,6 +105,6 @@ class PHPRedisMutex extends RedisMutex
             return false;
         }
 
-        return $redis->getOption(Redis::OPT_COMPRESSION) === Redis::COMPRESSION_LZF;
+        return $redis->getOption(\Redis::OPT_COMPRESSION) === \Redis::COMPRESSION_LZF;
     }
 }

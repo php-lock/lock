@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace malkusch\lock\exception;
 
-use Throwable;
-
 /**
  * Lock release exception.
  *
@@ -59,10 +57,9 @@ class LockReleaseException extends MutexException
      * Gets the exception that has happened during the synchronized code
      * execution.
      *
-     * @return \Throwable|null the exception thrown by the code block or null
-     *                         when there has been no exception
+     * @return \Throwable|null the exception thrown by the code block or null when there has been no exception
      */
-    public function getCodeException(): ?Throwable
+    public function getCodeException(): ?\Throwable
     {
         return $this->codeException;
     }
@@ -75,7 +72,7 @@ class LockReleaseException extends MutexException
      *
      * @return self current lock release exception instance
      */
-    public function setCodeException(Throwable $codeException): self
+    public function setCodeException(\Throwable $codeException): self
     {
         $this->codeException = $codeException;
 

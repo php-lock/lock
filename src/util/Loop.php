@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace malkusch\lock\util;
 
-use LengthException;
 use malkusch\lock\exception\TimeoutException;
 
 /**
@@ -48,7 +47,7 @@ class Loop
     public function __construct(float $timeout = 3)
     {
         if ($timeout <= 0) {
-            throw new LengthException(\sprintf(
+            throw new \LengthException(\sprintf(
                 'The timeout must be greater than 0. %d was given.',
                 $timeout
             ));
@@ -81,9 +80,8 @@ class Loop
      *
      * @return T the return value of the executed code callback
      *
-     * @throws \Exception                                the execution callback threw an exception
-     * @throws \malkusch\lock\exception\TimeoutException the timeout has been
-     *                                                   reached
+     * @throws \Exception       the execution callback threw an exception
+     * @throws TimeoutException the timeout has been reached
      */
     public function execute(callable $code)
     {

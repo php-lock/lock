@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace malkusch\lock\util;
 
-use InvalidArgumentException;
 use malkusch\lock\exception\DeadlineException;
 use malkusch\lock\exception\LockAcquireException;
-use RuntimeException;
 
 /**
  * Timeout based on a scheduled alarm.
@@ -36,11 +34,11 @@ final class PcntlTimeout
     public function __construct(int $timeout)
     {
         if (!self::isSupported()) {
-            throw new RuntimeException('PCNTL module not enabled');
+            throw new \RuntimeException('PCNTL module not enabled');
         }
 
         if ($timeout <= 0) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 'Timeout must be positive and non zero'
             );
         }
@@ -64,16 +62,14 @@ final class PcntlTimeout
      *
      * @return T Return value of the executed block
      *
-     * @throws \malkusch\lock\exception\DeadlineException    running the code hit
-     *                                                       the deadline
-     * @throws \malkusch\lock\exception\LockAcquireException installing the
-     *                                                       timeout failed
+     * @throws DeadlineException    running the code hit the deadline
+     * @throws LockAcquireException installing the timeout failed
      */
     public function timeBoxed(callable $code)
     {
-        $existingHandler = pcntl_signal_get_handler(SIGALRM);
+        $existingHandler = pcntl_signal_get_handler(\SIGALRM);
 
-        $signal = pcntl_signal(SIGALRM, function (): void {
+        $signal = pcntl_signal(\SIGALRM, function (): void {
             throw new DeadlineException(sprintf(
                 'Timebox hit deadline of %d seconds',
                 $this->timeout
@@ -93,7 +89,7 @@ final class PcntlTimeout
         } finally {
             pcntl_alarm(0);
             pcntl_signal_dispatch();
-            pcntl_signal(SIGALRM, $existingHandler);
+            pcntl_signal(\SIGALRM, $existingHandler);
         }
     }
 
@@ -108,7 +104,7 @@ final class PcntlTimeout
     public static function isSupported(): bool
     {
         return
-            PHP_SAPI === 'cli'
+            \PHP_SAPI === 'cli'
             && extension_loaded('pcntl')
             && function_exists('pcntl_alarm')
             && function_exists('pcntl_signal')

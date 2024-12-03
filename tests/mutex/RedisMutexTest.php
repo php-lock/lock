@@ -44,7 +44,7 @@ class RedisMutexTest extends TestCase
     private function buildRedisMutex(int $count, float $timeout = 1)
     {
         $redisAPIs = array_map(
-            function ($id): array {
+            static function ($id): array {
                 return ['id' => $id];
             },
             range(1, $count)
@@ -72,18 +72,18 @@ class RedisMutexTest extends TestCase
         $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturnCallback(
-                function () use (&$i, $available): bool {
+                static function () use (&$i, $available): bool {
                     if ($i < $available) {
-                        $i++;
+                        ++$i;
 
                         return true;
-                    } else {
-                        throw new LockAcquireException();
                     }
+
+                    throw new LockAcquireException();
                 }
             );
 
-        $mutex->synchronized(function (): void {
+        $mutex->synchronized(static function (): void {
             self::fail('Code should not be executed');
         });
     }
@@ -107,18 +107,18 @@ class RedisMutexTest extends TestCase
         $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturnCallback(
-                function () use (&$i, $available): bool {
+                static function () use (&$i, $available): bool {
                     if ($i < $available) {
-                        $i++;
+                        ++$i;
 
                         return true;
-                    } else {
-                        throw new LockAcquireException();
                     }
+
+                    throw new LockAcquireException();
                 }
             );
 
-        $mutex->synchronized(function () {});
+        $mutex->synchronized(static function () {});
     }
 
     /**
@@ -140,14 +140,14 @@ class RedisMutexTest extends TestCase
         $mutex->expects(self::any())
             ->method('add')
             ->willReturnCallback(
-                function () use (&$i, $available): bool {
-                    $i++;
+                static function () use (&$i, $available): bool {
+                    ++$i;
 
                     return $i <= $available;
                 }
             );
 
-        $mutex->synchronized(function (): void {
+        $mutex->synchronized(static function (): void {
             self::fail('Code should not be executed');
         });
     }
@@ -175,13 +175,13 @@ class RedisMutexTest extends TestCase
 
         $mutex->expects(self::exactly($count))
             ->method('add')
-            ->willReturnCallback(function () use ($delay): bool {
+            ->willReturnCallback(static function () use ($delay): bool {
                 usleep((int) ($delay * 1e6));
 
                 return true;
             });
 
-        $mutex->synchronized(function (): void {
+        $mutex->synchronized(static function (): void {
             self::fail('Code should not be executed');
         });
     }
@@ -219,14 +219,14 @@ class RedisMutexTest extends TestCase
         $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturnCallback(
-                function () use (&$i, $available): bool {
-                    $i++;
+                static function () use (&$i, $available): bool {
+                    ++$i;
 
                     return $i <= $available;
                 }
             );
 
-        $mutex->synchronized(function (): void {});
+        $mutex->synchronized(static function (): void {});
     }
 
     /**
@@ -248,20 +248,20 @@ class RedisMutexTest extends TestCase
         $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturnCallback(
-                function () use (&$i, $available): bool {
+                static function () use (&$i, $available): bool {
                     if ($i < $available) {
-                        $i++;
+                        ++$i;
 
                         return true;
-                    } else {
-                        throw new LockReleaseException();
                     }
+
+                    throw new LockReleaseException();
                 }
             );
 
         $this->expectException(LockReleaseException::class);
 
-        $mutex->synchronized(function (): void {});
+        $mutex->synchronized(static function (): void {});
     }
 
     /**
@@ -283,8 +283,8 @@ class RedisMutexTest extends TestCase
         $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturnCallback(
-                function () use (&$i, $available): bool {
-                    $i++;
+                static function () use (&$i, $available): bool {
+                    ++$i;
 
                     return $i <= $available;
                 }
@@ -292,7 +292,7 @@ class RedisMutexTest extends TestCase
 
         $this->expectException(LockReleaseException::class);
 
-        $mutex->synchronized(function (): void {});
+        $mutex->synchronized(static function (): void {});
     }
 
     /**

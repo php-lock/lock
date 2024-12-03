@@ -8,7 +8,7 @@ use malkusch\lock\exception\MutexException;
 use PHPUnit\Framework\TestCase;
 use Redis;
 
-if (PHP_MAJOR_VERSION >= 8) {
+if (\PHP_MAJOR_VERSION >= 8) {
     trait RedisTestTrait
     {
         #[\Override]
@@ -36,7 +36,7 @@ if (PHP_MAJOR_VERSION >= 8) {
         }
 
         /**
-         * @return Redis|string|bool
+         * @return \Redis|string|bool
          */
         #[\Override]
         public function set($key, $value, $options = null)
@@ -60,7 +60,7 @@ if (PHP_MAJOR_VERSION >= 8) {
 class PHPRedisMutexTest extends TestCase
 {
     /**
-     * @var Redis[]
+     * @var \Redis[]
      */
     private $connections = [];
 
@@ -79,7 +79,7 @@ class PHPRedisMutexTest extends TestCase
             $uri = parse_url($redisUri);
 
             // original Redis::set and Redis::eval calls will reopen the connection
-            $connection = new class extends Redis {
+            $connection = new class extends \Redis {
                 use RedisTestTrait;
 
                 private $is_closed = false;
@@ -160,7 +160,7 @@ class PHPRedisMutexTest extends TestCase
 
         $this->closeMajorityConnections();
 
-        $this->mutex->synchronized(function (): void {
+        $this->mutex->synchronized(static function (): void {
             self::fail('Code execution is not expected');
         });
     }
@@ -183,11 +183,11 @@ class PHPRedisMutexTest extends TestCase
     public function testSerializersAndCompressors($serializer, $compressor)
     {
         foreach ($this->connections as $connection) {
-            $connection->setOption(Redis::OPT_SERIALIZER, $serializer);
-            $connection->setOption(Redis::OPT_COMPRESSION, $compressor);
+            $connection->setOption(\Redis::OPT_SERIALIZER, $serializer);
+            $connection->setOption(\Redis::OPT_COMPRESSION, $compressor);
         }
 
-        self::assertSame('test', $this->mutex->synchronized(function (): string {
+        self::assertSame('test', $this->mutex->synchronized(static function (): string {
             return 'test';
         }));
     }
@@ -196,7 +196,7 @@ class PHPRedisMutexTest extends TestCase
     {
         $this->closeMinorityConnections();
 
-        self::assertSame('test', $this->mutex->synchronized(function (): string {
+        self::assertSame('test', $this->mutex->synchronized(static function (): string {
             return 'test';
         }));
     }
@@ -212,29 +212,29 @@ class PHPRedisMutexTest extends TestCase
 
     public static function provideSerializersAndCompressorsCases(): iterable
     {
-        if (!class_exists(Redis::class)) {
+        if (!class_exists(\Redis::class)) {
             return [];
         }
 
         $options = [
-            [Redis::SERIALIZER_NONE, Redis::COMPRESSION_NONE],
-            [Redis::SERIALIZER_PHP, Redis::COMPRESSION_NONE],
+            [\Redis::SERIALIZER_NONE, \Redis::COMPRESSION_NONE],
+            [\Redis::SERIALIZER_PHP, \Redis::COMPRESSION_NONE],
         ];
 
         if (defined('Redis::SERIALIZER_IGBINARY')) {
             $options[] = [
                 constant('Redis::SERIALIZER_IGBINARY'),
-                Redis::COMPRESSION_NONE,
+                \Redis::COMPRESSION_NONE,
             ];
         }
 
         if (defined('Redis::COMPRESSION_LZF')) {
             $options[] = [
-                Redis::SERIALIZER_NONE,
+                \Redis::SERIALIZER_NONE,
                 constant('Redis::COMPRESSION_LZF'),
             ];
             $options[] = [
-                Redis::SERIALIZER_PHP,
+                \Redis::SERIALIZER_PHP,
                 constant('Redis::COMPRESSION_LZF'),
             ];
 
