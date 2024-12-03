@@ -30,7 +30,7 @@ class MutexConcurrencyTest extends TestCase
     /** @var list<string> */
     protected static $temporaryFiles = [];
     /** @var \PDO|null the pdo instance */
-    private $pdo;
+    private static $pdo;
 
     #[\Override]
     public static function tearDownAfterClass(): void
@@ -39,6 +39,8 @@ class MutexConcurrencyTest extends TestCase
             unlink($temporaryFile);
         }
         self::$temporaryFiles = [];
+
+        self::$pdo = null;
 
         parent::tearDownAfterClass();
     }
@@ -52,14 +54,14 @@ class MutexConcurrencyTest extends TestCase
      *
      * @return \PDO the PDO
      */
-    private function getPDO(string $dsn, string $user, string $password): \PDO
+    private static function getPDO(string $dsn, string $user, string $password): \PDO
     {
-        if ($this->pdo === null) {
-            $this->pdo = new \PDO($dsn, $user, $password);
-            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        if (self::$pdo === null) {
+            self::$pdo = new \PDO($dsn, $user, $password);
+            self::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         }
 
-        return $this->pdo;
+        return self::$pdo;
     }
 
     /**
@@ -114,7 +116,7 @@ class MutexConcurrencyTest extends TestCase
      *
      * @return iterable<list<mixed>>
      */
-    public function provideHighContentionCases(): iterable
+    public static function provideHighContentionCases(): iterable
     {
         $cases = array_map(static function (array $mutexFactory): array {
             $filename = tempnam(sys_get_temp_dir(), 'php-lock-high-contention');
@@ -136,8 +138,8 @@ class MutexConcurrencyTest extends TestCase
             ];
         }, static::provideExecutionIsSerializedWhenLockedCases());
 
-        $addPDO = function ($dsn, $user, $password, $vendor) use (&$cases) {
-            $pdo = $this->getPDO($dsn, $user, $password);
+        $addPDO = static function ($dsn, $user, $password, $vendor) use (&$cases) {
+            $pdo = self::getPDO($dsn, $user, $password);
 
             $options = ['mysql' => 'engine=InnoDB'];
             $option = $options[$vendor] ?? '';
@@ -148,15 +150,15 @@ class MutexConcurrencyTest extends TestCase
             $pdo->exec('INSERT INTO counter VALUES (1, 0)');
             $pdo->commit();
 
-            $this->pdo = null;
+            self::$pdo = null;
 
             $cases[$vendor] = [
-                function ($increment) use ($dsn, $user, $password) {
+                static function ($increment) use ($dsn, $user, $password) {
                     // This prevents using a closed connection from a child.
                     if ($increment == 0) {
-                        $this->pdo = null;
+                        self::$pdo = null;
                     }
-                    $pdo = $this->getPDO($dsn, $user, $password);
+                    $pdo = self::getPDO($dsn, $user, $password);
                     $id = 1;
                     $select = $pdo->prepare('SELECT counter FROM counter WHERE id = ? FOR UPDATE');
                     $select->execute([$id]);
@@ -169,9 +171,9 @@ class MutexConcurrencyTest extends TestCase
 
                     return $counter;
                 },
-                function ($timeout = 3) use ($dsn, $user, $password) {
-                    $this->pdo = null;
-                    $pdo = $this->getPDO($dsn, $user, $password);
+                static function ($timeout = 3) use ($dsn, $user, $password) {
+                    self::$pdo = null;
+                    $pdo = self::getPDO($dsn, $user, $password);
 
                     return new TransactionalMutex($pdo, $timeout);
                 },

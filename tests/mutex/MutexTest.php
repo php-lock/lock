@@ -40,7 +40,7 @@ class MutexTest extends TestCase
      *
      * @return callable[][] the mutex factories
      */
-    public function provideMutexFactoriesCases(): iterable
+    public static function provideMutexFactoriesCases(): iterable
     {
         $cases = [
             'NoMutex' => [static function (): Mutex {
@@ -80,28 +80,34 @@ class MutexTest extends TestCase
                 return new SemaphoreMutex(sem_get(ftok(__FILE__, 'a')));
             }],
 
-            'SpinlockMutex' => [function (): Mutex {
-                $mock = $this->getMockForAbstractClass(SpinlockMutex::class, ['test']);
-                $mock->expects(self::atLeastOnce())
-                    ->method('acquire')
-                    ->willReturn(true);
+            'SpinlockMutex' => [static function (): Mutex {
+                $lock = new class('test') extends SpinlockMutex {
+                    #[\Override]
+                    protected function acquire(string $key, float $expire): bool
+                    {
+                        return true;
+                    }
 
-                $mock->expects(self::atLeastOnce())
-                    ->method('release')
-                    ->willReturn(true);
+                    #[\Override]
+                    protected function release(string $key): bool
+                    {
+                        return true;
+                    }
+                };
 
-                return $mock;
+                return $lock;
             }],
 
-            'LockMutex' => [function (): Mutex {
-                $mock = $this->getMockForAbstractClass(LockMutex::class);
-                $mock->expects(self::atLeastOnce())
-                    ->method('lock');
+            'LockMutex' => [static function (): Mutex {
+                $lock = new class extends LockMutex {
+                    #[\Override]
+                    protected function lock(): void {}
 
-                $mock->expects(self::atLeastOnce())
-                    ->method('unlock');
+                    #[\Override]
+                    protected function unlock(): void {}
+                };
 
-                return $mock;
+                return $lock;
             }],
         ];
 
