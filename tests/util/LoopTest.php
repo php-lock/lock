@@ -43,10 +43,24 @@ class LoopTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $loop = new Loop(1);
+        $loop = new Loop(0.5);
         $loop->execute(function () use ($loop): void {
-            usleep(999999);
+            usleep(499 * 1000);
             $loop->end();
+        });
+    }
+
+    /**
+     * Tests execution within the timeout without calling end().
+     */
+    public function testExecutionWithinTimeoutWithoutExplicitEnd()
+    {
+        $this->expectException(TimeoutException::class);
+        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded.');
+
+        $loop = new Loop(0.5);
+        $loop->execute(function (): void {
+            usleep(10 * 1000);
         });
     }
 
@@ -57,9 +71,9 @@ class LoopTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $loop = new Loop(1);
+        $loop = new Loop(0.5);
         $loop->execute(function () use ($loop): void {
-            sleep(1);
+            usleep(501 * 1000);
             $loop->end();
         });
     }
@@ -70,11 +84,11 @@ class LoopTest extends TestCase
     public function testExceedTimeoutWithoutExplicitEnd()
     {
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded.');
+        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded.');
 
-        $loop = new Loop(1);
+        $loop = new Loop(0.5);
         $loop->execute(function (): void {
-            sleep(1);
+            usleep(501 * 1000);
         });
     }
 

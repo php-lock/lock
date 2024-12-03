@@ -29,12 +29,12 @@ class PHPRedisMutex extends RedisMutex
      * called already.
      *
      * @param array<\Redis|\RedisCluster> $redisAPIs The Redis connections.
-     * @param string $name The lock name.
-     * @param int $timeout The time in seconds a lock expires after. Default is
-     *                     3 seconds.
+     * @param string                      $name      The lock name.
+     * @param float                       $timeout   The time in seconds a lock expires after. Default is
+     *                                               3 seconds.
      * @throws \LengthException The timeout must be greater than 0.
      */
-    public function __construct(array $redisAPIs, string $name, int $timeout = 3)
+    public function __construct(array $redisAPIs, string $name, float $timeout = 3)
     {
         parent::__construct($redisAPIs, $name, $timeout);
     }
@@ -43,12 +43,14 @@ class PHPRedisMutex extends RedisMutex
      * @param \Redis|\RedisCluster $redisAPI The Redis or RedisCluster connection.
      * @throws LockAcquireException
      */
-    protected function add($redisAPI, string $key, string $value, int $expire): bool
+    protected function add($redisAPI, string $key, string $value, float $expire): bool
     {
+        $expireMillis = (int) ceil($expire * 1000);
+
         /** @var \Redis $redisAPI */
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-            return $redisAPI->set($key, $value, ['nx', 'ex' => $expire]);
+            return $redisAPI->set($key, $value, ['nx', 'px' => $expireMillis]);
         } catch (RedisException $e) {
             $message = sprintf(
                 "Failed to acquire lock for key '%s'",

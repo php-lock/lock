@@ -72,7 +72,7 @@ class SpinlockMutexTest extends TestCase
     public function testExecuteTooLong()
     {
         /** @var SpinlockMutex|\PHPUnit\Framework\MockObject\MockObject $mutex */
-        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 1]);
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 0.5]);
         $mutex->expects($this->any())
             ->method('acquire')
             ->willReturn(true);
@@ -82,13 +82,13 @@ class SpinlockMutexTest extends TestCase
             ->willReturn(true);
 
         $this->expectException(ExecutionOutsideLockException::class);
-//        $this->expectExceptionMessageRegExp(
-//            '/The code executed for \d+\.\d+ seconds. But the timeout is 1 ' .
-//            'seconds. The last \d+\.\d+ seconds were executed outside of the lock./'
-//        );
+        $this->expectExceptionMessageMatches(
+            '/The code executed for 0\.5\d+ seconds. But the timeout is 0\.5 ' .
+            'seconds. The last 0\.0\d+ seconds were executed outside of the lock./'
+        );
 
         $mutex->synchronized(function () {
-            usleep(1100 * 1000);
+            usleep(501 * 1000);
         });
     }
 
@@ -98,12 +98,12 @@ class SpinlockMutexTest extends TestCase
      */
     public function testExecuteBarelySucceeds()
     {
-        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 1]);
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 0.5]);
         $mutex->expects($this->any())->method('acquire')->willReturn(true);
         $mutex->expects($this->once())->method('release')->willReturn(true);
 
         $mutex->synchronized(function () {
-            usleep(999999);
+            usleep(499 * 1000);
         });
     }
 
@@ -127,16 +127,16 @@ class SpinlockMutexTest extends TestCase
      */
     public function testExecuteTimeoutLeavesOneSecondForKeyToExpire()
     {
-        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 3]);
+        $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test', 0.2]);
         $mutex->expects($this->once())
             ->method('acquire')
-            ->with($this->anything(), 4)
+            ->with($this->anything(), 1.2)
             ->willReturn(true);
 
         $mutex->expects($this->once())->method('release')->willReturn(true);
 
         $mutex->synchronized(function () {
-            usleep(2999999);
+            usleep(199 * 1000);
         });
     }
 }
