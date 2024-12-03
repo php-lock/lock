@@ -1,8 +1,9 @@
 <?php
 
-namespace malkusch\lock\util;
+namespace malkusch\lock\Tests\util;
 
 use malkusch\lock\mutex\Mutex;
+use malkusch\lock\util\DoubleCheckedLocking;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

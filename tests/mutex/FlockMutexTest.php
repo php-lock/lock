@@ -1,10 +1,11 @@
 <?php
 
-namespace malkusch\lock\mutex;
+namespace malkusch\lock\Tests\mutex;
 
 use Eloquent\Liberator\Liberator;
 use malkusch\lock\exception\DeadlineException;
 use malkusch\lock\exception\TimeoutException;
+use malkusch\lock\mutex\FlockMutex;
 use malkusch\lock\util\PcntlTimeout;
 use PHPUnit\Framework\TestCase;
 

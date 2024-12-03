@@ -1,10 +1,11 @@
 <?php
 
-namespace malkusch\lock\mutex;
+namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\exception\MutexException;
+use malkusch\lock\mutex\PHPRedisMutex;
 use PHPUnit\Framework\TestCase;
 
 if (\PHP_MAJOR_VERSION >= 8) {
@@ -52,8 +53,6 @@ if (\PHP_MAJOR_VERSION >= 8) {
 }
 
 /**
- * Tests for PHPRedisMutex.
- *
  * These tests require the environment variable:
  *
  * REDIS_URIS - a comma separated list of redis:// URIs.

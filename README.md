@@ -398,16 +398,16 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 This project is free and is licensed under the MIT.
 
-[1]: http://semver.org
+[1]: http://semver.org/
 [2]: https://github.com/nrk/predis
 [3]: http://php.net/manual/en/book.pcntl.php
-[4]: https://getcomposer.org
-[5]: https://github.com/php-lock/lock/blob/master/src/mutex/Mutex.php
-[6]: https://github.com/php-lock/lock/blob/master/src/mutex/Mutex.php#L38
-[7]: https://github.com/php-lock/lock/blob/master/src/mutex/Mutex.php#L57
-[8]: https://github.com/php-lock/lock/blob/master/src/util/DoubleCheckedLocking.php#L72
+[4]: https://getcomposer.org/
+[5]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L15
+[6]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L38
+[7]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L60
+[8]: https://github.com/php-lock/lock/blob/35526aee28/src/util/DoubleCheckedLocking.php#L63
 [9]: https://en.wikipedia.org/wiki/Double-checked_locking
 [10]: https://en.wikipedia.org/wiki/Compare-and-swap
-[11]: https://github.com/php-lock/lock/blob/master/src/mutex/CASMutex.php#L44
-[12]: https://github.com/php-lock/lock/blob/master/src/mutex/LockMutex.php
-[13]: https://github.com/php-lock/lock/blob/master/src/exception/LockReleaseException.php
+[11]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/CASMutex.php#L42
+[12]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/LockMutex.php
+[13]: https://github.com/php-lock/lock/blob/35526aee28/src/exception/LockReleaseException.php

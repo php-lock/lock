@@ -1,8 +1,9 @@
 <?php
 
-namespace malkusch\lock\util;
+namespace malkusch\lock\Tests\util;
 
 use malkusch\lock\exception\TimeoutException;
+use malkusch\lock\util\Loop;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +19,7 @@ class LoopTest extends TestCase
 
         $builder = new SleepEnvironmentBuilder();
         $builder->addNamespace(__NAMESPACE__);
+        $builder->addNamespace('malkusch\lock\util');
         $sleep = $builder->build();
         $sleep->enable();
 

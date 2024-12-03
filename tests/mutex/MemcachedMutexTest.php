@@ -1,15 +1,14 @@
 <?php
 
-namespace malkusch\lock\mutex;
+namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\exception\TimeoutException;
+use malkusch\lock\mutex\MemcachedMutex;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for MemcachedMutex.
- *
  * Please provide the environment variable MEMCACHE_HOST.
  *
  * @requires extension memcached

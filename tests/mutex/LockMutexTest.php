@@ -1,9 +1,10 @@
 <?php
 
-namespace malkusch\lock\mutex;
+namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\mutex\LockMutex;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

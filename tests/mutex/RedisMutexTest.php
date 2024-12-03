@@ -1,19 +1,18 @@
 <?php
 
-namespace malkusch\lock\mutex;
+namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\exception\MutexException;
 use malkusch\lock\exception\TimeoutException;
+use malkusch\lock\mutex\RedisMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for RedisMutex.
- *
  * @group redis
  */
 class RedisMutexTest extends TestCase
@@ -27,6 +26,7 @@ class RedisMutexTest extends TestCase
 
         $sleepBuilder = new SleepEnvironmentBuilder();
         $sleepBuilder->addNamespace(__NAMESPACE__);
+        $sleepBuilder->addNamespace('malkusch\lock\mutex');
         $sleepBuilder->addNamespace('malkusch\lock\util');
         $sleep = $sleepBuilder->build();
 

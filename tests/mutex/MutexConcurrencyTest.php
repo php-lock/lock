@@ -1,16 +1,23 @@
 <?php
 
-namespace malkusch\lock\mutex;
+namespace malkusch\lock\Tests\mutex;
 
 use Eloquent\Liberator\Liberator;
+use malkusch\lock\mutex\FlockMutex;
+use malkusch\lock\mutex\MemcachedMutex;
+use malkusch\lock\mutex\Mutex;
+use malkusch\lock\mutex\MySQLMutex;
+use malkusch\lock\mutex\PgAdvisoryLockMutex;
+use malkusch\lock\mutex\PHPRedisMutex;
+use malkusch\lock\mutex\PredisMutex;
+use malkusch\lock\mutex\SemaphoreMutex;
+use malkusch\lock\mutex\TransactionalMutex;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
 use Spatie\Async\Pool;
 
 /**
- * Concurrency Tests for Mutex.
- *
  * If you want to run integration tests you should provide these environment variables:
  *
  * - MEMCACHE_HOST

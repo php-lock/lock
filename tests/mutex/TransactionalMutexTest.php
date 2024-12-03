@@ -1,13 +1,12 @@
 <?php
 
-namespace malkusch\lock\mutex;
+namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\mutex\TransactionalMutex;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for TransactionalMutex.
- *
  * Set the environment variables MYSQL_DSN, MYSQL_USER for this test.
  */
 class TransactionalMutexTest extends TestCase

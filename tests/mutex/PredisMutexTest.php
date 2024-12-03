@@ -1,9 +1,10 @@
 <?php
 
-namespace malkusch\lock\mutex;
+namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\mutex\PredisMutex;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface;
@@ -11,8 +12,6 @@ use Predis\PredisException;
 use Psr\Log\LoggerInterface;
 
 /**
- * Tests for PredisMutex.
- *
  * @group redis
  */
 class PredisMutexTest extends TestCase

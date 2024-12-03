@@ -74,7 +74,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "malkusch\\lock\\": "tests/"
+            "malkusch\\lock\\Tests\\": "tests/"
         }
     },
     "config": {

@@ -1,14 +1,13 @@
 <?php
 
-namespace malkusch\lock\util;
+namespace malkusch\lock\Tests\util;
 
 use malkusch\lock\exception\DeadlineException;
 use malkusch\lock\exception\LockAcquireException;
+use malkusch\lock\util\PcntlTimeout;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for PcntlTimeout.
- *
  * @requires pcntl
  */
 class PcntlTimeoutTest extends TestCase

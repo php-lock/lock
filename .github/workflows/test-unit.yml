@@ -42,7 +42,7 @@ jobs:
       - name: "Run tests (only for Phpunit)"
         if: startsWith(matrix.type, 'Phpunit')
         run: |
-          vendor/bin/phpunit --exclude-group none --no-coverage --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi) --filter '^(?!malkusch\\lock\\mutex\\PHPRedisMutexTest::)'
+          vendor/bin/phpunit --exclude-group none --no-coverage --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi) --filter '^(?!malkusch\\lock\\Tests\\mutex\\PHPRedisMutexTest::)'
 
       - name: Check Coding Style (only for CodingStyle)
         if: matrix.type == 'CodingStyle'
