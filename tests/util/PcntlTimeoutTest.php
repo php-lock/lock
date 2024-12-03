@@ -38,7 +38,7 @@ class PcntlTimeoutTest extends TestCase
             return 42;
         });
 
-        $this->assertEquals(42, $result);
+        self::assertEquals(42, $result);
     }
 
     /**
@@ -69,6 +69,6 @@ class PcntlTimeoutTest extends TestCase
 
         $timeout->timeBoxed(function () {});
 
-        $this->assertEquals(0, pcntl_alarm(0));
+        self::assertEquals(0, pcntl_alarm(0));
     }
 }

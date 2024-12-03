@@ -81,7 +81,7 @@ class MutexConcurrencyTest extends TestCase
      * @param callable $code         the counter code
      * @param callable $mutexFactory the mutex factory
      *
-     * @dataProvider provideTestHighContention
+     * @dataProvider provideHighContentionCases
      *
      * @slowThreshold 1000
      */
@@ -102,13 +102,13 @@ class MutexConcurrencyTest extends TestCase
         });
 
         $counter = $code(0);
-        $this->assertEquals($concurrency * $iterations, $counter);
+        self::assertEquals($concurrency * $iterations, $counter);
     }
 
     /**
      * Returns test cases for testHighContention().
      */
-    public function provideTestHighContention(): array
+    public function provideHighContentionCases(): iterable
     {
         $cases = array_map(function (array $mutexFactory): array {
             $filename = tempnam(sys_get_temp_dir(), 'php-lock-high-contention');
@@ -128,7 +128,7 @@ class MutexConcurrencyTest extends TestCase
                 },
                 $mutexFactory[0],
             ];
-        }, $this->provideMutexFactories());
+        }, static::provideExecutionIsSerializedWhenLockedCases());
 
         $addPDO = function ($dsn, $user, $password, $vendor) use (&$cases) {
             $pdo = $this->getPDO($dsn, $user, $password);
@@ -194,7 +194,7 @@ class MutexConcurrencyTest extends TestCase
      *
      * @param callable $mutexFactory the Mutex factory
      *
-     * @dataProvider provideMutexFactories
+     * @dataProvider provideExecutionIsSerializedWhenLockedCases
      *
      * @slowThreshold 2000
      */
@@ -211,7 +211,7 @@ class MutexConcurrencyTest extends TestCase
         });
 
         $delta = \microtime(true) - $time;
-        $this->assertGreaterThan(1.201, $delta);
+        self::assertGreaterThan(1.201, $delta);
     }
 
     /**
@@ -219,7 +219,7 @@ class MutexConcurrencyTest extends TestCase
      *
      * @return callable[][] the mutex factories
      */
-    public function provideMutexFactories()
+    public static function provideExecutionIsSerializedWhenLockedCases(): iterable
     {
         $filename = tempnam(sys_get_temp_dir(), 'mutex-concurrency-test');
 
@@ -250,10 +250,10 @@ class MutexConcurrencyTest extends TestCase
 
             'semaphore' => [function ($timeout = 3) use ($filename): Mutex {
                 $semaphore = sem_get(ftok($filename, 'b'));
-                $this->assertThat(
+                self::assertThat(
                     $semaphore,
-                    $this->logicalOr(
-                        $this->isInstanceOf(\SysvSemaphore::class),
+                    self::logicalOr(
+                        self::isInstanceOf(\SysvSemaphore::class),
                         new IsType(IsType::TYPE_RESOURCE)
                     )
                 );

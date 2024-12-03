@@ -59,7 +59,7 @@ class RedisMutexTest extends TestCase
      * @param int $count     The total count of servers
      * @param int $available the count of available servers
      *
-     * @dataProvider provideMinority
+     * @dataProvider provideMinorityCases
      */
     public function testTooFewServerToAcquire(int $count, int $available)
     {
@@ -69,7 +69,7 @@ class RedisMutexTest extends TestCase
         $mutex = $this->buildRedisMutex($count);
 
         $i = 0;
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
@@ -84,7 +84,7 @@ class RedisMutexTest extends TestCase
             );
 
         $mutex->synchronized(function (): void {
-            $this->fail('Code should not be executed');
+            self::fail('Code should not be executed');
         });
     }
 
@@ -94,17 +94,17 @@ class RedisMutexTest extends TestCase
      * @param int $count     The total count of servers
      * @param int $available the count of available servers
      *
-     * @dataProvider provideMajority
+     * @dataProvider provideMajorityCases
      */
     public function testFaultTolerance(int $count, int $available)
     {
         $mutex = $this->buildRedisMutex($count);
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturn(true);
 
         $i = 0;
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
@@ -127,7 +127,7 @@ class RedisMutexTest extends TestCase
      * @param int $count     The total count of servers
      * @param int $available the count of available servers
      *
-     * @dataProvider provideMinority
+     * @dataProvider provideMinorityCases
      */
     public function testAcquireTooFewKeys($count, $available)
     {
@@ -137,7 +137,7 @@ class RedisMutexTest extends TestCase
         $mutex = $this->buildRedisMutex($count);
 
         $i = 0;
-        $mutex->expects($this->any())
+        $mutex->expects(self::any())
             ->method('add')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
@@ -148,7 +148,7 @@ class RedisMutexTest extends TestCase
             );
 
         $mutex->synchronized(function (): void {
-            $this->fail('Code should not be executed');
+            self::fail('Code should not be executed');
         });
     }
 
@@ -159,7 +159,7 @@ class RedisMutexTest extends TestCase
      * @param float $timeout the timeout in seconds
      * @param float $delay   the delay in seconds
      *
-     * @dataProvider provideTestTimingOut
+     * @dataProvider provideTimingOutCases
      */
     public function testTimingOut(int $count, float $timeout, float $delay)
     {
@@ -173,7 +173,7 @@ class RedisMutexTest extends TestCase
 
         $mutex = $this->buildRedisMutex($count, $timeout);
 
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturnCallback(function () use ($delay): bool {
                 usleep((int) ($delay * 1e6));
@@ -182,7 +182,7 @@ class RedisMutexTest extends TestCase
             });
 
         $mutex->synchronized(function (): void {
-            $this->fail('Code should not be executed');
+            self::fail('Code should not be executed');
         });
     }
 
@@ -191,7 +191,7 @@ class RedisMutexTest extends TestCase
      *
      * @return array test cases
      */
-    public function provideTestTimingOut()
+    public static function provideTimingOutCases(): iterable
     {
         // count, timeout, delay
         return [
@@ -206,17 +206,17 @@ class RedisMutexTest extends TestCase
      * @param int $count     The total count of servers
      * @param int $available the count of available servers
      *
-     * @dataProvider provideMajority
+     * @dataProvider provideMajorityCases
      */
     public function testAcquireWithMajority(int $count, int $available)
     {
         $mutex = $this->buildRedisMutex($count);
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturn(true);
 
         $i = 0;
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
@@ -235,17 +235,17 @@ class RedisMutexTest extends TestCase
      * @param int $count     The total count of servers
      * @param int $available the count of available servers
      *
-     * @dataProvider provideMinority
+     * @dataProvider provideMinorityCases
      */
     public function testTooFewServersToRelease(int $count, int $available)
     {
         $mutex = $this->buildRedisMutex($count);
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturn(true);
 
         $i = 0;
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
@@ -270,17 +270,17 @@ class RedisMutexTest extends TestCase
      * @param int $count     The total count of servers
      * @param int $available the count of available servers
      *
-     * @dataProvider provideMinority
+     * @dataProvider provideMinorityCases
      */
     public function testReleaseTooFewKeys(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturn(true);
 
         $i = 0;
-        $mutex->expects($this->exactly($count))
+        $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturnCallback(
                 function () use (&$i, $available): bool {
@@ -300,7 +300,7 @@ class RedisMutexTest extends TestCase
      *
      * @return int[][] test cases
      */
-    public function provideMinority()
+    public static function provideMinorityCases(): iterable
     {
         // total count, available count
         return [
@@ -320,7 +320,7 @@ class RedisMutexTest extends TestCase
      *
      * @return int[][] test cases
      */
-    public function provideMajority()
+    public static function provideMajorityCases(): iterable
     {
         // total count, available count
         return [

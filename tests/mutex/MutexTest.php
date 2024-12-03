@@ -31,7 +31,7 @@ class MutexTest extends TestCase
      *
      * @return callable[][] the mutex factories
      */
-    public function provideMutexFactories()
+    public function provideMutexFactoriesCases(): iterable
     {
         $cases = [
             'NoMutex' => [function (): Mutex {
@@ -73,11 +73,11 @@ class MutexTest extends TestCase
 
             'SpinlockMutex' => [function (): Mutex {
                 $mock = $this->getMockForAbstractClass(SpinlockMutex::class, ['test']);
-                $mock->expects($this->atLeastOnce())
+                $mock->expects(self::atLeastOnce())
                     ->method('acquire')
                     ->willReturn(true);
 
-                $mock->expects($this->atLeastOnce())
+                $mock->expects(self::atLeastOnce())
                     ->method('release')
                     ->willReturn(true);
 
@@ -86,10 +86,10 @@ class MutexTest extends TestCase
 
             'LockMutex' => [function (): Mutex {
                 $mock = $this->getMockForAbstractClass(LockMutex::class);
-                $mock->expects($this->atLeastOnce())
+                $mock->expects(self::atLeastOnce())
                     ->method('lock');
 
-                $mock->expects($this->atLeastOnce())
+                $mock->expects(self::atLeastOnce())
                     ->method('unlock');
 
                 return $mock;
@@ -174,7 +174,7 @@ class MutexTest extends TestCase
      *
      * @param callable $mutexFactory the Mutex factory
      *
-     * @dataProvider provideMutexFactories
+     * @dataProvider provideMutexFactoriesCases
      */
     public function testSynchronizedDelegates(callable $mutexFactory)
     {
@@ -183,7 +183,7 @@ class MutexTest extends TestCase
         $result = $mutex->synchronized(function (): string {
             return 'test';
         });
-        $this->assertSame('test', $result);
+        self::assertSame('test', $result);
     }
 
     /**
@@ -191,7 +191,7 @@ class MutexTest extends TestCase
      *
      * @param callable $mutexFactory the Mutex factory
      *
-     * @dataProvider provideMutexFactories
+     * @dataProvider provideMutexFactoriesCases
      */
     public function testRelease(callable $mutexFactory)
     {
@@ -207,7 +207,7 @@ class MutexTest extends TestCase
      *
      * @param callable $mutexFactory the Mutex factory
      *
-     * @dataProvider provideMutexFactories
+     * @dataProvider provideMutexFactoriesCases
      */
     public function testSynchronizedPassesExceptionThrough(callable $mutexFactory)
     {

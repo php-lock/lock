@@ -116,7 +116,7 @@ class LoopTest extends TestCase
             $i++;
             $loop->end();
         });
-        $this->assertEquals(1, $i);
+        self::assertEquals(1, $i);
     }
 
     /**
@@ -132,6 +132,6 @@ class LoopTest extends TestCase
                 $loop->end();
             }
         });
-        $this->assertSame(2, $i);
+        self::assertSame(2, $i);
     }
 }

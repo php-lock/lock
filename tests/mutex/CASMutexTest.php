@@ -64,7 +64,7 @@ class CASMutexTest extends TestCase
             $i++;
             $mutex->notify();
         });
-        $this->assertEquals(1, $i);
+        self::assertEquals(1, $i);
     }
 
     /**
@@ -80,6 +80,6 @@ class CASMutexTest extends TestCase
                 $mutex->notify();
             }
         });
-        $this->assertEquals(2, $i);
+        self::assertEquals(2, $i);
     }
 }

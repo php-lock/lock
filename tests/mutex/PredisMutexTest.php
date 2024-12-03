@@ -51,19 +51,19 @@ class PredisMutexTest extends TestCase
      */
     public function testAddFailsToSetKey()
     {
-        $this->client->expects($this->atLeastOnce())
+        $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('lock_test', $this->isType('string'), 'PX', 3500, 'NX')
+            ->with('lock_test', self::isType('string'), 'PX', 3500, 'NX')
             ->willReturn(null);
 
-        $this->logger->expects($this->never())
+        $this->logger->expects(self::never())
             ->method('warning');
 
         $this->expectException(LockAcquireException::class);
 
         $this->mutex->synchronized(
             function (): void {
-                $this->fail('Code execution is not expected');
+                self::fail('Code execution is not expected');
             }
         );
     }
@@ -73,34 +73,34 @@ class PredisMutexTest extends TestCase
      */
     public function testAddErrors()
     {
-        $this->client->expects($this->atLeastOnce())
+        $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('lock_test', $this->isType('string'), 'PX', 3500, 'NX')
+            ->with('lock_test', self::isType('string'), 'PX', 3500, 'NX')
             ->willThrowException($this->createMock(PredisException::class));
 
-        $this->logger->expects($this->once())
+        $this->logger->expects(self::once())
             ->method('warning')
-            ->with('Could not set {key} = {token} at server #{index}.', $this->anything());
+            ->with('Could not set {key} = {token} at server #{index}.', self::anything());
 
         $this->expectException(LockAcquireException::class);
 
         $this->mutex->synchronized(
             function () {
-                $this->fail('Code execution is not expected');
+                self::fail('Code execution is not expected');
             }
         );
     }
 
     public function testWorksNormally()
     {
-        $this->client->expects($this->atLeastOnce())
+        $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('lock_test', $this->isType('string'), 'PX', 3500, 'NX')
+            ->with('lock_test', self::isType('string'), 'PX', 3500, 'NX')
             ->willReturnSelf();
 
-        $this->client->expects($this->once())
+        $this->client->expects(self::once())
             ->method('eval')
-            ->with($this->anything(), 1, 'lock_test', $this->isType('string'))
+            ->with(self::anything(), 1, 'lock_test', self::isType('string'))
             ->willReturn(true);
 
         $executed = false;
@@ -109,7 +109,7 @@ class PredisMutexTest extends TestCase
             $executed = true;
         });
 
-        $this->assertTrue($executed);
+        self::assertTrue($executed);
     }
 
     /**
@@ -117,19 +117,19 @@ class PredisMutexTest extends TestCase
      */
     public function testEvalScriptFails()
     {
-        $this->client->expects($this->atLeastOnce())
+        $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('lock_test', $this->isType('string'), 'PX', 3500, 'NX')
+            ->with('lock_test', self::isType('string'), 'PX', 3500, 'NX')
             ->willReturnSelf();
 
-        $this->client->expects($this->once())
+        $this->client->expects(self::once())
             ->method('eval')
-            ->with($this->anything(), 1, 'lock_test', $this->isType('string'))
+            ->with(self::anything(), 1, 'lock_test', self::isType('string'))
             ->willThrowException($this->createMock(PredisException::class));
 
-        $this->logger->expects($this->once())
+        $this->logger->expects(self::once())
             ->method('warning')
-            ->with('Could not unset {key} = {token} at server #{index}.', $this->anything());
+            ->with('Could not unset {key} = {token} at server #{index}.', self::anything());
 
         $executed = false;
 
@@ -139,6 +139,6 @@ class PredisMutexTest extends TestCase
             $executed = true;
         });
 
-        $this->assertTrue($executed);
+        self::assertTrue($executed);
     }
 }

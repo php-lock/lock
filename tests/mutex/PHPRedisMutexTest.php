@@ -140,7 +140,7 @@ class PHPRedisMutexTest extends TestCase
     private function closeMinorityConnections()
     {
         if (count($this->connections) === 1) {
-            $this->markTestSkipped('Cannot test this with only a single Redis server');
+            self::markTestSkipped('Cannot test this with only a single Redis server');
         }
 
         $numberToClose = (int) ceil(count($this->connections) / 2) - 1;
@@ -161,7 +161,7 @@ class PHPRedisMutexTest extends TestCase
         $this->closeMajorityConnections();
 
         $this->mutex->synchronized(function (): void {
-            $this->fail('Code execution is not expected');
+            self::fail('Code execution is not expected');
         });
     }
 
@@ -178,7 +178,7 @@ class PHPRedisMutexTest extends TestCase
     }
 
     /**
-     * @dataProvider serializationAndCompressionModes
+     * @dataProvider provideSerializersAndCompressorsCases
      */
     public function testSerializersAndCompressors($serializer, $compressor)
     {
@@ -187,7 +187,7 @@ class PHPRedisMutexTest extends TestCase
             $connection->setOption(Redis::OPT_COMPRESSION, $compressor);
         }
 
-        $this->assertSame('test', $this->mutex->synchronized(function (): string {
+        self::assertSame('test', $this->mutex->synchronized(function (): string {
             return 'test';
         }));
     }
@@ -196,21 +196,21 @@ class PHPRedisMutexTest extends TestCase
     {
         $this->closeMinorityConnections();
 
-        $this->assertSame('test', $this->mutex->synchronized(function (): string {
+        self::assertSame('test', $this->mutex->synchronized(function (): string {
             return 'test';
         }));
     }
 
     public function testResistantToPartialClusterFailuresForReleasingLock()
     {
-        $this->assertNull($this->mutex->synchronized(function () {
+        self::assertNull($this->mutex->synchronized(function () {
             $this->closeMinorityConnections();
 
             return null;
         }));
     }
 
-    public function serializationAndCompressionModes()
+    public static function provideSerializersAndCompressorsCases(): iterable
     {
         if (!class_exists(Redis::class)) {
             return [];

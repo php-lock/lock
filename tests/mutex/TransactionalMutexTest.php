@@ -17,7 +17,7 @@ class TransactionalMutexTest extends TestCase
      *
      * @param int $mode the invalid error mode
      *
-     * @dataProvider provideTestInvalidErrorMode
+     * @dataProvider provideInvalidErrorModeCases
      */
     public function testInvalidErrorMode(int $mode)
     {
@@ -31,7 +31,7 @@ class TransactionalMutexTest extends TestCase
     /**
      * Returns test cases for testInvalidErrorMode().
      */
-    public function provideTestInvalidErrorMode(): array
+    public static function provideInvalidErrorModeCases(): iterable
     {
         return [
             [\PDO::ERRMODE_SILENT],
@@ -82,7 +82,7 @@ class TransactionalMutexTest extends TestCase
         }
 
         $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
-        $this->assertEquals(0, $count);
+        self::assertEquals(0, $count);
     }
 
     /**
@@ -108,7 +108,7 @@ class TransactionalMutexTest extends TestCase
      *
      * @param \Exception $exception the thrown exception
      *
-     * @dataProvider provideTestReplayTransaction
+     * @dataProvider provideReplayTransactionCases
      */
     public function testReplayTransaction(\Exception $exception)
     {
@@ -126,7 +126,7 @@ class TransactionalMutexTest extends TestCase
             $i++;
 
             $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
-            $this->assertEquals(0, $count);
+            self::assertEquals(0, $count);
 
             $pdo->exec('INSERT INTO testExceptionRollsback VALUES(1)');
 
@@ -137,9 +137,9 @@ class TransactionalMutexTest extends TestCase
         });
 
         $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
-        $this->assertEquals(1, $count);
+        self::assertEquals(1, $count);
 
-        $this->assertEquals(5, $i);
+        self::assertEquals(5, $i);
     }
 
     /**
@@ -147,7 +147,7 @@ class TransactionalMutexTest extends TestCase
      *
      * @return \Exception[][] test cases
      */
-    public function provideTestReplayTransaction()
+    public static function provideReplayTransactionCases(): iterable
     {
         return [
             [new \PDOException()],
@@ -186,7 +186,7 @@ class TransactionalMutexTest extends TestCase
     private function buildMySqlPdo()
     {
         if (!getenv('MYSQL_DSN')) {
-            $this->markTestSkipped();
+            self::markTestSkipped();
         }
 
         $dsn = getenv('MYSQL_DSN');

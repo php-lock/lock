@@ -28,18 +28,18 @@ class DoubleCheckedLockingTest extends TestCase
      */
     public function testCheckFailsAcquiresNoLock()
     {
-        $this->mutex->expects($this->never())->method('synchronized');
+        $this->mutex->expects(self::never())->method('synchronized');
 
         $checkedLocking = new DoubleCheckedLocking($this->mutex, function (): bool {
             return false;
         });
 
         $result = $checkedLocking->then(function (): void {
-            $this->fail();
+            self::fail();
         });
 
         // Failed check should return false.
-        $this->assertFalse($result);
+        self::assertFalse($result);
     }
 
     /**
@@ -50,7 +50,7 @@ class DoubleCheckedLockingTest extends TestCase
         $lock = 0;
         $check = 0;
 
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('synchronized')
             ->willReturnCallback(function (callable $block) use (&$lock) {
                 $lock++;
@@ -62,7 +62,7 @@ class DoubleCheckedLockingTest extends TestCase
 
         $checkedLocking = new DoubleCheckedLocking($this->mutex, function () use (&$lock, &$check): bool {
             if ($check == 1) {
-                $this->assertSame(1, $lock);
+                self::assertSame(1, $lock);
             }
             $check++;
 
@@ -70,15 +70,15 @@ class DoubleCheckedLockingTest extends TestCase
         });
 
         $result = $checkedLocking->then(function () use (&$lock) {
-            $this->assertSame(1, $lock);
+            self::assertSame(1, $lock);
 
             return 'test';
         });
 
-        $this->assertSame(2, $check);
+        self::assertSame(2, $check);
 
         // Synchronized code should return a test string.
-        $this->assertSame('test', $result);
+        self::assertSame('test', $result);
     }
 
     /**
@@ -86,11 +86,11 @@ class DoubleCheckedLockingTest extends TestCase
      *
      * @param callable $check the check
      *
-     * @dataProvider provideTestCodeNotExecuted
+     * @dataProvider provideCodeNotExecutedCases
      */
     public function testCodeNotExecuted(callable $check)
     {
-        $this->mutex->expects($this->any())
+        $this->mutex->expects(self::any())
             ->method('synchronized')
             ->willReturnCallback(function (callable $block) {
                 return $block();
@@ -98,11 +98,11 @@ class DoubleCheckedLockingTest extends TestCase
 
         $checkedLocking = new DoubleCheckedLocking($this->mutex, $check);
         $result = $checkedLocking->then(function (): void {
-            $this->fail();
+            self::fail();
         });
 
         // Each failed check should return false.
-        $this->assertFalse($result);
+        self::assertFalse($result);
     }
 
     /**
@@ -110,7 +110,7 @@ class DoubleCheckedLockingTest extends TestCase
      *
      * @return callable[][] the test cases
      */
-    public function provideTestCodeNotExecuted()
+    public static function provideCodeNotExecutedCases(): iterable
     {
         $checkCounter = 0;
 
@@ -133,7 +133,7 @@ class DoubleCheckedLockingTest extends TestCase
      */
     public function testCodeExecuted()
     {
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('synchronized')
             ->willReturnCallback(function (callable $block) {
                 return $block();
@@ -150,7 +150,7 @@ class DoubleCheckedLockingTest extends TestCase
             return 'test';
         });
 
-        $this->assertTrue($executed);
-        $this->assertEquals('test', $result);
+        self::assertTrue($executed);
+        self::assertEquals('test', $result);
     }
 }

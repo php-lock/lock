@@ -30,12 +30,12 @@ class LockMutexTest extends TestCase
     {
         $this->expectException(LockAcquireException::class);
 
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('lock')
             ->willThrowException(new LockAcquireException());
 
         $this->mutex->synchronized(function (): void {
-            $this->fail('Should not execute code.');
+            self::fail('Should not execute code.');
         });
     }
 
@@ -44,7 +44,7 @@ class LockMutexTest extends TestCase
      */
     public function testUnlockAfterCode()
     {
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('unlock');
 
         $this->mutex->synchronized(function (): void {});
@@ -55,7 +55,7 @@ class LockMutexTest extends TestCase
      */
     public function testUnlockAfterException()
     {
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('unlock');
 
         $this->expectException(\DomainException::class);
@@ -71,7 +71,7 @@ class LockMutexTest extends TestCase
     {
         $this->expectException(LockReleaseException::class);
 
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
@@ -85,7 +85,7 @@ class LockMutexTest extends TestCase
     {
         $this->expectException(LockReleaseException::class);
 
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
@@ -99,7 +99,7 @@ class LockMutexTest extends TestCase
      */
     public function testCodeResultAvailableAfterFailedUnlock()
     {
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
@@ -108,8 +108,8 @@ class LockMutexTest extends TestCase
                 return 'result';
             });
         } catch (LockReleaseException $exception) {
-            $this->assertEquals('result', $exception->getCodeResult());
-            $this->assertNull($exception->getCodeException());
+            self::assertEquals('result', $exception->getCodeResult());
+            self::assertNull($exception->getCodeException());
         }
     }
 
@@ -118,7 +118,7 @@ class LockMutexTest extends TestCase
      */
     public function testCodeExceptionAvailableAfterFailedUnlock()
     {
-        $this->mutex->expects($this->once())
+        $this->mutex->expects(self::once())
             ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
@@ -127,8 +127,8 @@ class LockMutexTest extends TestCase
                 throw new \DomainException('Domain exception');
             });
         } catch (LockReleaseException $exception) {
-            $this->assertInstanceOf(\DomainException::class, $exception->getCodeException());
-            $this->assertEquals('Domain exception', $exception->getCodeException()->getMessage());
+            self::assertInstanceOf(\DomainException::class, $exception->getCodeException());
+            self::assertEquals('Domain exception', $exception->getCodeException()->getMessage());
         }
     }
 }

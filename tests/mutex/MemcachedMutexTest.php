@@ -39,13 +39,13 @@ class MemcachedMutexTest extends TestCase
     {
         $this->expectException(TimeoutException::class);
 
-        $this->memcached->expects($this->atLeastOnce())
+        $this->memcached->expects(self::atLeastOnce())
             ->method('add')
             ->with('lock_test', true, 2)
             ->willReturn(false);
 
         $this->mutex->synchronized(function (): void {
-            $this->fail('execution is not expected');
+            self::fail('execution is not expected');
         });
     }
 
@@ -56,12 +56,12 @@ class MemcachedMutexTest extends TestCase
     {
         $this->expectException(LockReleaseException::class);
 
-        $this->memcached->expects($this->once())
+        $this->memcached->expects(self::once())
             ->method('add')
             ->with('lock_test', true, 2)
             ->willReturn(true);
 
-        $this->memcached->expects($this->once())
+        $this->memcached->expects(self::once())
             ->method('delete')
             ->with('lock_test')
             ->willReturn(false);

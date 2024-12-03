@@ -29,22 +29,22 @@ class PgAdvisoryLockMutexTest extends TestCase
     {
         $statement = $this->createMock(\PDOStatement::class);
 
-        $this->pdo->expects($this->once())
+        $this->pdo->expects(self::once())
             ->method('prepare')
             ->with('SELECT pg_advisory_lock(?,?)')
             ->willReturn($statement);
 
-        $statement->expects($this->once())
+        $statement->expects(self::once())
             ->method('execute')
             ->with(
-                $this->logicalAnd(
-                    $this->isType('array'),
-                    $this->countOf(2),
-                    $this->callback(function (...$arguments): bool {
+                self::logicalAnd(
+                    self::isType('array'),
+                    self::countOf(2),
+                    self::callback(function (...$arguments): bool {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {
-                            $this->assertIsInt($each);
+                            self::assertIsInt($each);
                         }
 
                         return true;
@@ -59,24 +59,24 @@ class PgAdvisoryLockMutexTest extends TestCase
     {
         $statement = $this->createMock(\PDOStatement::class);
 
-        $this->pdo->expects($this->once())
+        $this->pdo->expects(self::once())
             ->method('prepare')
             ->with('SELECT pg_advisory_unlock(?,?)')
             ->willReturn($statement);
 
-        $statement->expects($this->once())
+        $statement->expects(self::once())
             ->method('execute')
             ->with(
-                $this->logicalAnd(
-                    $this->isType('array'),
-                    $this->countOf(2),
-                    $this->callback(function (...$arguments): bool {
+                self::logicalAnd(
+                    self::isType('array'),
+                    self::countOf(2),
+                    self::callback(function (...$arguments): bool {
                         $integers = $arguments[0];
 
                         foreach ($integers as $each) {
-                            $this->assertLessThan(1 << 32, $each);
-                            $this->assertGreaterThan(-(1 << 32), $each);
-                            $this->assertIsInt($each);
+                            self::assertLessThan(1 << 32, $each);
+                            self::assertGreaterThan(-(1 << 32), $each);
+                            self::assertIsInt($each);
                         }
 
                         return true;

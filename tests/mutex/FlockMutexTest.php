@@ -36,13 +36,13 @@ class FlockMutexTest extends TestCase
     }
 
     /**
-     * @dataProvider dpTimeoutableStrategies
+     * @dataProvider dpTimeoutableStrategiesCases
      */
     public function testCodeExecutedOutsideLockIsNotThrown(int $strategy)
     {
         $this->mutex->strategy = $strategy; // @phpstan-ignore-line
 
-        $this->assertTrue($this->mutex->synchronized(function (): bool {
+        self::assertTrue($this->mutex->synchronized(function (): bool {
             usleep(1100 * 1000);
 
             return true;
@@ -50,7 +50,7 @@ class FlockMutexTest extends TestCase
     }
 
     /**
-     * @dataProvider dpTimeoutableStrategies
+     * @dataProvider dpTimeoutableStrategiesCases
      */
     public function testTimeoutOccurs(int $strategy)
     {
@@ -65,7 +65,7 @@ class FlockMutexTest extends TestCase
         try {
             $this->mutex->synchronized(
                 function () {
-                    $this->fail('Did not expect code to be executed');
+                    self::fail('Did not expect code to be executed');
                 }
             );
         } finally {
@@ -73,7 +73,7 @@ class FlockMutexTest extends TestCase
         }
     }
 
-    public function dpTimeoutableStrategies()
+    public static function dpTimeoutableStrategiesCases(): iterable
     {
         return [
             [FlockMutex::STRATEGY_PCNTL],
@@ -93,7 +93,7 @@ class FlockMutexTest extends TestCase
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {
             $this->mutex->synchronized(function (): void {
-                $this->fail('Did not expect code execution.');
+                self::fail('Did not expect code execution.');
             });
         });
     }
