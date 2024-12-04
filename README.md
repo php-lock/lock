@@ -7,8 +7,7 @@
 
 [![Latest Stable Version](https://poser.pugx.org/malkusch/lock/version)](https://packagist.org/packages/malkusch/lock)
 [![Total Downloads](https://poser.pugx.org/malkusch/lock/downloads)](https://packagist.org/packages/malkusch/lock)
-[![Latest Unstable Version](https://poser.pugx.org/malkusch/lock/v/unstable)](//packagist.org/packages/malkusch/lock)
-[![Build Status](https://travis-ci.org/php-lock/lock.svg?branch=master)](https://travis-ci.org/php-lock/lock)
+[![Build Status](https://github.com/php-lock/lock/actions/workflows/test-unit.yml/badge.svg?branch=master)](https://github.com/php-lock/lock/actions?query=branch:master)
 [![License](https://poser.pugx.org/malkusch/lock/license)](https://packagist.org/packages/malkusch/lock)
 
 This library helps executing critical code in concurrent situations.
