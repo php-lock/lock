@@ -31,7 +31,8 @@ class PredisMutexTest extends TestCase
         parent::setUp();
 
         $this->client = $this->getMockBuilder(ClientInterface::class) // @phpstan-ignore method.deprecated
-            ->setMethods(array_merge(get_class_methods(ClientInterface::class), ['set', 'eval']))
+            ->onlyMethods(get_class_methods(ClientInterface::class))
+            ->addMethods(['set', 'eval'])
             ->getMock();
 
         $this->mutex = new PredisMutex([$this->client], 'test', 2.5);

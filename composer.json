@@ -46,6 +46,7 @@
         "ext-sysvsem": "*",
         "eloquent/liberator": "^2.0 || ^3.0",
         "ergebnis/composer-normalize": "^2.13",
+        "ergebnis/phpunit-slow-test-detector": "^2.9",
         "friendsofphp/php-cs-fixer": "^3.0",
         "mikey179/vfsstream": "^1.6.11",
         "php-mock/php-mock-phpunit": "^2.1",
@@ -53,7 +54,7 @@
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^9.4",
+        "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0",
         "predis/predis": "^1.1.8",
         "spatie/async": "^1.5"
     },

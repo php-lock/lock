@@ -24,6 +24,11 @@ class PgAdvisoryLockMutexTest extends TestCase
         $this->mutex = new PgAdvisoryLockMutex($this->pdo, 'test' . uniqid());
     }
 
+    private function isPhpunit9x(): bool
+    {
+        return (new \ReflectionClass(self::class))->hasMethod('getStatus');
+    }
+
     public function testAcquireLock(): void
     {
         $statement = $this->createMock(\PDOStatement::class);
@@ -39,11 +44,13 @@ class PgAdvisoryLockMutexTest extends TestCase
                 self::logicalAnd(
                     self::isType('array'),
                     self::countOf(2),
-                    self::callback(static function (...$arguments): bool {
-                        $integers = $arguments[0];
+                    self::callback(function (...$arguments): bool {
+                        if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
+                            $arguments = $arguments[0];
+                        }
 
-                        foreach ($integers as $each) {
-                            self::assertIsInt($each);
+                        foreach ($arguments as $v) {
+                            self::assertIsInt($v);
                         }
 
                         return true;
@@ -69,13 +76,15 @@ class PgAdvisoryLockMutexTest extends TestCase
                 self::logicalAnd(
                     self::isType('array'),
                     self::countOf(2),
-                    self::callback(static function (...$arguments): bool {
-                        $integers = $arguments[0];
+                    self::callback(function (...$arguments): bool {
+                        if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
+                            $arguments = $arguments[0];
+                        }
 
-                        foreach ($integers as $each) {
-                            self::assertLessThan(1 << 32, $each);
-                            self::assertGreaterThan(-(1 << 32), $each);
-                            self::assertIsInt($each);
+                        foreach ($arguments as $v) {
+                            self::assertLessThan(1 << 32, $v);
+                            self::assertGreaterThan(-(1 << 32), $v);
+                            self::assertIsInt($v);
                         }
 
                         return true;

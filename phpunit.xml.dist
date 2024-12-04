@@ -1,18 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.4/phpunit.xsd"
-         backupGlobals="false"
-         backupStaticAttributes="false"
-         bootstrap="vendor/autoload.php"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false">
+<phpunit bootstrap="vendor/autoload.php" colors="true">
     <testsuites>
-        <testsuite name="Unit">
-            <directory suffix="Test.php">./tests</directory>
+        <testsuite name="tests">
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <extensions>
+        <bootstrap class="Ergebnis\PHPUnit\SlowTestDetector\Extension" />
+    </extensions>
+    <source>
+        <include>
+            <directory>src</directory>
+            <directory>tests</directory>
+        </include>
+    </source>
+    <coverage>
+        <report>
+            <php outputFile="coverage/phpunit.cov" />
+        </report>
+    </coverage>
 </phpunit>
