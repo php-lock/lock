@@ -48,7 +48,7 @@ class MySQLMutex extends LockMutex
         $statement->setFetchMode(\PDO::FETCH_NUM);
         $row = $statement->fetch();
 
-        if ($row[0] == 1) {
+        if ((string) $row[0] === '1') {
             // Returns 1 if the lock was obtained successfully.
             return;
         }

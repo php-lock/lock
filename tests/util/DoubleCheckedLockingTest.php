@@ -58,7 +58,7 @@ class DoubleCheckedLockingTest extends TestCase
             });
 
         $checkedLocking = new DoubleCheckedLocking($this->mutex, static function () use (&$lock, &$check): bool {
-            if ($check == 1) {
+            if ($check === 1) {
                 self::assertSame(1, $lock);
             }
             ++$check;
@@ -117,7 +117,7 @@ class DoubleCheckedLockingTest extends TestCase
             }],
 
             [static function () use (&$checkCounter): bool {
-                $result = $checkCounter == 0;
+                $result = $checkCounter === 0;
                 ++$checkCounter;
 
                 return $result;

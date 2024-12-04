@@ -88,8 +88,6 @@ class MutexConcurrencyTest extends TestCase
      * @param callable $mutexFactory the mutex factory
      *
      * @dataProvider provideHighContentionCases
-     *
-     * @slowThreshold 1000
      */
     public function testHighContention(callable $code, callable $mutexFactory): void
     {
@@ -153,9 +151,9 @@ class MutexConcurrencyTest extends TestCase
             self::$pdo = null;
 
             $cases[$vendor] = [
-                static function ($increment) use ($dsn, $user, $password) {
+                static function (int $increment) use ($dsn, $user, $password) {
                     // This prevents using a closed connection from a child.
-                    if ($increment == 0) {
+                    if ($increment === 0) {
                         self::$pdo = null;
                     }
                     $pdo = self::getPDO($dsn, $user, $password);
@@ -203,8 +201,6 @@ class MutexConcurrencyTest extends TestCase
      * @param callable $mutexFactory the Mutex factory
      *
      * @dataProvider provideExecutionIsSerializedWhenLockedCases
-     *
-     * @slowThreshold 2000
      */
     public function testExecutionIsSerializedWhenLocked(callable $mutexFactory): void
     {
