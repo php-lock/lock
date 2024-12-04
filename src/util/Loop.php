@@ -44,7 +44,7 @@ class Loop
     {
         if ($timeout <= 0) {
             throw new \LengthException(\sprintf(
-                'The timeout must be greater than 0. %d was given.',
+                'The timeout must be greater than 0 (%d was given)',
                 $timeout
             ));
         }

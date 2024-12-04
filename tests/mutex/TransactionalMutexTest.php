@@ -46,7 +46,7 @@ class TransactionalMutexTest extends TestCase
     public function testBeginFails(): void
     {
         $this->expectException(LockAcquireException::class);
-        $this->expectExceptionMessage('Could not begin transaction.');
+        $this->expectExceptionMessage('Could not begin transaction');
 
         $pdo = $this->buildMySqlPdo();
         $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);

@@ -66,7 +66,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                     'token' => $this->token,
                     'exception' => $exception,
                 ];
-                $this->logger->warning('Could not set {key} = {token} at server #{index}.', $context);
+                $this->logger->warning('Could not set {key} = {token} at server #{index}', $context);
 
                 ++$errored;
             }
@@ -89,7 +89,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
             assert($exception !== null); // The last exception for some context.
 
             throw new LockAcquireException(
-                "It's not possible to acquire a lock because at least half of the Redis server are not available.",
+                'It\'s not possible to acquire a lock because at least half of the Redis server are not available',
                 LockAcquireException::REDIS_NOT_ENOUGH_SERVERS,
                 $exception
             );
@@ -127,7 +127,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
                     'token' => $this->token,
                     'exception' => $e,
                 ];
-                $this->logger->warning('Could not unset {key} = {token} at server #{index}.', $context);
+                $this->logger->warning('Could not unset {key} = {token} at server #{index}', $context);
             }
         }
 

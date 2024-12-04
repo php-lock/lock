@@ -26,6 +26,6 @@ class TimeoutException extends LockAcquireException
             $timeoutStr .= '.0';
         }
 
-        return new self(\sprintf('Timeout of %s seconds exceeded.', $timeoutStr));
+        return new self(\sprintf('Timeout of %s seconds exceeded', $timeoutStr));
     }
 }

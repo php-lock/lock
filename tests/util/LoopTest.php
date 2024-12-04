@@ -56,7 +56,7 @@ class LoopTest extends TestCase
     public function testExecutionWithinTimeoutWithoutExplicitEnd(): void
     {
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded.');
+        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded');
 
         $loop = new Loop(0.5);
         $loop->execute(static function (): void {
@@ -84,7 +84,7 @@ class LoopTest extends TestCase
     public function testExceedTimeoutWithoutExplicitEnd(): void
     {
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded.');
+        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded');
 
         $loop = new Loop(0.5);
         $loop->execute(static function (): void {

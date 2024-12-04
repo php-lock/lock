@@ -75,7 +75,7 @@ class PredisMutexTest extends TestCase
 
         $this->logger->expects(self::once())
             ->method('warning')
-            ->with('Could not set {key} = {token} at server #{index}.', self::anything());
+            ->with('Could not set {key} = {token} at server #{index}', self::anything());
 
         $this->expectException(LockAcquireException::class);
 
@@ -124,7 +124,7 @@ class PredisMutexTest extends TestCase
 
         $this->logger->expects(self::once())
             ->method('warning')
-            ->with('Could not unset {key} = {token} at server #{index}.', self::anything());
+            ->with('Could not unset {key} = {token} at server #{index}', self::anything());
 
         $executed = false;
 

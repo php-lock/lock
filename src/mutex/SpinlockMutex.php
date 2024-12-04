@@ -77,7 +77,7 @@ abstract class SpinlockMutex extends LockMutex
          * This guarantees that we don't delete a wrong key.
          */
         if (!$this->release($this->key)) {
-            throw new LockReleaseException('Failed to release the lock.');
+            throw new LockReleaseException('Failed to release the lock');
         }
     }
 

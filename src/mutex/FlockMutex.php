@@ -50,7 +50,7 @@ class FlockMutex extends LockMutex
     public function __construct($fileHandle, float $timeout = self::INFINITE_TIMEOUT)
     {
         if (!is_resource($fileHandle)) {
-            throw new \InvalidArgumentException('The file handle is not a valid resource.');
+            throw new \InvalidArgumentException('The file handle is not a valid resource');
         }
 
         $this->fileHandle = $fileHandle;
@@ -80,7 +80,7 @@ class FlockMutex extends LockMutex
     private function lockBlocking(): void
     {
         if (!flock($this->fileHandle, \LOCK_EX)) {
-            throw new LockAcquireException('Failed to lock the file.');
+            throw new LockAcquireException('Failed to lock the file');
         }
     }
 
@@ -130,7 +130,7 @@ class FlockMutex extends LockMutex
                 return false;
             }
 
-            throw new LockAcquireException('Failed to lock the file.');
+            throw new LockAcquireException('Failed to lock the file');
         }
 
         return true;
@@ -158,14 +158,14 @@ class FlockMutex extends LockMutex
                 return;
         }
 
-        throw new \RuntimeException("Unknown strategy '{$this->strategy}'.'"); // @phpstan-ignore deadCode.unreachable
+        throw new \RuntimeException('Unknown "' . $this->strategy . '" strategy'); // @phpstan-ignore deadCode.unreachable
     }
 
     #[\Override]
     protected function unlock(): void
     {
         if (!flock($this->fileHandle, \LOCK_UN)) {
-            throw new LockReleaseException('Failed to unlock the file.');
+            throw new LockReleaseException('Failed to unlock the file');
         }
     }
 }

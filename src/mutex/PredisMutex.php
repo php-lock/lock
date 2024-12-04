@@ -43,7 +43,7 @@ class PredisMutex extends RedisMutex
             return $redisAPI->set($key, $value, 'PX', $expireMillis, 'NX') !== null;
         } catch (PredisException $e) {
             $message = sprintf(
-                "Failed to acquire lock for key '%s'",
+                'Failed to acquire lock for key \'%s\'',
                 $key
             );
 

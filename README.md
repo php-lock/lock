@@ -6,7 +6,7 @@
 # php-lock/lock
 
 [![Latest Stable Version](https://poser.pugx.org/malkusch/lock/version)](https://packagist.org/packages/malkusch/lock)
-[![Total Downloads](https://poser.pugx.org/malkusch/lock/downloads)](https://packagist.org/packages/malkusch/lock)
+[![Total Downloads](https://poser.pugx.org/malkusch/lock/downloads)](https://packagist.org/packages/malkusch/lock/stats)
 [![Build Status](https://github.com/php-lock/lock/actions/workflows/test-unit.yml/badge.svg?branch=master)](https://github.com/php-lock/lock/actions?query=branch:master)
 [![License](https://poser.pugx.org/malkusch/lock/license)](https://packagist.org/packages/malkusch/lock)
 
@@ -72,7 +72,7 @@ $newBalance = $mutex->synchronized(function () use (
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
 
@@ -120,7 +120,7 @@ $newBalance = $mutex->check(function () use ($bankAccount, $amount): bool {
 
 if ($newBalance === false) {
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
 }
 ```
@@ -210,7 +210,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
 });
@@ -234,7 +234,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
 });
@@ -261,7 +261,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
 });
@@ -282,7 +282,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
 });
@@ -301,7 +301,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
 });
@@ -330,7 +330,7 @@ $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
 
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $pdo->prepare('UPDATE account SET balance = ? WHERE id = ?')
         ->execute([$balance, $accountId]);
@@ -361,7 +361,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
 });
@@ -387,7 +387,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
-        throw new \DomainException('You have no credit.');
+        throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
 });

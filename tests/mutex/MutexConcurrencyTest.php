@@ -143,7 +143,7 @@ class MutexConcurrencyTest extends TestCase
 
             $options = ['mysql' => 'engine=InnoDB'];
             $option = $options[$vendor] ?? '';
-            $pdo->exec("CREATE TABLE IF NOT EXISTS counter(id INT PRIMARY KEY, counter INT) {$option}");
+            $pdo->exec('CREATE TABLE IF NOT EXISTS counter(id INT PRIMARY KEY, counter INT) ' . $option);
 
             $pdo->beginTransaction();
             $pdo->exec('DELETE FROM counter');
@@ -324,7 +324,7 @@ class MutexConcurrencyTest extends TestCase
 
         if (getenv('MYSQL_DSN')) {
             $cases['MySQLMutex'] = [static function ($timeout = 3): Mutex {
-                $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_USER'));
+                $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new MySQLMutex($pdo, 'test', $timeout);

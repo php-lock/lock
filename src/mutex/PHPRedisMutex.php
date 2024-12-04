@@ -52,7 +52,7 @@ class PHPRedisMutex extends RedisMutex
             return $redisAPI->set($key, $value, ['nx', 'px' => $expireMillis]);
         } catch (\RedisException $e) {
             $message = sprintf(
-                "Failed to acquire lock for key '%s'",
+                'Failed to acquire lock for key \'%s\'',
                 $key
             );
 

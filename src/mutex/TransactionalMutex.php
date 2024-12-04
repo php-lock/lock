@@ -40,7 +40,7 @@ class TransactionalMutex extends Mutex
     public function __construct(\PDO $pdo, float $timeout = 3)
     {
         if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
-            throw new \InvalidArgumentException('The pdo must have PDO::ERRMODE_EXCEPTION set.');
+            throw new \InvalidArgumentException('The pdo must have PDO::ERRMODE_EXCEPTION set');
         }
         self::checkAutocommit($pdo);
 
@@ -64,7 +64,7 @@ class TransactionalMutex extends Mutex
 
         try {
             if ($pdo->getAttribute(\PDO::ATTR_AUTOCOMMIT)) {
-                throw new \InvalidArgumentException('PDO::ATTR_AUTOCOMMIT should be disabled.');
+                throw new \InvalidArgumentException('PDO::ATTR_AUTOCOMMIT should be disabled');
             }
         } catch (\PDOException $e) {
             /*
@@ -97,7 +97,7 @@ class TransactionalMutex extends Mutex
                 // BEGIN
                 $this->pdo->beginTransaction();
             } catch (\PDOException $e) {
-                throw new LockAcquireException('Could not begin transaction.', 0, $e);
+                throw new LockAcquireException('Could not begin transaction', 0, $e);
             }
 
             try {
@@ -151,7 +151,7 @@ class TransactionalMutex extends Mutex
             $this->pdo->rollBack();
         } catch (\PDOException $e2) {
             throw new LockAcquireException(
-                "Could not roll back transaction: {$e2->getMessage()})",
+                'Could not roll back transaction: ' . $e2->getMessage(),
                 0,
                 $exception
             );

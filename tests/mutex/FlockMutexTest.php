@@ -58,7 +58,7 @@ class FlockMutexTest extends TestCase
     public function testTimeoutOccurs(int $strategy): void
     {
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded.');
+        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded');
 
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, \LOCK_EX);
@@ -99,7 +99,7 @@ class FlockMutexTest extends TestCase
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {
             $this->mutex->synchronized(static function (): void {
-                self::fail('Did not expect code execution.');
+                self::fail('Did not expect code execution');
             });
         });
     }

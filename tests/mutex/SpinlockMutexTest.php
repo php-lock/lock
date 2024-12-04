@@ -54,7 +54,7 @@ class SpinlockMutexTest extends TestCase
     public function testAcquireTimesOut(): void
     {
         $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 3.0 seconds exceeded.');
+        $this->expectExceptionMessage('Timeout of 3.0 seconds exceeded');
 
         $mutex = $this->getMockForAbstractClass(SpinlockMutex::class, ['test']);
         $mutex->expects(self::atLeastOnce())
