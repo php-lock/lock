@@ -279,9 +279,9 @@ class MutexConcurrencyTest extends TestCase
             }];
         }
 
-        $uris = getenv('REDIS_URIS') !== false ? explode(',', getenv('REDIS_URIS')) : false;
+        if (getenv('REDIS_URIS')) {
+            $uris = explode(',', getenv('REDIS_URIS'));
 
-        if ($uris) {
             $cases['PredisMutex'] = [static function ($timeout = 3) use ($uris): Mutex {
                 $clients = array_map(
                     static function ($uri) {

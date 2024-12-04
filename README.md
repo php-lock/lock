@@ -1,7 +1,7 @@
 **[Requirements](#requirements)** |
 **[Installation](#installation)** |
 **[Usage](#usage)** |
-**[License](#license)** |
+**[License](#license)**
 
 # php-lock/lock
 

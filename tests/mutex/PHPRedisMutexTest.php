@@ -74,9 +74,13 @@ class PHPRedisMutexTest extends TestCase
     {
         parent::setUp();
 
-        $uris = explode(',', getenv('REDIS_URIS') ?: 'redis://localhost'); // @phpstan-ignore ternary.shortNotAllowed
+        if (!getenv('REDIS_URIS')) {
+            self::markTestSkipped('Redis server is needed');
+        }
 
-        foreach ($uris as $redisUri) {
+        $redisUris = explode(',', getenv('REDIS_URIS'));
+
+        foreach ($redisUris as $redisUri) {
             $uri = parse_url($redisUri);
 
             // original Redis::set and Redis::eval calls will reopen the connection
@@ -241,14 +245,14 @@ class PHPRedisMutexTest extends TestCase
             [\Redis::SERIALIZER_PHP, \Redis::COMPRESSION_NONE],
         ];
 
-        if (defined('Redis::SERIALIZER_IGBINARY')) {
+        if (defined('Redis::SERIALIZER_IGBINARY') && extension_loaded('igbinary')) {
             $options[] = [
                 constant('Redis::SERIALIZER_IGBINARY'),
                 \Redis::COMPRESSION_NONE,
             ];
         }
 
-        if (defined('Redis::COMPRESSION_LZF')) {
+        if (defined('Redis::COMPRESSION_LZF') && extension_loaded('lzf')) {
             $options[] = [
                 \Redis::SERIALIZER_NONE,
                 constant('Redis::COMPRESSION_LZF'),
@@ -258,7 +262,7 @@ class PHPRedisMutexTest extends TestCase
                 constant('Redis::COMPRESSION_LZF'),
             ];
 
-            if (defined('Redis::SERIALIZER_IGBINARY')) {
+            if (defined('Redis::SERIALIZER_IGBINARY') && extension_loaded('igbinary')) {
                 $options[] = [
                     constant('Redis::SERIALIZER_IGBINARY'),
                     constant('Redis::COMPRESSION_LZF'),
