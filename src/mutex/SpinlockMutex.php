@@ -17,7 +17,7 @@ use malkusch\lock\util\Loop;
 abstract class SpinlockMutex extends LockMutex
 {
     /** The prefix for the lock key. */
-    private const PREFIX = 'lock_';
+    private const PREFIX = 'php-malkusch-lock:';
 
     /** @var float The timeout in seconds a lock may live */
     private $timeout;

@@ -50,7 +50,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('lock_test', self::isType('string'), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', self::isType('string'), 'PX', 3500, 'NX')
             ->willReturn(null);
 
         $this->logger->expects(self::never())
@@ -72,7 +72,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('lock_test', self::isType('string'), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', self::isType('string'), 'PX', 3500, 'NX')
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects(self::once())
@@ -92,12 +92,12 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('lock_test', self::isType('string'), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', self::isType('string'), 'PX', 3500, 'NX')
             ->willReturnSelf();
 
         $this->client->expects(self::once())
             ->method('eval')
-            ->with(self::anything(), 1, 'lock_test', self::isType('string'))
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', self::isType('string'))
             ->willReturn(true);
 
         $executed = false;
@@ -116,12 +116,12 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('lock_test', self::isType('string'), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', self::isType('string'), 'PX', 3500, 'NX')
             ->willReturnSelf();
 
         $this->client->expects(self::once())
             ->method('eval')
-            ->with(self::anything(), 1, 'lock_test', self::isType('string'))
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', self::isType('string'))
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects(self::once())
