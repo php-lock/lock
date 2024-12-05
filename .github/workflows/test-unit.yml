@@ -154,7 +154,7 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-phpunit-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
 
       - name: Upload coverage (only for coverage)
-        if: env.LOG_COVERAGE && false # TODO
+        if: env.LOG_COVERAGE
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

@@ -3,5 +3,6 @@
 /.gitattributes export-ignore
 /.gitignore export-ignore
 /.php-cs-fixer.dist.php export-ignore
+/codecov.yml export-ignore
 /phpstan.neon.dist export-ignore
 /phpunit.xml.dist export-ignore
