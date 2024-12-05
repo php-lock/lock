@@ -10,6 +10,7 @@ use malkusch\lock\exception\MutexException;
 use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\mutex\RedisMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
+use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -34,9 +35,13 @@ class RedisMutexTest extends TestCase
         $sleepBuilder->addNamespace('malkusch\lock\mutex');
         $sleepBuilder->addNamespace('malkusch\lock\util');
         $sleep = $sleepBuilder->build();
-
-        $sleep->enable();
-        $this->registerForTearDown($sleep);
+        try {
+            $sleep->enable();
+            $this->registerForTearDown($sleep);
+        } catch (MockEnabledException $e) {
+            // workaround for burn testing
+            \assert($e->getMessage() === 'microtime is already enabled.Call disable() on the existing mock.');
+        }
     }
 
     /**
@@ -136,7 +141,7 @@ class RedisMutexTest extends TestCase
      * @dataProvider provideMinorityCases
      */
     #[DataProvider('provideMinorityCases')]
-    public function testAcquireTooFewKeys($count, $available): void
+    public function testAcquireTooFewKeys(int $count, int $available): void
     {
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded');

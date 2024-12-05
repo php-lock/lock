@@ -7,6 +7,7 @@ namespace malkusch\lock\Tests\mutex;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\mutex\CASMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
+use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
 
@@ -19,14 +20,18 @@ class CASMutexTest extends TestCase
     {
         parent::setUp();
 
-        $builder = new SleepEnvironmentBuilder();
-        $builder->addNamespace(__NAMESPACE__);
-        $builder->addNamespace('malkusch\lock\mutex');
-        $builder->addNamespace('malkusch\lock\util');
-        $sleep = $builder->build();
-        $sleep->enable();
-
-        $this->registerForTearDown($sleep);
+        $sleepBuilder = new SleepEnvironmentBuilder();
+        $sleepBuilder->addNamespace(__NAMESPACE__);
+        $sleepBuilder->addNamespace('malkusch\lock\mutex');
+        $sleepBuilder->addNamespace('malkusch\lock\util');
+        $sleep = $sleepBuilder->build();
+        try {
+            $sleep->enable();
+            $this->registerForTearDown($sleep);
+        } catch (MockEnabledException $e) {
+            // workaround for burn testing
+            \assert($e->getMessage() === 'microtime is already enabled.Call disable() on the existing mock.');
+        }
     }
 
     /**

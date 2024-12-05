@@ -253,7 +253,7 @@ continue to function as long as a majority of the servers still works.
 
 Example:
 ```php
-$redis = new Redis();
+$redis = new \Redis();
 $redis->connect('localhost');
 
 $mutex = new PHPRedisMutex([$redis], 'balance');
@@ -275,7 +275,7 @@ The **PredisMutex** is the distributed lock implementation of
 
 Example:
 ```php
-$redis = new Client('redis://localhost');
+$redis = new \Predis\Client('redis://localhost');
 
 $mutex = new PredisMutex([$redis], 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {
@@ -354,7 +354,7 @@ Also note that `GET_LOCK` function is server wide and the MySQL manual suggests
 you to namespace your locks like `dbname.lockname`.
 
 ```php
-$pdo = new PDO('mysql:host=localhost;dbname=test', 'username');
+$pdo = new \PDO('mysql:host=localhost;dbname=test', 'username');
 
 $mutex = new MySQLMutex($pdo, 'balance', 15);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
@@ -380,7 +380,7 @@ No time outs are supported. If the connection to the database server is lost or
 interrupted, the lock is automatically released.
 
 ```php
-$pdo = new PDO('pgsql:host=localhost;dbname=test', 'username');
+$pdo = new \PDO('pgsql:host=localhost;dbname=test', 'username');
 
 $mutex = new PgAdvisoryLockMutex($pdo, 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {

@@ -28,6 +28,8 @@ class MemcachedMutexTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->memcached = $this->createMock(\Memcached::class);
         $this->mutex = new MemcachedMutex('test', $this->memcached, 1);
     }

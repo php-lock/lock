@@ -153,6 +153,15 @@ class PHPRedisMutexTest extends TestCase
         $this->mutex = new PHPRedisMutex($this->connections, 'test');
     }
 
+    #[\Override]
+    protected function assertPostConditions(): void
+    {
+        // workaround for burn testing
+        $this->connections = [];
+
+        parent::assertPostConditions();
+    }
+
     private function closeMajorityConnections(): void
     {
         $numberToClose = (int) ceil(count($this->connections) / 2);
@@ -209,7 +218,7 @@ class PHPRedisMutexTest extends TestCase
      * @dataProvider provideSerializersAndCompressorsCases
      */
     #[DataProvider('provideSerializersAndCompressorsCases')]
-    public function testSerializersAndCompressors($serializer, $compressor): void
+    public function testSerializersAndCompressors(int $serializer, int $compressor): void
     {
         foreach ($this->connections as $connection) {
             $connection->setOption(\Redis::OPT_SERIALIZER, $serializer);

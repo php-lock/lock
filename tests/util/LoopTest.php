@@ -7,6 +7,7 @@ namespace malkusch\lock\Tests\util;
 use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\util\Loop;
 use phpmock\environment\SleepEnvironmentBuilder;
+use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
@@ -20,13 +21,17 @@ class LoopTest extends TestCase
     {
         parent::setUp();
 
-        $builder = new SleepEnvironmentBuilder();
-        $builder->addNamespace(__NAMESPACE__);
-        $builder->addNamespace('malkusch\lock\util');
-        $sleep = $builder->build();
-        $sleep->enable();
-
-        $this->registerForTearDown($sleep);
+        $sleepBuilder = new SleepEnvironmentBuilder();
+        $sleepBuilder->addNamespace(__NAMESPACE__);
+        $sleepBuilder->addNamespace('malkusch\lock\util');
+        $sleep = $sleepBuilder->build();
+        try {
+            $sleep->enable();
+            $this->registerForTearDown($sleep);
+        } catch (MockEnabledException $e) {
+            // workaround for burn testing
+            \assert($e->getMessage() === 'microtime is already enabled.Call disable() on the existing mock.');
+        }
     }
 
     /**
@@ -47,8 +52,6 @@ class LoopTest extends TestCase
     #[DoesNotPerformAssertions]
     public function testExecutionWithinTimeout(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $loop = new Loop(0.5);
         $loop->execute(static function () use ($loop): void {
             usleep(499 * 1000);

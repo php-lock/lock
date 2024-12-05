@@ -36,6 +36,8 @@ class MutexTest extends TestCase
     #[\Override]
     public static function setUpBeforeClass(): void
     {
+        parent::setUpBeforeClass();
+
         vfsStream::setup('test');
     }
 
@@ -71,7 +73,7 @@ class MutexTest extends TestCase
             return $lock->popsValue();
         }];
 
-        yield 'flockWithTimoutBusy' => [static function ($timeout = 3): Mutex {
+        yield 'flockWithTimoutBusy' => [static function (): Mutex {
             $file = fopen(vfsStream::url('test/lock'), 'w');
             $lock = Liberator::liberate(new FlockMutex($file, 3));
             $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore property.notFound

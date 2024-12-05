@@ -66,6 +66,9 @@ jobs:
       matrix:
         php: ['7.4', '8.0', '8.1', '8.2', '8.3']
         type: ['Phpunit', 'Phpunit Lowest']
+        include:
+          - php: 'latest'
+            type: 'Phpunit Burn'
     env:
       LOG_COVERAGE: "${{ fromJSON('{true: \"1\", false: \"\"}')[matrix.php == '8.3' && matrix.type == 'Phpunit' && (github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')))] }}"
     services:
@@ -108,12 +111,13 @@ jobs:
 
       - name: Install PHP dependencies
         run: |
-          if [ "${{ matrix.type }}" != "Phpunit" ] && [ "${{ matrix.type }}" != "Phpunit Lowest" ]; then composer remove --no-interaction --no-update phpunit/phpunit ergebnis/phpunit-slow-test-detector --dev; fi
+          if [ "${{ matrix.type }}" != "Phpunit" ] && [ "${{ matrix.type }}" != "Phpunit Lowest" ] && [ "${{ matrix.type }}" != "Phpunit Burn" ]; then composer remove --no-interaction --no-update phpunit/phpunit ergebnis/phpunit-slow-test-detector --dev; fi
           if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer ergebnis/composer-normalize --dev; fi
           if [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpstan/\* --dev; fi
           if [ -n "$LOG_COVERAGE" ]; then composer require --no-interaction --no-install phpunit/phpcov; fi
           composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
           if [ "${{ matrix.type }}" = "Phpunit Lowest" ]; then composer update --ansi --prefer-dist --prefer-lowest --prefer-stable --no-interaction --no-progress --optimize-autoloader; fi
+          if [ "${{ matrix.type }}" = "Phpunit Burn" ]; then sed -i 's~public function runBare(): void~public function runBare(): void { gc_collect_cycles(); $memDiffs = array_fill(0, '"$(if [ \"$GITHUB_EVENT_NAME\" == \"schedule\" ]; then echo 64; else echo 16; fi)"', 0); $emitter = Event\\Facade::emitter(); for ($i = -1; $i < count($memDiffs); ++$i) { $this->_runBare(); if ($this->inIsolation) { $dispatcher = \\Closure::bind(static fn () => $emitter->dispatcher, null, Event\\DispatchingEmitter::class)(); if ($i === -1) { $dispatcherEvents = $dispatcher->flush()->asArray(); } else { $dispatcher->flush(); } foreach ($dispatcherEvents as $event) { $dispatcher->dispatch($event); } } gc_collect_cycles(); $mem = memory_get_usage(); if ($i !== -1) { $memDiffs[$i] = $mem - $memPrev; } $memPrev = $mem; rsort($memDiffs); if (array_sum($memDiffs) >= 4096 * 1024 || $memDiffs[2] > 0) { $e = new AssertionFailedError("Memory leak detected! (" . implode(" + ", array_map(static fn ($v) => number_format($v / 1024, 3, ".", " "), array_filter($memDiffs))) . " KB, " . ($i + 2) . " iterations)"); $this->status = TestStatus::failure($e->getMessage()); $emitter->testFailed($this->valueObjectForEvents(), Event\\Code\\ThrowableBuilder::from($e), Event\\Code\\ComparisonFailureBuilder::from($e)); $this->onNotSuccessfulTest($e); } } } private function _runBare(): void~' vendor/phpunit/phpunit/src/Framework/TestCase.php && cat vendor/phpunit/phpunit/src/Framework/TestCase.php | grep '_runBare('; fi
 
       - name: Init
         run: |
