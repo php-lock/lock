@@ -50,7 +50,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         // 2.
         $acquired = 0;
         $errored = 0;
-        $this->token = bin2hex(random_bytes(16));
+        $this->token = bin2hex(random_bytes(16)) . md5((string) $time);
         $exception = null;
         foreach ($this->redisAPIs as $index => $redisAPI) {
             try {
