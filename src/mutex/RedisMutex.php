@@ -19,20 +19,19 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    /** @var string the random value token for key identification */
+    /** @var string The random value token for key identification */
     private $token;
 
-    /** @var array<int, mixed> the Redis APIs */
+    /** @var array<int, mixed> */
     private $redisAPIs;
 
     /**
      * Sets the Redis APIs.
      *
-     * @param array<int, mixed> $redisAPIs the Redis APIs
-     * @param string            $name      the lock name
-     * @param float             $timeout   the time in seconds a lock expires, default is 3
+     * @param array<int, mixed> $redisAPIs
+     * @param float             $timeout   The time in seconds a lock expires
      *
-     * @throws \LengthException the timeout must be greater than 0
+     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(array $redisAPIs, string $name, float $timeout = 3)
     {
@@ -137,9 +136,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     /**
      * Returns if a count is the majority of all servers.
      *
-     * @param int $count the count
-     *
-     * @return bool true if the count is the majority
+     * @return bool True if the count is the majority
      */
     private function isMajority(int $count): bool
     {
@@ -149,24 +146,22 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
     /**
      * Sets the key only if such key doesn't exist at the server yet.
      *
-     * @param mixed  $redisAPI the connected Redis API
-     * @param string $key      the key
-     * @param string $value    the value
-     * @param float  $expire   the TTL seconds
+     * @param mixed $redisAPI
+     * @param float $expire   The TTL seconds
      *
-     * @return bool true, if the key was set
+     * @return bool True if the key was set
      */
     abstract protected function add($redisAPI, string $key, string $value, float $expire): bool;
 
     /**
-     * @param mixed       $redisAPI  the connected Redis API
-     * @param string      $script    the Lua script
-     * @param int         $numkeys   the number of values in $arguments that represent Redis key names
-     * @param list<mixed> $arguments keys and values
+     * @param mixed       $redisAPI
+     * @param string      $script    The Lua script
+     * @param int         $numkeys   The number of values in $arguments that represent Redis key names
+     * @param list<mixed> $arguments Keys and values
      *
-     * @return mixed the script result, or false if executing failed
+     * @return mixed The script result, or false if executing failed
      *
-     * @throws LockReleaseException an unexpected error happened
+     * @throws LockReleaseException An unexpected error happened
      */
     abstract protected function evalScript($redisAPI, string $script, int $numkeys, array $arguments);
 }

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class DoubleCheckedLockingTest extends TestCase
 {
-    /** @var Mutex|MockObject the Mutex mock */
+    /** @var Mutex|MockObject */
     private $mutex;
 
     #[\Override]
@@ -49,7 +49,7 @@ class DoubleCheckedLockingTest extends TestCase
 
         $this->mutex->expects(self::once())
             ->method('synchronized')
-            ->willReturnCallback(static function (callable $block) use (&$lock) {
+            ->willReturnCallback(static function (\Closure $block) use (&$lock) {
                 ++$lock;
                 $result = $block();
                 ++$lock;
@@ -81,15 +81,15 @@ class DoubleCheckedLockingTest extends TestCase
     /**
      * Tests that the code is not executed if the first or second check fails.
      *
-     * @param callable $check the check
+     * @param \Closure(): bool $check
      *
      * @dataProvider provideCodeNotExecutedCases
      */
-    public function testCodeNotExecuted(callable $check): void
+    public function testCodeNotExecuted(\Closure $check): void
     {
         $this->mutex->expects(self::any())
             ->method('synchronized')
-            ->willReturnCallback(static function (callable $block) {
+            ->willReturnCallback(static function (\Closure $block) {
                 return $block();
             });
 
@@ -105,7 +105,7 @@ class DoubleCheckedLockingTest extends TestCase
     /**
      * Returns checks for testCodeNotExecuted().
      *
-     * @return callable[][] the test cases
+     * @return iterable<list<mixed>>
      */
     public static function provideCodeNotExecutedCases(): iterable
     {
@@ -132,7 +132,7 @@ class DoubleCheckedLockingTest extends TestCase
     {
         $this->mutex->expects(self::once())
             ->method('synchronized')
-            ->willReturnCallback(static function (callable $block) {
+            ->willReturnCallback(static function (\Closure $block) {
                 return $block();
             });
 

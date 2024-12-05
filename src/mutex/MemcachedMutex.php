@@ -9,7 +9,7 @@ namespace malkusch\lock\mutex;
  */
 class MemcachedMutex extends SpinlockMutex
 {
-    /** @var \Memcached the connected Memcached API */
+    /** @var \Memcached */
     private $memcache;
 
     /**
@@ -18,11 +18,10 @@ class MemcachedMutex extends SpinlockMutex
      * The Memcached API needs to have at least one server in its pool. I.e.
      * it has to be added with Memcached::addServer().
      *
-     * @param string     $name     the lock name
-     * @param \Memcached $memcache the connected Memcached API
-     * @param float      $timeout  the time in seconds a lock expires, default is 3
+     * @param string $name    The lock name
+     * @param float  $timeout The time in seconds a lock expires
      *
-     * @throws \LengthException the timeout must be greater than 0
+     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(string $name, \Memcached $memcache, float $timeout = 3)
     {

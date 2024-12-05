@@ -22,6 +22,16 @@ parameters:
             message: '~^Only booleans are allowed in an if condition, mixed given\.$~'
             count: 1
         -
+            message: '~^Parameter #1 \$(redisAPI|redis) \(Redis\|RedisCluster\) of method malkusch\\lock\\mutex\\PHPRedisMutex::(add|evalScript)\(\) should be contravariant with parameter \$redisAPI \(mixed\) of method malkusch\\lock\\mutex\\RedisMutex::(add|evalScript)\(\)$~'
+            identifier: method.childParameterType
+            path: 'src/mutex/PHPRedisMutex.php'
+            count: 2
+        -
+            message: '~^Parameter #1 \$(redisAPI|client) \(Predis\\ClientInterface\) of method malkusch\\lock\\mutex\\PredisMutex::(add|evalScript)\(\) should be contravariant with parameter \$redisAPI \(mixed\) of method malkusch\\lock\\mutex\\RedisMutex::(add|evalScript)\(\)$~'
+            identifier: method.childParameterType
+            path: 'src/mutex/PredisMutex.php'
+            count: 2
+        -
             path: 'tests/mutex/*Test.php'
             identifier: empty.notAllowed
             message: '~^Construct empty\(\) is not allowed\. Use more strict comparison\.$~'
@@ -31,3 +41,8 @@ parameters:
             identifier: method.deprecated
             message: '~^Call to deprecated method getMockForAbstractClass\(\) of class PHPUnit\\Framework\\TestCase:\nhttps://github.com/sebastianbergmann/phpunit/issues/5241$~'
             count: 8
+        -
+            path: 'tests/mutex/PredisMutexTest.php'
+            identifier: method.deprecated
+            message: '~^Call to deprecated method addMethods\(\) of class PHPUnit\\Framework\\MockObject\\MockBuilder:\nhttps://github.com/sebastianbergmann/phpunit/issues/5320$~'
+            count: 1

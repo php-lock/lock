@@ -66,7 +66,7 @@ class PHPRedisMutexTest extends TestCase
     /** @var \Redis[] */
     private $connections = [];
 
-    /** @var PHPRedisMutex the SUT */
+    /** @var PHPRedisMutex */
     private $mutex;
 
     #[\Override]

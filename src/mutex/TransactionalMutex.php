@@ -17,10 +17,10 @@ use malkusch\lock\util\Loop;
  */
 class TransactionalMutex extends Mutex
 {
-    /** @var \PDO the PDO */
+    /** @var \PDO */
     private $pdo;
 
-    /** @var Loop the loop */
+    /** @var Loop */
     private $loop;
 
     /**
@@ -32,10 +32,9 @@ class TransactionalMutex extends Mutex
      * As this implementation spans a transaction over a unit of work,
      * PDO::ATTR_AUTOCOMMIT SHOULD not be enabled.
      *
-     * @param \PDO  $pdo     the PDO
-     * @param float $timeout the timeout in seconds, default is 3
+     * @param float $timeout The timeout in seconds
      *
-     * @throws \LengthException the timeout must be greater than 0
+     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(\PDO $pdo, float $timeout = 3)
     {
@@ -50,8 +49,6 @@ class TransactionalMutex extends Mutex
 
     /**
      * Checks that the AUTOCOMMIT mode is turned off.
-     *
-     * @param \PDO $pdo PDO
      */
     private static function checkAutocommit(\PDO $pdo): void
     {
@@ -120,11 +117,9 @@ class TransactionalMutex extends Mutex
     }
 
     /**
-     * Checks if an exception or any of its previous exceptions is a PDOException.
+     * Checks if an exception or any of its previous exceptions is a \PDOException.
      *
-     * @param \Throwable $exception the exception
-     *
-     * @return bool true if there's a PDOException
+     * @return bool True if there's a \PDOException
      */
     private static function hasPDOException(\Throwable $exception)
     {
@@ -141,9 +136,9 @@ class TransactionalMutex extends Mutex
     /**
      * Rolls back a transaction.
      *
-     * @param \Exception $exception the causing exception
+     * @param \Exception $exception The causing exception
      *
-     * @throws LockAcquireException the roll back failed
+     * @throws LockAcquireException The roll back failed
      */
     private function rollBack(\Exception $exception): void
     {

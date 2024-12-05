@@ -19,11 +19,10 @@ class PredisMutex extends RedisMutex
     /**
      * Sets the Redis connections.
      *
-     * @param ClientInterface[] $clients the Redis clients
-     * @param string            $name    the lock name
-     * @param float             $timeout the time in seconds a lock expires, default is 3
+     * @param ClientInterface[] $clients The Redis clients
+     * @param float             $timeout The time in seconds a lock expires
      *
-     * @throws \LengthException the timeout must be greater than 0
+     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(array $clients, string $name, float $timeout = 3)
     {
@@ -31,6 +30,8 @@ class PredisMutex extends RedisMutex
     }
 
     /**
+     * @param ClientInterface $redisAPI
+     *
      * @throws LockAcquireException
      */
     #[\Override]
@@ -38,7 +39,6 @@ class PredisMutex extends RedisMutex
     {
         $expireMillis = (int) ceil($expire * 1000);
 
-        /** @var ClientInterface $redisAPI */
         try {
             return $redisAPI->set($key, $value, 'PX', $expireMillis, 'NX') !== null;
         } catch (PredisException $e) {
@@ -51,10 +51,12 @@ class PredisMutex extends RedisMutex
         }
     }
 
+    /**
+     * @param ClientInterface $client
+     */
     #[\Override]
     protected function evalScript($client, string $script, int $numkeys, array $arguments)
     {
-        /** @var ClientInterface $client */
         try {
             return $client->eval($script, $numkeys, ...$arguments);
         } catch (PredisException $e) {

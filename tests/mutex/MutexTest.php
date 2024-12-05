@@ -38,7 +38,7 @@ class MutexTest extends TestCase
     /**
      * Provides Mutex factories.
      *
-     * @return callable[][] the mutex factories
+     * @return iterable<list<mixed>>
      */
     public static function provideMutexFactoriesCases(): iterable
     {
@@ -137,7 +137,6 @@ class MutexTest extends TestCase
             if (class_exists(\Redis::class)) {
                 $cases['PHPRedisMutex'] = [
                     static function () use ($uris): Mutex {
-                        /** @var \Redis[] $apis */
                         $apis = array_map(
                             static function ($uri) {
                                 $redis = new \Redis();
@@ -187,11 +186,11 @@ class MutexTest extends TestCase
     /**
      * Tests synchronized() executes the code and returns its result.
      *
-     * @param callable $mutexFactory the Mutex factory
+     * @param \Closure(): Mutex $mutexFactory
      *
      * @dataProvider provideMutexFactoriesCases
      */
-    public function testSynchronizedDelegates(callable $mutexFactory): void
+    public function testSynchronizedDelegates(\Closure $mutexFactory): void
     {
         /** @var Mutex $mutex */
         $mutex = $mutexFactory();
@@ -204,13 +203,13 @@ class MutexTest extends TestCase
     /**
      * Tests that synchronized() released the lock.
      *
-     * @param callable $mutexFactory the Mutex factory
+     * @param \Closure(): Mutex $mutexFactory
      *
      * @dataProvider provideMutexFactoriesCases
      */
-    public function testRelease(callable $mutexFactory): void
+    public function testRelease(\Closure $mutexFactory): void
     {
-        $mutex = call_user_func($mutexFactory);
+        $mutex = $mutexFactory();
         $mutex->synchronized(static function () {});
 
         $this->expectNotToPerformAssertions();
@@ -220,15 +219,14 @@ class MutexTest extends TestCase
     /**
      * Tests synchronized() rethrows the exception of the code.
      *
-     * @param callable $mutexFactory the Mutex factory
+     * @param \Closure(): Mutex $mutexFactory
      *
      * @dataProvider provideMutexFactoriesCases
      */
-    public function testSynchronizedPassesExceptionThrough(callable $mutexFactory): void
+    public function testSynchronizedPassesExceptionThrough(\Closure $mutexFactory): void
     {
         $this->expectException(\DomainException::class);
 
-        /** @var Mutex $mutex */
         $mutex = $mutexFactory();
         $mutex->synchronized(static function () {
             throw new \DomainException();

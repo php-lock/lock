@@ -31,7 +31,7 @@ class LockReleaseException extends MutexException
      * Gets the result that has been returned during the critical code
      * execution.
      *
-     * @return mixed the return value of the executed code block
+     * @return mixed The return value of the executed code block
      */
     public function getCodeResult()
     {
@@ -42,9 +42,9 @@ class LockReleaseException extends MutexException
      * Sets the result that has been returned during the critical code
      * execution.
      *
-     * @param mixed $codeResult the return value of the executed code block
+     * @param mixed $codeResult The return value of the executed code block
      *
-     * @return self current lock release exception instance
+     * @return $this
      */
     public function setCodeResult($codeResult): self
     {
@@ -57,7 +57,7 @@ class LockReleaseException extends MutexException
      * Gets the exception that has happened during the synchronized code
      * execution.
      *
-     * @return \Throwable|null the exception thrown by the code block or null when there has been no exception
+     * @return \Throwable|null The exception thrown by the code block or null when there has been no exception
      */
     public function getCodeException(): ?\Throwable
     {
@@ -68,9 +68,9 @@ class LockReleaseException extends MutexException
      * Sets the exception that has happened during the critical code
      * execution.
      *
-     * @param \Throwable $codeException the exception thrown by the code block
+     * @param \Throwable $codeException The exception thrown by the code block
      *
-     * @return self current lock release exception instance
+     * @return $this
      */
     public function setCodeException(\Throwable $codeException): self
     {

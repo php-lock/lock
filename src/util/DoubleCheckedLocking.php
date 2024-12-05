@@ -17,17 +17,17 @@ use malkusch\lock\mutex\Mutex;
  */
 class DoubleCheckedLocking
 {
-    /** @var Mutex the mutex */
+    /** @var Mutex */
     private $mutex;
 
-    /** @var callable(): bool the check */
+    /** @var callable(): bool */
     private $check;
 
     /**
      * Constructs a new instance of the DoubleCheckedLocking pattern.
      *
-     * @param Mutex            $mutex provides methods for exclusive code execution
-     * @param callable(): bool $check callback that decides if the lock should be acquired and if the critical code
+     * @param Mutex            $mutex Provides methods for exclusive code execution
+     * @param callable(): bool $check Callback that decides if the lock should be acquired and if the critical code
      *                                callback should be executed after acquiring the lock
      */
     public function __construct(Mutex $mutex, callable $check)
@@ -47,23 +47,23 @@ class DoubleCheckedLocking
      *
      * @template T
      *
-     * @param callable(): T $code the critical code callback
+     * @param callable(): T $code The critical code callback
      *
-     * @return T|false boolean false if check did not pass or mixed for what ever the critical code callback returns
+     * @return T|false False if check did not pass
      *
-     * @throws \Exception                    the execution callback or the check threw an exception
-     * @throws LockAcquireException          the mutex could not be acquired
-     * @throws LockReleaseException          the mutex could not be released
-     * @throws ExecutionOutsideLockException some code has been executed outside of the lock
+     * @throws \Exception                    The execution callback or the check threw an exception
+     * @throws LockAcquireException          The mutex could not be acquired
+     * @throws LockReleaseException          The mutex could not be released
+     * @throws ExecutionOutsideLockException Some code has been executed outside of the lock
      */
     public function then(callable $code)
     {
-        if (!\call_user_func($this->check)) {
+        if (!($this->check)()) {
             return false;
         }
 
         return $this->mutex->synchronized(function () use ($code) {
-            if (!\call_user_func($this->check)) {
+            if (!($this->check)()) {
                 return false;
             }
 

@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class LockMutexTest extends TestCase
 {
-    /** @var MockObject|LockMutex The SUT */
+    /** @var MockObject|LockMutex */
     private $mutex;
 
     #[\Override]

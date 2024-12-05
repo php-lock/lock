@@ -15,30 +15,26 @@ class Loop
 {
     /**
      * Minimum time that we want to wait, between lock checks. In micro seconds.
-     *
-     * @var float
      */
     private const MINIMUM_WAIT_US = 1e4; // 0.01 seconds
 
     /**
      * Maximum time that we want to wait, between lock checks. In micro seconds.
-     *
-     * @var float
      */
     private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
-    /** @var float the timeout in seconds */
+    /** @var float The timeout in seconds */
     private $timeout;
 
-    /** @var bool true while code execution is repeating */
+    /** @var bool true While code execution is repeating */
     private $looping = false;
 
     /**
-     * Sets the timeout. The default is 3 seconds.
+     * Sets the timeout.
      *
-     * @param float $timeout The timeout in seconds. The default is 3 seconds.
+     * @param float $timeout the timeout in seconds
      *
-     * @throws \LengthException the timeout must be greater than 0
+     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(float $timeout = 3)
     {
@@ -72,12 +68,12 @@ class Loop
      *
      * @template T
      *
-     * @param callable(): T $code the to be executed code callback
+     * @param callable(): T $code The to be executed code callback
      *
-     * @return T the return value of the executed code callback
+     * @return T
      *
-     * @throws \Exception       the execution callback threw an exception
-     * @throws TimeoutException the timeout has been reached
+     * @throws \Exception       The execution callback threw an exception
+     * @throws TimeoutException The timeout has been reached
      */
     public function execute(callable $code)
     {

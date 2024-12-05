@@ -14,8 +14,6 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests building the mutex with an invalid error mode.
      *
-     * @param int $mode the invalid error mode
-     *
      * @dataProvider provideInvalidErrorModeCases
      */
     public function testInvalidErrorMode(int $mode): void
@@ -107,8 +105,6 @@ class TransactionalMutexTest extends TestCase
     /**
      * Tests replaying the transaction.
      *
-     * @param \Exception $exception the thrown exception
-     *
      * @dataProvider provideReplayTransactionCases
      */
     public function testReplayTransaction(\Exception $exception): void
@@ -146,7 +142,7 @@ class TransactionalMutexTest extends TestCase
     /**
      * Returns test cases for testReplayTransaction().
      *
-     * @return \Exception[][] test cases
+     * @return iterable<list<mixed>>
      */
     public static function provideReplayTransactionCases(): iterable
     {
@@ -181,10 +177,8 @@ class TransactionalMutexTest extends TestCase
      * - MYSQL_DSN
      * - MYSQL_USER
      * - MYSQL_PASSWORD
-     *
-     * @return \PDO the MySQL PDO
      */
-    private function buildMySqlPdo()
+    private function buildMySqlPdo(): \PDO
     {
         if (!getenv('MYSQL_DSN')) {
             self::markTestSkipped();

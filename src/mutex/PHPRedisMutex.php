@@ -25,11 +25,10 @@ class PHPRedisMutex extends RedisMutex
      * The Redis APIs needs to be connected. I.e. Redis::connect() was
      * called already.
      *
-     * @param array<\Redis|\RedisCluster> $redisAPIs the Redis connections
-     * @param string                      $name      the lock name
-     * @param float                       $timeout   The time in seconds a lock expires after. Default is 3 seconds.
+     * @param array<\Redis|\RedisCluster> $redisAPIs
+     * @param float                       $timeout   The time in seconds a lock expires after
      *
-     * @throws \LengthException the timeout must be greater than 0
+     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(array $redisAPIs, string $name, float $timeout = 3)
     {
@@ -37,16 +36,15 @@ class PHPRedisMutex extends RedisMutex
     }
 
     /**
-     * @param \Redis|\RedisCluster $redisAPI the Redis or RedisCluster connection
+     * @param \Redis|\RedisCluster $redisAPI
      *
      * @throws LockAcquireException
      */
-    #[\Override] // @phpstan-ignore method.childParameterType
+    #[\Override]
     protected function add($redisAPI, string $key, string $value, float $expire): bool
     {
         $expireMillis = (int) ceil($expire * 1000);
 
-        /** @var \Redis $redisAPI */
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
             return $redisAPI->set($key, $value, ['nx', 'px' => $expireMillis]);
@@ -61,9 +59,9 @@ class PHPRedisMutex extends RedisMutex
     }
 
     /**
-     * @param \Redis|\RedisCluster $redis the Redis or RedisCluster connection
+     * @param \Redis|\RedisCluster $redis
      */
-    #[\Override] // @phpstan-ignore method.childParameterType
+    #[\Override]
     protected function evalScript($redis, string $script, int $numkeys, array $arguments)
     {
         for ($i = $numkeys; $i < count($arguments); ++$i) {
@@ -94,9 +92,9 @@ class PHPRedisMutex extends RedisMutex
     /**
      * Determines if lzf compression is enabled for the given connection.
      *
-     * @param \Redis|\RedisCluster $redis the Redis or RedisCluster connection
+     * @param \Redis|\RedisCluster $redis
      *
-     * @return bool TRUE if lzf compression is enabled, false otherwise
+     * @return bool True if lzf compression is enabled, false otherwise
      */
     private function hasLzfCompression($redis): bool
     {

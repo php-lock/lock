@@ -24,10 +24,10 @@ final class PcntlTimeout
     /**
      * Builds the timeout.
      *
-     * @param int $timeout timeout in seconds
+     * @param int $timeout Timeout in seconds
      *
-     * @throws \RuntimeException         when the PCNTL module is not enabled
-     * @throws \InvalidArgumentException when the timeout is zero or negative
+     * @throws \RuntimeException         When the PCNTL module is not enabled
+     * @throws \InvalidArgumentException When the timeout is zero or negative
      */
     public function __construct(int $timeout)
     {
@@ -58,10 +58,10 @@ final class PcntlTimeout
      *
      * @param callable(): T $code Executed code block
      *
-     * @return T Return value of the executed block
+     * @return T
      *
-     * @throws DeadlineException    running the code hit the deadline
-     * @throws LockAcquireException installing the timeout failed
+     * @throws DeadlineException    Running the code hit the deadline
+     * @throws LockAcquireException Installing the timeout failed
      */
     public function timeBoxed(callable $code)
     {
@@ -92,12 +92,10 @@ final class PcntlTimeout
     }
 
     /**
-     * Returns if this class is supported by the PHP runtime.
+     * Returns true if this class is supported by the PHP runtime.
      *
      * This class requires the pcntl module. This method checks if
      * it is available.
-     *
-     * @return bool TRUE if this class is supported by the PHP runtime
      */
     public static function isSupported(): bool
     {

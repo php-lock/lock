@@ -19,24 +19,24 @@ abstract class SpinlockMutex extends LockMutex
     /** The prefix for the lock key. */
     private const PREFIX = 'lock_';
 
-    /** @var float the timeout in seconds a lock may live */
+    /** @var float The timeout in seconds a lock may live */
     private $timeout;
 
-    /** @var Loop the loop */
+    /** @var Loop */
     private $loop;
 
-    /** @var string the lock key */
+    /** @var string */
     private $key;
 
-    /** @var float the timestamp when the lock was acquired */
+    /** @var float The timestamp when the lock was acquired */
     private $acquired;
 
     /**
      * Sets the timeout.
      *
-     * @param float $timeout the time in seconds a lock expires, default is 3
+     * @param float $timeout The time in seconds a lock expires
      *
-     * @throws \LengthException the timeout must be greater than 0
+     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(string $name, float $timeout = 3)
     {
@@ -84,10 +84,9 @@ abstract class SpinlockMutex extends LockMutex
     /**
      * Tries to acquire a lock.
      *
-     * @param string $key    the lock key
-     * @param float  $expire the timeout in seconds when a lock expires
+     * @param float $expire The timeout in seconds when a lock expires
      *
-     * @return bool true, if the lock could be acquired
+     * @return bool True if the lock could be acquired
      *
      * @throws LockAcquireException an unexpected error happened
      */
@@ -96,9 +95,7 @@ abstract class SpinlockMutex extends LockMutex
     /**
      * Tries to release a lock.
      *
-     * @param string $key the lock key
-     *
-     * @return bool true, if the lock could be released
+     * @return bool True if the lock could be released
      */
     abstract protected function release(string $key): bool;
 }

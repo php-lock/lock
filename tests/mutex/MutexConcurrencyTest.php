@@ -29,7 +29,7 @@ class MutexConcurrencyTest extends TestCase
 {
     /** @var list<string> */
     protected static $temporaryFiles = [];
-    /** @var \PDO|null the pdo instance */
+    /** @var \PDO|null */
     private static $pdo;
 
     #[\Override]
@@ -47,12 +47,6 @@ class MutexConcurrencyTest extends TestCase
 
     /**
      * Gets a PDO instance.
-     *
-     * @param string $dsn      the DSN
-     * @param string $user     the user
-     * @param string $password the password
-     *
-     * @return \PDO the PDO
      */
     private static function getPDO(string $dsn, string $user, string $password): \PDO
     {
@@ -67,10 +61,9 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Forks, runs code in the children and wait until all finished.
      *
-     * @param int      $concurrency the amount of forks
-     * @param callable $code        the code for the fork
+     * @param \Closure(): void $code The code for the fork
      */
-    private function fork(int $concurrency, callable $code): void
+    private function fork(int $concurrency, \Closure $code): void
     {
         $pool = Pool::create();
 
@@ -84,19 +77,18 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Tests high contention empirically.
      *
-     * @param callable $code         the counter code
-     * @param callable $mutexFactory the mutex factory
+     * @param \Closure(0|1): int     $code         The counter code
+     * @param \Closure(float): Mutex $mutexFactory
      *
      * @dataProvider provideHighContentionCases
      */
-    public function testHighContention(callable $code, callable $mutexFactory): void
+    public function testHighContention(\Closure $code, \Closure $mutexFactory): void
     {
         $concurrency = 10;
         $iterations = 1000 / $concurrency;
         $timeout = $concurrency * 20;
 
         $this->fork($concurrency, static function () use ($mutexFactory, $timeout, $iterations, $code): void {
-            /** @var Mutex $mutex */
             $mutex = $mutexFactory($timeout);
             for ($i = 0; $i < $iterations; ++$i) {
                 $mutex->synchronized(static function () use ($code): void {
@@ -198,16 +190,15 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Tests that five processes run sequentially.
      *
-     * @param callable $mutexFactory the Mutex factory
+     * @param \Closure(): Mutex $mutexFactory
      *
      * @dataProvider provideExecutionIsSerializedWhenLockedCases
      */
-    public function testExecutionIsSerializedWhenLocked(callable $mutexFactory): void
+    public function testExecutionIsSerializedWhenLocked(\Closure $mutexFactory): void
     {
         $time = \microtime(true);
 
         $this->fork(6, static function () use ($mutexFactory): void {
-            /** @var Mutex $mutex */
             $mutex = $mutexFactory();
             $mutex->synchronized(static function (): void {
                 \usleep(200 * 1000);
@@ -221,7 +212,7 @@ class MutexConcurrencyTest extends TestCase
     /**
      * Provides Mutex factories.
      *
-     * @return callable[][] the mutex factories
+     * @return iterable<list<mixed>>
      */
     public static function provideExecutionIsSerializedWhenLockedCases(): iterable
     {
@@ -292,7 +283,6 @@ class MutexConcurrencyTest extends TestCase
             if (class_exists(\Redis::class)) {
                 $cases['PHPRedisMutex'] = [
                     static function ($timeout = 3) use ($uris): Mutex {
-                        /** @var \Redis[] $apis */
                         $apis = array_map(
                             static function (string $uri): \Redis {
                                 $redis = new \Redis();

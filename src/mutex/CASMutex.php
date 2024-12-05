@@ -17,17 +17,15 @@ use malkusch\lock\util\Loop;
  */
 class CASMutex extends Mutex
 {
-    /** @var Loop the loop */
+    /** @var Loop */
     private $loop;
 
     /**
      * Sets the timeout.
      *
-     * The default is 3 seconds.
+     * @param float $timeout The timeout in seconds
      *
-     * @param float $timeout the timeout in seconds
-     *
-     * @throws \LengthException the timeout must be greater than 0
+     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(float $timeout = 3)
     {
@@ -66,8 +64,8 @@ class CASMutex extends Mutex
      * });
      * </code>
      *
-     * @throws \Exception       the execution block threw an exception
-     * @throws TimeoutException the timeout was reached
+     * @throws \Exception       The execution block threw an exception
+     * @throws TimeoutException The timeout was reached
      */
     #[\Override]
     public function synchronized(callable $code)

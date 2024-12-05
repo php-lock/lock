@@ -26,14 +26,14 @@ abstract class Mutex
      *
      * @template T
      *
-     * @param callable(): T $code the synchronized execution callback
+     * @param callable(): T $code The synchronized execution callback
      *
-     * @return T the return value of the execution callback
+     * @return T
      *
-     * @throws \Exception                    the execution callback threw an exception
-     * @throws LockAcquireException          the mutex could not be acquired, no further side effects
-     * @throws LockReleaseException          the mutex could not be released, the code was already executed
-     * @throws ExecutionOutsideLockException some code has been executed outside of the lock
+     * @throws \Exception                    The execution callback threw an exception
+     * @throws LockAcquireException          The mutex could not be acquired, no further side effects
+     * @throws LockReleaseException          The mutex could not be released, the code was already executed
+     * @throws ExecutionOutsideLockException Some code has been executed outside of the lock
      */
     abstract public function synchronized(callable $code);
 
@@ -52,10 +52,10 @@ abstract class Mutex
      * });
      * </code>
      *
-     * @param callable(): bool $check callback that decides if the lock should be acquired and if the synchronized
+     * @param callable(): bool $check Callback that decides if the lock should be acquired and if the synchronized
      *                                callback should be executed after acquiring the lock
      *
-     * @return DoubleCheckedLocking the double-checked locking pattern
+     * @return DoubleCheckedLocking The double-checked locking pattern
      */
     public function check(callable $check): DoubleCheckedLocking
     {

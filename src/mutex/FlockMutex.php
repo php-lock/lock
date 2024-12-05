@@ -33,7 +33,7 @@ class FlockMutex extends LockMutex
      */
     public const STRATEGY_BUSY = 3;
 
-    /** @var resource the file handle */
+    /** @var resource */
     private $fileHandle;
 
     /** @var float */
@@ -45,7 +45,7 @@ class FlockMutex extends LockMutex
     /**
      * Sets the file handle.
      *
-     * @param resource $fileHandle the file handle
+     * @param resource $fileHandle
      */
     public function __construct($fileHandle, float $timeout = self::INFINITE_TIMEOUT)
     {
