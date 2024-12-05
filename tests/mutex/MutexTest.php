@@ -128,9 +128,7 @@ class MutexTest extends TestCase
 
             $cases['PredisMutex'] = [static function () use ($uris): Mutex {
                 $clients = array_map(
-                    static function ($uri) {
-                        return new Client($uri);
-                    },
+                    static fn ($uri) => new Client($uri),
                     $uris
                 );
 
@@ -196,7 +194,6 @@ class MutexTest extends TestCase
     #[DataProvider('provideMutexFactoriesCases')]
     public function testSynchronizedDelegates(\Closure $mutexFactory): void
     {
-        /** @var Mutex $mutex */
         $mutex = $mutexFactory();
         $result = $mutex->synchronized(static function (): string {
             return 'test';

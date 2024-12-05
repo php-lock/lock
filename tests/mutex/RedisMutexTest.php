@@ -40,22 +40,21 @@ class RedisMutexTest extends TestCase
     }
 
     /**
-     * Builds a testable RedisMutex mock.
-     *
      * @param int $count The amount of redis apis
      *
-     * @return MockObject|RedisMutex
+     * @return RedisMutex&MockObject
      */
-    private function buildRedisMutex(int $count, float $timeout = 1)
+    private function createRedisMutexMock(int $count, float $timeout = 1): RedisMutex
     {
         $redisAPIs = array_map(
-            static function ($id): array {
-                return ['id' => $id];
-            },
+            static fn ($id) => ['id' => $id],
             range(1, $count)
         );
 
-        return $this->getMockForAbstractClass(RedisMutex::class, [$redisAPIs, 'test', $timeout]);
+        return $this->getMockBuilder(RedisMutex::class)
+            ->setConstructorArgs([$redisAPIs, 'test', $timeout])
+            ->onlyMethods(['add', 'evalScript'])
+            ->getMock();
     }
 
     /**
@@ -72,7 +71,7 @@ class RedisMutexTest extends TestCase
         $this->expectException(LockAcquireException::class);
         $this->expectExceptionCode(MutexException::REDIS_NOT_ENOUGH_SERVERS);
 
-        $mutex = $this->buildRedisMutex($count);
+        $mutex = $this->createRedisMutexMock($count);
 
         $i = 0;
         $mutex->expects(self::exactly($count))
@@ -105,7 +104,7 @@ class RedisMutexTest extends TestCase
     #[DataProvider('provideMajorityCases')]
     public function testFaultTolerance(int $count, int $available): void
     {
-        $mutex = $this->buildRedisMutex($count);
+        $mutex = $this->createRedisMutexMock($count);
         $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturn(true);
@@ -142,7 +141,7 @@ class RedisMutexTest extends TestCase
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded');
 
-        $mutex = $this->buildRedisMutex($count);
+        $mutex = $this->createRedisMutexMock($count);
 
         $i = 0;
         $mutex->expects(self::any())
@@ -180,7 +179,7 @@ class RedisMutexTest extends TestCase
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of ' . $timeoutStr . ' seconds exceeded');
 
-        $mutex = $this->buildRedisMutex($count, $timeout);
+        $mutex = $this->createRedisMutexMock($count, $timeout);
 
         $mutex->expects(self::exactly($count))
             ->method('add')
@@ -220,7 +219,7 @@ class RedisMutexTest extends TestCase
     #[DataProvider('provideMajorityCases')]
     public function testAcquireWithMajority(int $count, int $available): void
     {
-        $mutex = $this->buildRedisMutex($count);
+        $mutex = $this->createRedisMutexMock($count);
         $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturn(true);
@@ -250,7 +249,7 @@ class RedisMutexTest extends TestCase
     #[DataProvider('provideMinorityCases')]
     public function testTooFewServersToRelease(int $count, int $available): void
     {
-        $mutex = $this->buildRedisMutex($count);
+        $mutex = $this->createRedisMutexMock($count);
         $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturn(true);
@@ -286,7 +285,7 @@ class RedisMutexTest extends TestCase
     #[DataProvider('provideMinorityCases')]
     public function testReleaseTooFewKeys(int $count, int $available): void
     {
-        $mutex = $this->buildRedisMutex($count);
+        $mutex = $this->createRedisMutexMock($count);
         $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturn(true);

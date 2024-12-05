@@ -186,7 +186,7 @@ class TransactionalMutexTest extends TestCase
     private function buildMySqlPdo(): \PDO
     {
         if (!getenv('MYSQL_DSN')) {
-            self::markTestSkipped();
+            self::markTestSkipped('MySQL server is needed');
         }
 
         $dsn = getenv('MYSQL_DSN');

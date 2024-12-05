@@ -118,19 +118,15 @@ class TransactionalMutex extends Mutex
 
     /**
      * Checks if an exception or any of its previous exceptions is a \PDOException.
-     *
-     * @return bool True if there's a \PDOException
      */
-    private static function hasPDOException(\Throwable $exception)
+    private static function hasPDOException(\Throwable $exception): bool
     {
         if ($exception instanceof \PDOException) {
             return true;
         }
-        if ($exception->getPrevious() === null) {
-            return false;
-        }
 
-        return self::hasPDOException($exception->getPrevious());
+        return $exception->getPrevious() !== null
+            && self::hasPDOException($exception->getPrevious());
     }
 
     /**

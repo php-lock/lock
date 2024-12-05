@@ -276,9 +276,7 @@ class MutexConcurrencyTest extends TestCase
 
             $cases['PredisMutex'] = [static function ($timeout = 3) use ($uris): Mutex {
                 $clients = array_map(
-                    static function ($uri) {
-                        return new Client($uri);
-                    },
+                    static fn ($uri) => new Client($uri),
                     $uris
                 );
 

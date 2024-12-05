@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class PgAdvisoryLockMutexTest extends TestCase
 {
-    /** @var \PDO|MockObject */
+    /** @var \PDO&MockObject */
     private $pdo;
 
     /** @var PgAdvisoryLockMutex */

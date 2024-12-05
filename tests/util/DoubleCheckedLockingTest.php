@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 class DoubleCheckedLockingTest extends TestCase
 {
-    /** @var Mutex|MockObject */
+    /** @var Mutex&MockObject */
     private $mutex;
 
     #[\Override]

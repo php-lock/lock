@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 class LockMutexTest extends TestCase
 {
-    /** @var MockObject|LockMutex */
+    /** @var LockMutex&MockObject */
     private $mutex;
 
     #[\Override]
@@ -20,7 +20,9 @@ class LockMutexTest extends TestCase
     {
         parent::setUp();
 
-        $this->mutex = $this->getMockForAbstractClass(LockMutex::class);
+        $this->mutex = $this->getMockBuilder(LockMutex::class)
+            ->onlyMethods(['lock', 'unlock'])
+            ->getMock();
     }
 
     /**

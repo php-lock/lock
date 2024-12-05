@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 #[RequiresPhpExtension('memcached')]
 class MemcachedMutexTest extends TestCase
 {
-    /** @var \Memcached|MockObject */
+    /** @var \Memcached&MockObject */
     protected $memcached;
 
     /** @var MemcachedMutex */

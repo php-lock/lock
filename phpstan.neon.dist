@@ -36,13 +36,3 @@ parameters:
             identifier: empty.notAllowed
             message: '~^Construct empty\(\) is not allowed\. Use more strict comparison\.$~'
             count: 6
-        -
-            path: '*'
-            identifier: method.deprecated
-            message: '~^Call to deprecated method getMockForAbstractClass\(\) of class PHPUnit\\Framework\\TestCase:\nhttps://github.com/sebastianbergmann/phpunit/issues/5241$~'
-            count: 8
-        -
-            path: 'tests/mutex/PredisMutexTest.php'
-            identifier: method.deprecated
-            message: '~^Call to deprecated method addMethods\(\) of class PHPUnit\\Framework\\MockObject\\MockBuilder:\nhttps://github.com/sebastianbergmann/phpunit/issues/5320$~'
-            count: 1

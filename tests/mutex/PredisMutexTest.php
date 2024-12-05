@@ -14,19 +14,32 @@ use Predis\ClientInterface;
 use Predis\PredisException;
 use Psr\Log\LoggerInterface;
 
+interface ClientInterfaceWithSetAndEvalMethods extends ClientInterface
+{
+    /**
+     * @return mixed
+     */
+    public function eval();
+
+    /**
+     * @return mixed
+     */
+    public function set();
+}
+
 /**
  * @group redis
  */
 #[Group('redis')]
 class PredisMutexTest extends TestCase
 {
-    /** @var ClientInterface|MockObject */
+    /** @var ClientInterface&MockObject */
     private $client;
 
     /** @var PredisMutex */
     private $mutex;
 
-    /** @var LoggerInterface|MockObject */
+    /** @var LoggerInterface&MockObject */
     private $logger;
 
     #[\Override]
@@ -34,10 +47,7 @@ class PredisMutexTest extends TestCase
     {
         parent::setUp();
 
-        $this->client = $this->getMockBuilder(ClientInterface::class)
-            ->onlyMethods(get_class_methods(ClientInterface::class))
-            ->addMethods(['set', 'eval'])
-            ->getMock();
+        $this->client = $this->createMock(ClientInterfaceWithSetAndEvalMethods::class);
 
         $this->mutex = new PredisMutex([$this->client], 'test', 2.5);
 
