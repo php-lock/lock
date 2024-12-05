@@ -113,20 +113,18 @@ class DoubleCheckedLockingTest extends TestCase
      */
     public static function provideCodeNotExecutedCases(): iterable
     {
+        yield [static function (): bool {
+            return false;
+        }];
+
         $checkCounter = 0;
 
-        return [
-            [static function (): bool {
-                return false;
-            }],
+        yield [static function () use (&$checkCounter): bool {
+            $result = $checkCounter === 0;
+            ++$checkCounter;
 
-            [static function () use (&$checkCounter): bool {
-                $result = $checkCounter === 0;
-                ++$checkCounter;
-
-                return $result;
-            }],
-        ];
+            return $result;
+        }];
     }
 
     /**

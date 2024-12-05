@@ -195,17 +195,12 @@ class RedisMutexTest extends TestCase
     }
 
     /**
-     * Returns test cases for testTimingOut().
-     *
      * @return iterable<list<mixed>>
      */
     public static function provideTimingOutCases(): iterable
     {
-        // count, timeout, delay
-        return [
-            [1, 1.2 - 1, 1.201],
-            [2, 1.2 - 1, 1.401],
-        ];
+        yield [1, 1.2 - 1, 1.201];
+        yield [2, 1.2 - 1, 1.401];
     }
 
     /**
@@ -313,17 +308,14 @@ class RedisMutexTest extends TestCase
      */
     public static function provideMinorityCases(): iterable
     {
-        // total count, available count
-        return [
-            [1, 0],
-            [2, 0],
-            [2, 1],
-            [3, 0],
-            [3, 1],
-            [4, 0],
-            [4, 1],
-            [4, 2],
-        ];
+        yield [1, 0];
+        yield [2, 0];
+        yield [2, 1];
+        yield [3, 0];
+        yield [3, 1];
+        yield [4, 0];
+        yield [4, 1];
+        yield [4, 2];
     }
 
     /**
@@ -333,13 +325,10 @@ class RedisMutexTest extends TestCase
      */
     public static function provideMajorityCases(): iterable
     {
-        // total count, available count
-        return [
-            [1, 1],
-            [2, 2],
-            [3, 2],
-            [3, 3],
-            [4, 3],
-        ];
+        yield [1, 1];
+        yield [2, 2];
+        yield [3, 2];
+        yield [3, 3];
+        yield [4, 3];
     }
 }

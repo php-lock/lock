@@ -106,20 +106,18 @@ class MutexConcurrencyTest extends TestCase
     }
 
     /**
-     * Returns test cases for testHighContention().
-     *
      * @return iterable<list<mixed>>
      */
     public static function provideHighContentionCases(): iterable
     {
-        $cases = array_map(static function (array $mutexFactory): array {
+        foreach (static::provideExecutionIsSerializedWhenLockedCases() as [$mutexFactory]) {
             $filename = tempnam(sys_get_temp_dir(), 'php-lock-high-contention');
 
             static::$temporaryFiles[] = $filename;
 
             file_put_contents($filename, '0');
 
-            return [
+            yield [
                 static function (int $increment) use ($filename): int {
                     $counter = file_get_contents($filename);
                     $counter += $increment;
@@ -128,11 +126,11 @@ class MutexConcurrencyTest extends TestCase
 
                     return $counter;
                 },
-                $mutexFactory[0],
+                $mutexFactory,
             ];
-        }, static::provideExecutionIsSerializedWhenLockedCases());
+        }
 
-        $addPDO = static function ($dsn, $user, $password, $vendor) use (&$cases) {
+        $addPDO = static function ($dsn, $user, $password, $vendor) {
             $pdo = self::getPDO($dsn, $user, $password);
 
             $options = ['mysql' => 'engine=InnoDB'];
@@ -146,7 +144,7 @@ class MutexConcurrencyTest extends TestCase
 
             self::$pdo = null;
 
-            $cases[$vendor] = [
+            return [
                 static function (int $increment) use ($dsn, $user, $password) {
                     // This prevents using a closed connection from a child.
                     if ($increment === 0) {
@@ -178,17 +176,15 @@ class MutexConcurrencyTest extends TestCase
             $dsn = getenv('MYSQL_DSN');
             $user = getenv('MYSQL_USER');
             $password = getenv('MYSQL_PASSWORD');
-            $addPDO($dsn, $user, $password, 'mysql');
+            yield 'mysql' => $addPDO($dsn, $user, $password, 'mysql');
         }
 
         if (getenv('PGSQL_DSN')) {
             $dsn = getenv('PGSQL_DSN');
             $user = getenv('PGSQL_USER');
             $password = getenv('PGSQL_PASSWORD');
-            $addPDO($dsn, $user, $password, 'postgres');
+            yield 'postgres' => $addPDO($dsn, $user, $password, 'postgres');
         }
-
-        return $cases;
     }
 
     /**
@@ -225,45 +221,43 @@ class MutexConcurrencyTest extends TestCase
 
         self::$temporaryFiles[] = $filename;
 
-        $cases = [
-            'flock' => [static function ($timeout = 3) use ($filename): Mutex {
-                $file = fopen($filename, 'w');
+        yield 'flock' => [static function ($timeout = 3) use ($filename): Mutex {
+            $file = fopen($filename, 'w');
 
-                return new FlockMutex($file);
-            }],
+            return new FlockMutex($file);
+        }];
 
-            'flockWithTimoutPcntl' => [static function ($timeout = 3) use ($filename): Mutex {
-                $file = fopen($filename, 'w');
-                $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore property.notFound
+        yield 'flockWithTimoutPcntl' => [static function ($timeout = 3) use ($filename): Mutex {
+            $file = fopen($filename, 'w');
+            $lock = Liberator::liberate(new FlockMutex($file, $timeout));
+            $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore property.notFound
 
-                return $lock->popsValue();
-            }],
+            return $lock->popsValue();
+        }];
 
-            'flockWithTimoutBusy' => [static function ($timeout = 3) use ($filename): Mutex {
-                $file = fopen($filename, 'w');
-                $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore property.notFound
+        yield 'flockWithTimoutBusy' => [static function ($timeout = 3) use ($filename): Mutex {
+            $file = fopen($filename, 'w');
+            $lock = Liberator::liberate(new FlockMutex($file, $timeout));
+            $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore property.notFound
 
-                return $lock->popsValue();
-            }],
+            return $lock->popsValue();
+        }];
 
-            'semaphore' => [static function ($timeout = 3) use ($filename): Mutex {
-                $semaphore = sem_get(ftok($filename, 'b'));
-                self::assertThat(
-                    $semaphore,
-                    self::logicalOr(
-                        self::isInstanceOf(\SysvSemaphore::class),
-                        new IsType(IsType::TYPE_RESOURCE)
-                    )
-                );
+        yield 'semaphore' => [static function ($timeout = 3) use ($filename): Mutex {
+            $semaphore = sem_get(ftok($filename, 'b'));
+            self::assertThat(
+                $semaphore,
+                self::logicalOr(
+                    self::isInstanceOf(\SysvSemaphore::class),
+                    new IsType(IsType::TYPE_RESOURCE)
+                )
+            );
 
-                return new SemaphoreMutex($semaphore);
-            }],
-        ];
+            return new SemaphoreMutex($semaphore);
+        }];
 
         if (getenv('MEMCACHE_HOST')) {
-            $cases['memcached'] = [static function ($timeout = 3): Mutex {
+            yield 'memcached' => [static function ($timeout = 3): Mutex {
                 $memcached = new \Memcached();
                 $memcached->addServer(getenv('MEMCACHE_HOST'), 11211);
 
@@ -274,7 +268,7 @@ class MutexConcurrencyTest extends TestCase
         if (getenv('REDIS_URIS')) {
             $uris = explode(',', getenv('REDIS_URIS'));
 
-            $cases['PredisMutex'] = [static function ($timeout = 3) use ($uris): Mutex {
+            yield 'PredisMutex' => [static function ($timeout = 3) use ($uris): Mutex {
                 $clients = array_map(
                     static fn ($uri) => new Client($uri),
                     $uris
@@ -284,7 +278,7 @@ class MutexConcurrencyTest extends TestCase
             }];
 
             if (class_exists(\Redis::class)) {
-                $cases['PHPRedisMutex'] = [
+                yield 'PHPRedisMutex' => [
                     static function ($timeout = 3) use ($uris): Mutex {
                         $apis = array_map(
                             static function (string $uri): \Redis {
@@ -312,7 +306,7 @@ class MutexConcurrencyTest extends TestCase
         }
 
         if (getenv('MYSQL_DSN')) {
-            $cases['MySQLMutex'] = [static function ($timeout = 3): Mutex {
+            yield 'MySQLMutex' => [static function ($timeout = 3): Mutex {
                 $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -321,14 +315,12 @@ class MutexConcurrencyTest extends TestCase
         }
 
         if (getenv('PGSQL_DSN')) {
-            $cases['PgAdvisoryLockMutex'] = [static function (): Mutex {
+            yield 'PgAdvisoryLockMutex' => [static function (): Mutex {
                 $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new PgAdvisoryLockMutex($pdo, 'test');
             }];
         }
-
-        return $cases;
     }
 }

@@ -122,7 +122,7 @@ jobs:
           php -r '(new PDO("pgsql:host=postgres;dbname=test_db", "test_user", "test_pass"))->exec("ALTER ROLE test_user CONNECTION LIMIT 1");'
           if [ -n "$LOG_COVERAGE" ]; then mkdir coverage; fi
 
-      - name: "Run tests 1/2"
+      - name: "Run tests"
         env:
           MYSQL_DSN: "mysql:host=mysql;dbname=test_db"
           MYSQL_USER: test_user
@@ -135,7 +135,8 @@ jobs:
         run: |
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-phpunit-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
 
-      - name: "Run tests 2/2"
+      - name: "Run tests /w MariaDB and Valkey (only for cron)"
+        if: (success() || failure()) && github.event_name == 'schedule'
         env:
           MYSQL_DSN: "mysql:host=mariadb;dbname=test_db"
           MYSQL_USER: test_user

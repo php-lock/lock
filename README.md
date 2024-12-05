@@ -380,7 +380,7 @@ No time outs are supported. If the connection to the database server is lost or
 interrupted, the lock is automatically released.
 
 ```php
-$pdo = new PDO('pgsql:host=localhost;dbname=test;', 'username');
+$pdo = new PDO('pgsql:host=localhost;dbname=test', 'username');
 
 $mutex = new PgAdvisoryLockMutex($pdo, 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {

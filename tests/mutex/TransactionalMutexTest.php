@@ -30,16 +30,12 @@ class TransactionalMutexTest extends TestCase
     }
 
     /**
-     * Returns test cases for testInvalidErrorMode().
-     *
      * @return iterable<list<mixed>>
      */
     public static function provideInvalidErrorModeCases(): iterable
     {
-        return [
-            [\PDO::ERRMODE_SILENT],
-            [\PDO::ERRMODE_WARNING],
-        ];
+        yield [\PDO::ERRMODE_SILENT];
+        yield [\PDO::ERRMODE_WARNING];
     }
 
     /**
@@ -145,16 +141,12 @@ class TransactionalMutexTest extends TestCase
     }
 
     /**
-     * Returns test cases for testReplayTransaction().
-     *
      * @return iterable<list<mixed>>
      */
     public static function provideReplayTransactionCases(): iterable
     {
-        return [
-            [new \PDOException()],
-            [new \Exception('', 0, new \PDOException())],
-        ];
+        yield [new \PDOException()];
+        yield [new \Exception('', 0, new \PDOException())];
     }
 
     /**

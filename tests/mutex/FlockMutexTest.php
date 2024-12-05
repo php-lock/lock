@@ -86,10 +86,8 @@ class FlockMutexTest extends TestCase
      */
     public static function provideTimeoutableStrategiesCases(): iterable
     {
-        return [
-            [FlockMutex::STRATEGY_PCNTL],
-            [FlockMutex::STRATEGY_BUSY],
-        ];
+        yield [FlockMutex::STRATEGY_PCNTL];
+        yield [FlockMutex::STRATEGY_BUSY];
     }
 
     public function testNoTimeoutWaitsForever(): void

@@ -245,39 +245,35 @@ class PHPRedisMutexTest extends TestCase
     public static function provideSerializersAndCompressorsCases(): iterable
     {
         if (!class_exists(\Redis::class)) {
-            return [];
+            return;
         }
 
-        $options = [
-            [\Redis::SERIALIZER_NONE, \Redis::COMPRESSION_NONE],
-            [\Redis::SERIALIZER_PHP, \Redis::COMPRESSION_NONE],
-        ];
+        yield [\Redis::SERIALIZER_NONE, \Redis::COMPRESSION_NONE];
+        yield [\Redis::SERIALIZER_PHP, \Redis::COMPRESSION_NONE];
 
         if (defined('Redis::SERIALIZER_IGBINARY') && extension_loaded('igbinary')) {
-            $options[] = [
+            yield [
                 constant('Redis::SERIALIZER_IGBINARY'),
                 \Redis::COMPRESSION_NONE,
             ];
         }
 
         if (defined('Redis::COMPRESSION_LZF') && extension_loaded('lzf')) {
-            $options[] = [
+            yield [
                 \Redis::SERIALIZER_NONE,
                 constant('Redis::COMPRESSION_LZF'),
             ];
-            $options[] = [
+            yield [
                 \Redis::SERIALIZER_PHP,
                 constant('Redis::COMPRESSION_LZF'),
             ];
 
             if (defined('Redis::SERIALIZER_IGBINARY') && extension_loaded('igbinary')) {
-                $options[] = [
+                yield [
                     constant('Redis::SERIALIZER_IGBINARY'),
                     constant('Redis::COMPRESSION_LZF'),
                 ];
             }
         }
-
-        return $options;
     }
 }

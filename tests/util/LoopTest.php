@@ -8,6 +8,7 @@ use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\util\Loop;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
 
 class LoopTest extends TestCase
@@ -40,7 +41,10 @@ class LoopTest extends TestCase
 
     /**
      * Tests execution within the timeout.
+     *
+     * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testExecutionWithinTimeout(): void
     {
         $this->expectNotToPerformAssertions();
@@ -68,11 +72,12 @@ class LoopTest extends TestCase
 
     /**
      * Tests exceeding the execution timeout.
+     *
+     * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testExceedTimeoutIsAcceptableIfEndWasCalled(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $loop = new Loop(0.5);
         $loop->execute(static function () use ($loop): void {
             usleep(501 * 1000);

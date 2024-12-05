@@ -19,6 +19,7 @@ use malkusch\lock\mutex\SpinlockMutex;
 use malkusch\lock\mutex\TransactionalMutex;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
 
@@ -45,77 +46,75 @@ class MutexTest extends TestCase
      */
     public static function provideMutexFactoriesCases(): iterable
     {
-        $cases = [
-            'NoMutex' => [static function (): Mutex {
-                return new NoMutex();
-            }],
+        yield 'NoMutex' => [static function (): Mutex {
+            return new NoMutex();
+        }];
 
-            'TransactionalMutex' => [static function (): Mutex {
-                $pdo = new \PDO('sqlite::memory:');
-                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        yield 'TransactionalMutex' => [static function (): Mutex {
+            $pdo = new \PDO('sqlite::memory:');
+            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new TransactionalMutex($pdo, self::TIMEOUT);
-            }],
+            return new TransactionalMutex($pdo, self::TIMEOUT);
+        }];
 
-            'FlockMutex' => [static function (): Mutex {
-                $file = fopen(vfsStream::url('test/lock'), 'w');
+        yield 'FlockMutex' => [static function (): Mutex {
+            $file = fopen(vfsStream::url('test/lock'), 'w');
 
-                return new FlockMutex($file);
-            }],
+            return new FlockMutex($file);
+        }];
 
-            'flockWithTimoutPcntl' => [static function (): Mutex {
-                $file = fopen(vfsStream::url('test/lock'), 'w');
-                $lock = Liberator::liberate(new FlockMutex($file, 3));
-                $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore property.notFound
+        yield 'flockWithTimoutPcntl' => [static function (): Mutex {
+            $file = fopen(vfsStream::url('test/lock'), 'w');
+            $lock = Liberator::liberate(new FlockMutex($file, 3));
+            $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore property.notFound
 
-                return $lock->popsValue();
-            }],
+            return $lock->popsValue();
+        }];
 
-            'flockWithTimoutBusy' => [static function ($timeout = 3): Mutex {
-                $file = fopen(vfsStream::url('test/lock'), 'w');
-                $lock = Liberator::liberate(new FlockMutex($file, 3));
-                $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore property.notFound
+        yield 'flockWithTimoutBusy' => [static function ($timeout = 3): Mutex {
+            $file = fopen(vfsStream::url('test/lock'), 'w');
+            $lock = Liberator::liberate(new FlockMutex($file, 3));
+            $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore property.notFound
 
-                return $lock->popsValue();
-            }],
+            return $lock->popsValue();
+        }];
 
-            'SemaphoreMutex' => [static function (): Mutex {
-                return new SemaphoreMutex(sem_get(ftok(__FILE__, 'a')));
-            }],
+        yield 'SemaphoreMutex' => [static function (): Mutex {
+            return new SemaphoreMutex(sem_get(ftok(__FILE__, 'a')));
+        }];
 
-            'SpinlockMutex' => [static function (): Mutex {
-                $lock = new class('test') extends SpinlockMutex {
-                    #[\Override]
-                    protected function acquire(string $key, float $expire): bool
-                    {
-                        return true;
-                    }
+        yield 'SpinlockMutex' => [static function (): Mutex {
+            $lock = new class('test') extends SpinlockMutex {
+                #[\Override]
+                protected function acquire(string $key, float $expire): bool
+                {
+                    return true;
+                }
 
-                    #[\Override]
-                    protected function release(string $key): bool
-                    {
-                        return true;
-                    }
-                };
+                #[\Override]
+                protected function release(string $key): bool
+                {
+                    return true;
+                }
+            };
 
-                return $lock;
-            }],
+            return $lock;
+        }];
 
-            'LockMutex' => [static function (): Mutex {
-                $lock = new class extends LockMutex {
-                    #[\Override]
-                    protected function lock(): void {}
+        yield 'LockMutex' => [static function (): Mutex {
+            $lock = new class extends LockMutex {
+                #[\Override]
+                protected function lock(): void {}
 
-                    #[\Override]
-                    protected function unlock(): void {}
-                };
+                #[\Override]
+                protected function unlock(): void {}
+            };
 
-                return $lock;
-            }],
-        ];
+            return $lock;
+        }];
 
         if (getenv('MEMCACHE_HOST')) {
-            $cases['MemcachedMutex'] = [static function (): Mutex {
+            yield 'MemcachedMutex' => [static function (): Mutex {
                 $memcache = new \Memcached();
                 $memcache->addServer(getenv('MEMCACHE_HOST'), 11211);
 
@@ -126,7 +125,7 @@ class MutexTest extends TestCase
         if (getenv('REDIS_URIS')) {
             $uris = explode(',', getenv('REDIS_URIS'));
 
-            $cases['PredisMutex'] = [static function () use ($uris): Mutex {
+            yield 'PredisMutex' => [static function () use ($uris): Mutex {
                 $clients = array_map(
                     static fn ($uri) => new Client($uri),
                     $uris
@@ -136,7 +135,7 @@ class MutexTest extends TestCase
             }];
 
             if (class_exists(\Redis::class)) {
-                $cases['PHPRedisMutex'] = [
+                yield 'PHPRedisMutex' => [
                     static function () use ($uris): Mutex {
                         $apis = array_map(
                             static function ($uri) {
@@ -164,7 +163,7 @@ class MutexTest extends TestCase
         }
 
         if (getenv('MYSQL_DSN')) {
-            $cases['MySQLMutex'] = [static function (): Mutex {
+            yield 'MySQLMutex' => [static function (): Mutex {
                 $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -173,15 +172,13 @@ class MutexTest extends TestCase
         }
 
         if (getenv('PGSQL_DSN')) {
-            $cases['PgAdvisoryLockMutex'] = [static function (): Mutex {
+            yield 'PgAdvisoryLockMutex' => [static function (): Mutex {
                 $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
                 return new PgAdvisoryLockMutex($pdo, 'test');
             }];
         }
-
-        return $cases;
     }
 
     /**
@@ -206,15 +203,17 @@ class MutexTest extends TestCase
      *
      * @param \Closure(): Mutex $mutexFactory
      *
+     * @doesNotPerformAssertions
+     *
      * @dataProvider provideMutexFactoriesCases
      */
+    #[DoesNotPerformAssertions]
     #[DataProvider('provideMutexFactoriesCases')]
     public function testRelease(\Closure $mutexFactory): void
     {
         $mutex = $mutexFactory();
         $mutex->synchronized(static function () {});
 
-        $this->expectNotToPerformAssertions();
         $mutex->synchronized(static function () {});
     }
 
