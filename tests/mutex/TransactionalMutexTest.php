@@ -6,6 +6,7 @@ namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\mutex\TransactionalMutex;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -18,6 +19,7 @@ class TransactionalMutexTest extends TestCase
      *
      * @dataProvider provideInvalidErrorModeCases
      */
+    #[DataProvider('provideInvalidErrorModeCases')]
     public function testInvalidErrorMode(int $mode): void
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -109,6 +111,7 @@ class TransactionalMutexTest extends TestCase
      *
      * @dataProvider provideReplayTransactionCases
      */
+    #[DataProvider('provideReplayTransactionCases')]
     public function testReplayTransaction(\Exception $exception): void
     {
         $pdo = $this->buildMySqlPdo();

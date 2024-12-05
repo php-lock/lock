@@ -6,6 +6,7 @@ namespace malkusch\lock\Tests\util;
 
 use malkusch\lock\mutex\Mutex;
 use malkusch\lock\util\DoubleCheckedLocking;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -87,6 +88,7 @@ class DoubleCheckedLockingTest extends TestCase
      *
      * @dataProvider provideCodeNotExecutedCases
      */
+    #[DataProvider('provideCodeNotExecutedCases')]
     public function testCodeNotExecuted(\Closure $check): void
     {
         $this->mutex->expects(self::any())

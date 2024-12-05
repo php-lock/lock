@@ -14,6 +14,7 @@ use malkusch\lock\mutex\PHPRedisMutex;
 use malkusch\lock\mutex\PredisMutex;
 use malkusch\lock\mutex\SemaphoreMutex;
 use malkusch\lock\mutex\TransactionalMutex;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
@@ -84,6 +85,7 @@ class MutexConcurrencyTest extends TestCase
      *
      * @dataProvider provideHighContentionCases
      */
+    #[DataProvider('provideHighContentionCases')]
     public function testHighContention(\Closure $code, \Closure $mutexFactory): void
     {
         $concurrency = 10;
@@ -196,6 +198,7 @@ class MutexConcurrencyTest extends TestCase
      *
      * @dataProvider provideExecutionIsSerializedWhenLockedCases
      */
+    #[DataProvider('provideExecutionIsSerializedWhenLockedCases')]
     public function testExecutionIsSerializedWhenLocked(\Closure $mutexFactory): void
     {
         $time = \microtime(true);

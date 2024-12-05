@@ -7,6 +7,7 @@ namespace malkusch\lock\Tests\mutex;
 use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\mutex\MemcachedMutex;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -15,6 +16,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @requires extension memcached
  */
+#[RequiresPhpExtension('memcached')]
 class MemcachedMutexTest extends TestCase
 {
     /** @var \Memcached|MockObject */

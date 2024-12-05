@@ -9,6 +9,7 @@ use malkusch\lock\exception\DeadlineException;
 use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\mutex\FlockMutex;
 use malkusch\lock\util\PcntlTimeout;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class FlockMutexTest extends TestCase
@@ -41,6 +42,7 @@ class FlockMutexTest extends TestCase
      *
      * @dataProvider provideTimeoutableStrategiesCases
      */
+    #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testCodeExecutedOutsideLockIsNotThrown(int $strategy): void
     {
         $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
@@ -57,6 +59,7 @@ class FlockMutexTest extends TestCase
      *
      * @dataProvider provideTimeoutableStrategiesCases
      */
+    #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testTimeoutOccurs(int $strategy): void
     {
         $this->expectException(TimeoutException::class);

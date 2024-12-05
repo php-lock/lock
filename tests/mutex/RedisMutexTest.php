@@ -11,12 +11,15 @@ use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\mutex\RedisMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @group redis
  */
+#[Group('redis')]
 class RedisMutexTest extends TestCase
 {
     use PHPMock;
@@ -63,6 +66,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMinorityCases
      */
+    #[DataProvider('provideMinorityCases')]
     public function testTooFewServerToAcquire(int $count, int $available): void
     {
         $this->expectException(LockAcquireException::class);
@@ -98,6 +102,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMajorityCases
      */
+    #[DataProvider('provideMajorityCases')]
     public function testFaultTolerance(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);
@@ -131,6 +136,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMinorityCases
      */
+    #[DataProvider('provideMinorityCases')]
     public function testAcquireTooFewKeys($count, $available): void
     {
         $this->expectException(TimeoutException::class);
@@ -163,6 +169,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideTimingOutCases
      */
+    #[DataProvider('provideTimingOutCases')]
     public function testTimingOut(int $count, float $timeout, float $delay): void
     {
         $timeoutStr = (string) round($timeout, 6);
@@ -210,6 +217,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMajorityCases
      */
+    #[DataProvider('provideMajorityCases')]
     public function testAcquireWithMajority(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);
@@ -239,6 +247,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMinorityCases
      */
+    #[DataProvider('provideMinorityCases')]
     public function testTooFewServersToRelease(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);
@@ -274,6 +283,7 @@ class RedisMutexTest extends TestCase
      *
      * @dataProvider provideMinorityCases
      */
+    #[DataProvider('provideMinorityCases')]
     public function testReleaseTooFewKeys(int $count, int $available): void
     {
         $mutex = $this->buildRedisMutex($count);

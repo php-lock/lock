@@ -8,6 +8,9 @@ use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\exception\MutexException;
 use malkusch\lock\mutex\PHPRedisMutex;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 
 if (\PHP_MAJOR_VERSION >= 8) {
@@ -63,6 +66,8 @@ if (\PHP_MAJOR_VERSION >= 8) {
  *
  * @group redis
  */
+#[RequiresPhpExtension('redis')]
+#[Group('redis')]
 class PHPRedisMutexTest extends TestCase
 {
     /** @var \Redis[] */
@@ -203,6 +208,7 @@ class PHPRedisMutexTest extends TestCase
      *
      * @dataProvider provideSerializersAndCompressorsCases
      */
+    #[DataProvider('provideSerializersAndCompressorsCases')]
     public function testSerializersAndCompressors($serializer, $compressor): void
     {
         foreach ($this->connections as $connection) {

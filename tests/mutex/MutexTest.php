@@ -18,6 +18,7 @@ use malkusch\lock\mutex\SemaphoreMutex;
 use malkusch\lock\mutex\SpinlockMutex;
 use malkusch\lock\mutex\TransactionalMutex;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
 
@@ -192,6 +193,7 @@ class MutexTest extends TestCase
      *
      * @dataProvider provideMutexFactoriesCases
      */
+    #[DataProvider('provideMutexFactoriesCases')]
     public function testSynchronizedDelegates(\Closure $mutexFactory): void
     {
         /** @var Mutex $mutex */
@@ -209,6 +211,7 @@ class MutexTest extends TestCase
      *
      * @dataProvider provideMutexFactoriesCases
      */
+    #[DataProvider('provideMutexFactoriesCases')]
     public function testRelease(\Closure $mutexFactory): void
     {
         $mutex = $mutexFactory();
@@ -225,6 +228,7 @@ class MutexTest extends TestCase
      *
      * @dataProvider provideMutexFactoriesCases
      */
+    #[DataProvider('provideMutexFactoriesCases')]
     public function testSynchronizedPassesExceptionThrough(\Closure $mutexFactory): void
     {
         $this->expectException(\DomainException::class);
