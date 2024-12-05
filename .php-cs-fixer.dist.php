@@ -55,20 +55,12 @@ return (new Config())
         'return_assignment' => false,
         'comment_to_phpdoc' => false,
         'general_phpdoc_annotation_remove' => [
-            'annotations' => ['author', 'copyright', 'throws'],
+            'annotations' => ['author', 'copyright'],
         ],
 
         // fn => without curly brackets is less readable,
         // also prevent bounding of unwanted variables for GC
         'use_arrow_functions' => false,
-
-        // TODO disable too strict rules for now
-        'declare_strict_types' => false,
-        'general_phpdoc_annotation_remove' => false,
-        'php_unit_data_provider_static' => false,
-        'php_unit_strict' => false,
-        'phpdoc_to_comment' => false,
-        'strict_comparison' => false,
     ])
     ->setFinder($finder)
     ->setCacheFile(sys_get_temp_dir() . '/php-cs-fixer.' . md5(__DIR__) . '.cache');

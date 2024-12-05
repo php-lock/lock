@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
@@ -81,7 +83,7 @@ class TransactionalMutexTest extends TestCase
         }
 
         $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
-        self::assertEquals(0, $count);
+        self::assertSame(0, \PHP_VERSION_ID < 8_01_00 ? (int) $count : $count);
     }
 
     /**
@@ -123,7 +125,7 @@ class TransactionalMutexTest extends TestCase
             ++$i;
 
             $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
-            self::assertEquals(0, $count);
+            self::assertSame(0, \PHP_VERSION_ID < 8_01_00 ? (int) $count : $count);
 
             $pdo->exec('INSERT INTO testExceptionRollsback VALUES(1)');
 
@@ -134,7 +136,7 @@ class TransactionalMutexTest extends TestCase
         });
 
         $count = $pdo->query('SELECT count(*) FROM testExceptionRollsback')->fetchColumn();
-        self::assertEquals(1, $count);
+        self::assertSame(1, \PHP_VERSION_ID < 8_01_00 ? (int) $count : $count);
 
         self::assertSame(5, $i);
     }

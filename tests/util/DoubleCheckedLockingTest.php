@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace malkusch\lock\Tests\util;
 
 use malkusch\lock\mutex\Mutex;
