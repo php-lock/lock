@@ -72,6 +72,9 @@ jobs:
       mysql:
         image: mysql
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=test_pass_root -e MYSQL_USER=test_user -e MYSQL_PASSWORD=test_pass -e MYSQL_DATABASE=test_db
+      mariadb:
+        image: mariadb
+        options: --health-cmd="mariadb-admin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=test_pass_root -e MYSQL_USER=test_user -e MYSQL_PASSWORD=test_pass -e MYSQL_DATABASE=test_db
       postgres:
         image: postgres:12-alpine
         env:
@@ -85,6 +88,12 @@ jobs:
         image: redis:alpine
       redis3:
         image: redis:alpine
+      valkey1:
+        image: valkey/valkey:alpine
+      valkey2:
+        image: valkey/valkey:alpine
+      valkey3:
+        image: valkey/valkey:alpine
       memcached:
         image: memcached:alpine
     steps:
@@ -109,10 +118,11 @@ jobs:
       - name: Init
         run: |
           php -r '(new PDO("mysql:host=mysql", "root", "test_pass_root"))->exec("ALTER USER '"'"'test_user'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 15");'
+          php -r '(new PDO("mysql:host=mariadb", "root", "test_pass_root"))->exec("ALTER USER '"'"'test_user'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 15");'
           php -r '(new PDO("pgsql:host=postgres;dbname=test_db", "test_user", "test_pass"))->exec("ALTER ROLE test_user CONNECTION LIMIT 1");'
           if [ -n "$LOG_COVERAGE" ]; then mkdir coverage; fi
 
-      - name: "Run tests"
+      - name: "Run tests 1/2"
         env:
           MYSQL_DSN: "mysql:host=mysql;dbname=test_db"
           MYSQL_USER: test_user
@@ -121,6 +131,19 @@ jobs:
           PGSQL_USER: test_user
           PGSQL_PASSWORD: test_pass
           REDIS_URIS: "redis://redis1,redis://redis2,redis://redis3"
+          MEMCACHE_HOST: memcached
+        run: |
+          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+
+      - name: "Run tests 2/2"
+        env:
+          MYSQL_DSN: "mysql:host=mariadb;dbname=test_db"
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_pass
+          PGSQL_DSN: "pgsql:host=postgres;dbname=test_db"
+          PGSQL_USER: test_user
+          PGSQL_PASSWORD: test_pass
+          REDIS_URIS: "redis://valkey1,redis://valkey2,redis://valkey3"
           MEMCACHE_HOST: memcached
         run: |
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
