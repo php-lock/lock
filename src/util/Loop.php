@@ -13,16 +13,6 @@ use malkusch\lock\exception\TimeoutException;
  */
 class Loop
 {
-    /**
-     * Minimum time that we want to wait, between lock checks. In micro seconds.
-     */
-    private const MINIMUM_WAIT_US = 1e4; // 0.01 seconds
-
-    /**
-     * Maximum time that we want to wait, between lock checks. In micro seconds.
-     */
-    private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
-
     /** @var float The timeout in seconds */
     private $timeout;
 
@@ -80,10 +70,13 @@ class Loop
         $this->looping = true;
 
         // At this time, the lock will time out.
-        $deadline = microtime(true) + $this->timeout;
+        $deadlineTs = microtime(true) + $this->timeout;
+
+        $minWaitSecs = 0.1e-3; // 0.1 ms
+        $maxWaitSecs = max(0.05, min(25, $this->timeout / 120)); // 50 ms to 25 s, based on timeout
 
         $result = null;
-        for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) { // @phpstan-ignore booleanAnd.leftAlwaysTrue
+        for ($i = 0;; ++$i) {
             $result = $code();
             if (!$this->looping) { // @phpstan-ignore booleanNot.alwaysFalse
                 // The $code callback has called $this->end() and the lock has been acquired.
@@ -92,24 +85,28 @@ class Loop
             }
 
             // Calculate max time remaining, don't sleep any longer than that.
-            $usecRemaining = (int) (($deadline - microtime(true)) * 1e6);
-
-            // We've ran out of time.
-            if ($usecRemaining <= 0) {
-                throw TimeoutException::create($this->timeout);
+            $remainingSecs = $deadlineTs - microtime(true);
+            if ($remainingSecs <= 0) {
+                break;
             }
 
-            $min = min(
-                (int) self::MINIMUM_WAIT_US * 1.25 ** $i,
-                self::MAXIMUM_WAIT_US
+            $minSecs = min(
+                $minWaitSecs * 1.5 ** $i,
+                max($minWaitSecs, $maxWaitSecs / 2)
             );
-            $max = min($min * 2, self::MAXIMUM_WAIT_US);
+            $maxSecs = min($minSecs * 2, $maxWaitSecs);
+            $sleepMicros = min(
+                max(10, (int) ($remainingSecs * 1e6)),
+                random_int((int) ($minSecs * 1e6), (int) ($maxSecs * 1e6))
+            );
 
-            $usecToSleep = min($usecRemaining, random_int((int) $min, (int) $max));
-
-            usleep($usecToSleep);
+            usleep($sleepMicros);
         }
 
-        throw TimeoutException::create($this->timeout);
+        if (microtime(true) >= $deadlineTs) {
+            throw TimeoutException::create($this->timeout);
+        }
+
+        return $result;
     }
 }
