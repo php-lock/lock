@@ -24,7 +24,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
         $this->pdo = $this->createMock(\PDO::class);
 
-        $this->mutex = new PgAdvisoryLockMutex($this->pdo, 'test' . uniqid());
+        $this->mutex = new PgAdvisoryLockMutex($this->pdo, 'test');
     }
 
     private function isPhpunit9x(): bool
@@ -43,23 +43,21 @@ class PgAdvisoryLockMutexTest extends TestCase
 
         $statement->expects(self::once())
             ->method('execute')
-            ->with(
-                self::logicalAnd(
-                    new IsType(IsType::TYPE_ARRAY),
-                    self::countOf(2),
-                    self::callback(function (...$arguments): bool {
-                        if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
-                            $arguments = $arguments[0];
-                        }
+            ->with(self::logicalAnd(
+                new IsType(IsType::TYPE_ARRAY),
+                self::countOf(2),
+                self::callback(function (...$arguments): bool {
+                    if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
+                        $arguments = $arguments[0];
+                    }
 
-                        foreach ($arguments as $v) {
-                            self::assertIsInt($v);
-                        }
+                    foreach ($arguments as $v) {
+                        self::assertIsInt($v);
+                    }
 
-                        return true;
-                    })
-                )
-            );
+                    return true;
+                })
+            ));
 
         \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PgAdvisoryLockMutex::class)($this->mutex);
     }
@@ -75,25 +73,23 @@ class PgAdvisoryLockMutexTest extends TestCase
 
         $statement->expects(self::once())
             ->method('execute')
-            ->with(
-                self::logicalAnd(
-                    new IsType(IsType::TYPE_ARRAY),
-                    self::countOf(2),
-                    self::callback(function (...$arguments): bool {
-                        if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
-                            $arguments = $arguments[0];
-                        }
+            ->with(self::logicalAnd(
+                new IsType(IsType::TYPE_ARRAY),
+                self::countOf(2),
+                self::callback(function (...$arguments): bool {
+                    if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
+                        $arguments = $arguments[0];
+                    }
 
-                        foreach ($arguments as $v) {
-                            self::assertLessThan(1 << 32, $v);
-                            self::assertGreaterThan(-(1 << 32), $v);
-                            self::assertIsInt($v);
-                        }
+                    foreach ($arguments as $v) {
+                        self::assertLessThan(1 << 32, $v);
+                        self::assertGreaterThan(-(1 << 32), $v);
+                        self::assertIsInt($v);
+                    }
 
-                        return true;
-                    })
-                )
-            );
+                    return true;
+                })
+            ));
 
         \Closure::bind(static fn ($mutex) => $mutex->unlock(), null, PgAdvisoryLockMutex::class)($this->mutex);
     }
