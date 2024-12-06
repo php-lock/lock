@@ -15,7 +15,7 @@ use Malkusch\Lock\Mutex\PgAdvisoryLockMutex;
 use Malkusch\Lock\Mutex\PHPRedisMutex;
 use Malkusch\Lock\Mutex\PredisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
-use Malkusch\Lock\Mutex\SpinlockMutex;
+use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use Malkusch\Lock\Mutex\TransactionalMutex;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -87,8 +87,8 @@ class MutexTest extends TestCase
             }];
         }
 
-        yield 'SpinlockMutex' => [static function (): Mutex {
-            $lock = new class('test') extends SpinlockMutex {
+        yield 'AbstractSpinlockMutex' => [static function (): Mutex {
+            $lock = new class('test') extends AbstractSpinlockMutex {
                 #[\Override]
                 protected function acquire(string $key, float $expire): bool
                 {
