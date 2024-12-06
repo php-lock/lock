@@ -124,7 +124,7 @@ if ($newBalance === false) {
 }
 ```
 
-### Extracting code result after lock release exception
+#### Extracting code result after lock release exception
 
 Mutex implementations based on [`Malkush\Lock\Mutex\AbstractLockMutex`][10] will throw
 [`Malkusch\Lock\Exception\LockReleaseException`][11] in case of lock release
