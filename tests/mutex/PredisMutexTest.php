@@ -8,6 +8,7 @@ use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
 use malkusch\lock\mutex\PredisMutex;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface;
@@ -62,7 +63,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', self::isType('string'), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
             ->willReturn(null);
 
         $this->logger->expects(self::never())
@@ -84,7 +85,7 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', self::isType('string'), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects(self::once())
@@ -104,12 +105,12 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', self::isType('string'), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
             ->willReturnSelf();
 
         $this->client->expects(self::once())
             ->method('eval')
-            ->with(self::anything(), 1, 'php-malkusch-lock:test', self::isType('string'))
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
             ->willReturn(true);
 
         $executed = false;
@@ -128,12 +129,12 @@ class PredisMutexTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', self::isType('string'), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
             ->willReturnSelf();
 
         $this->client->expects(self::once())
             ->method('eval')
-            ->with(self::anything(), 1, 'php-malkusch-lock:test', self::isType('string'))
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects(self::once())

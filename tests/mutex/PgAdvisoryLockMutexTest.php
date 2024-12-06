@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace malkusch\lock\Tests\mutex;
 
 use malkusch\lock\mutex\PgAdvisoryLockMutex;
+use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +45,7 @@ class PgAdvisoryLockMutexTest extends TestCase
             ->method('execute')
             ->with(
                 self::logicalAnd(
-                    self::isType('array'),
+                    new IsType(IsType::TYPE_ARRAY),
                     self::countOf(2),
                     self::callback(function (...$arguments): bool {
                         if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -76,7 +77,7 @@ class PgAdvisoryLockMutexTest extends TestCase
             ->method('execute')
             ->with(
                 self::logicalAnd(
-                    self::isType('array'),
+                    new IsType(IsType::TYPE_ARRAY),
                     self::countOf(2),
                     self::callback(function (...$arguments): bool {
                         if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
