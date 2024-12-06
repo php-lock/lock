@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\util;
+namespace Malkusch\Lock\Tests\Util;
 
-use malkusch\lock\mutex\Mutex;
-use malkusch\lock\util\DoubleCheckedLocking;
+use Malkusch\Lock\Mutex\Mutex;
+use Malkusch\Lock\Util\DoubleCheckedLocking;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

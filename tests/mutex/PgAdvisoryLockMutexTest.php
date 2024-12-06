@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\mutex;
+namespace Malkusch\Lock\Tests\Mutex;
 
-use malkusch\lock\mutex\PgAdvisoryLockMutex;
+use Malkusch\Lock\Mutex\PgAdvisoryLockMutex;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\mutex;
+namespace Malkusch\Lock\Tests\Mutex;
 
 use Eloquent\Liberator\Liberator;
-use malkusch\lock\mutex\FlockMutex;
-use malkusch\lock\mutex\LockMutex;
-use malkusch\lock\mutex\MemcachedMutex;
-use malkusch\lock\mutex\Mutex;
-use malkusch\lock\mutex\MySQLMutex;
-use malkusch\lock\mutex\NoMutex;
-use malkusch\lock\mutex\PgAdvisoryLockMutex;
-use malkusch\lock\mutex\PHPRedisMutex;
-use malkusch\lock\mutex\PredisMutex;
-use malkusch\lock\mutex\SemaphoreMutex;
-use malkusch\lock\mutex\SpinlockMutex;
-use malkusch\lock\mutex\TransactionalMutex;
+use Malkusch\Lock\Mutex\FlockMutex;
+use Malkusch\Lock\Mutex\LockMutex;
+use Malkusch\Lock\Mutex\MemcachedMutex;
+use Malkusch\Lock\Mutex\Mutex;
+use Malkusch\Lock\Mutex\MySQLMutex;
+use Malkusch\Lock\Mutex\NoMutex;
+use Malkusch\Lock\Mutex\PgAdvisoryLockMutex;
+use Malkusch\Lock\Mutex\PHPRedisMutex;
+use Malkusch\Lock\Mutex\PredisMutex;
+use Malkusch\Lock\Mutex\SemaphoreMutex;
+use Malkusch\Lock\Mutex\SpinlockMutex;
+use Malkusch\Lock\Mutex\TransactionalMutex;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;

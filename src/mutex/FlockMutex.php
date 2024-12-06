@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\mutex;
+namespace Malkusch\Lock\Mutex;
 
-use malkusch\lock\exception\DeadlineException;
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\LockReleaseException;
-use malkusch\lock\exception\TimeoutException;
-use malkusch\lock\util\Loop;
-use malkusch\lock\util\PcntlTimeout;
+use Malkusch\Lock\Exception\DeadlineException;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockReleaseException;
+use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Util\Loop;
+use Malkusch\Lock\Util\PcntlTimeout;
 
 /**
  * Flock() based mutex implementation.

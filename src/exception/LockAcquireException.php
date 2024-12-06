@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\exception;
+namespace Malkusch\Lock\Exception;
 
 /**
  * Lock acquire exception.

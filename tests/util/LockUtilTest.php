@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\util;
+namespace Malkusch\Lock\Tests\Util;
 
-use malkusch\lock\util\LockUtil;
+use Malkusch\Lock\Util\LockUtil;
 use PHPUnit\Framework\TestCase;
 
 class LockUtilTest extends TestCase

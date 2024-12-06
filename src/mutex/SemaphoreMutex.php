@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\mutex;
+namespace Malkusch\Lock\Mutex;
 
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\LockReleaseException;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockReleaseException;
 
 /**
  * System V IPC based mutex implementation.

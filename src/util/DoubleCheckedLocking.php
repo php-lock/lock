@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\util;
+namespace Malkusch\Lock\Util;
 
-use malkusch\lock\exception\ExecutionOutsideLockException;
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\LockReleaseException;
-use malkusch\lock\mutex\Mutex;
+use Malkusch\Lock\Exception\ExecutionOutsideLockException;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockReleaseException;
+use Malkusch\Lock\Mutex\Mutex;
 
 /**
  * The double-checked locking pattern.
  *
  * You should not instantiate this class directly. Use
- * {@link \malkusch\lock\mutex\Mutex::check()}.
+ * {@link \Malkusch\Lock\Mutex\Mutex::check()}.
  */
 class DoubleCheckedLocking
 {

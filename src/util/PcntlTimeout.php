@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\util;
+namespace Malkusch\Lock\Util;
 
-use malkusch\lock\exception\DeadlineException;
-use malkusch\lock\exception\LockAcquireException;
+use Malkusch\Lock\Exception\DeadlineException;
+use Malkusch\Lock\Exception\LockAcquireException;
 
 /**
  * Timeout based on a scheduled alarm.

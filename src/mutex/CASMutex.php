@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\mutex;
+namespace Malkusch\Lock\Mutex;
 
-use malkusch\lock\exception\TimeoutException;
-use malkusch\lock\util\Loop;
+use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Util\Loop;
 
 /**
  * CAS based mutex implementation.

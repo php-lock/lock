@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\exception;
+namespace Malkusch\Lock\Exception;
 
 class DeadlineException extends \RuntimeException implements PhpLockException {}

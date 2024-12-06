@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\mutex;
+namespace Malkusch\Lock\Tests\Mutex;
 
-use malkusch\lock\exception\ExecutionOutsideLockException;
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\LockReleaseException;
-use malkusch\lock\exception\TimeoutException;
-use malkusch\lock\mutex\SpinlockMutex;
+use Malkusch\Lock\Exception\ExecutionOutsideLockException;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockReleaseException;
+use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Mutex\SpinlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
@@ -26,8 +26,8 @@ class SpinlockMutexTest extends TestCase
 
         $sleepBuilder = new SleepEnvironmentBuilder();
         $sleepBuilder->addNamespace(__NAMESPACE__);
-        $sleepBuilder->addNamespace('malkusch\lock\mutex');
-        $sleepBuilder->addNamespace('malkusch\lock\util');
+        $sleepBuilder->addNamespace('Malkusch\Lock\Mutex');
+        $sleepBuilder->addNamespace('Malkusch\Lock\Util');
         $sleep = $sleepBuilder->build();
         try {
             $sleep->enable();

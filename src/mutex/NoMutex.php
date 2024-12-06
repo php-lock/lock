@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\mutex;
+namespace Malkusch\Lock\Mutex;
 
 /**
  * This mutex doesn't lock at all.

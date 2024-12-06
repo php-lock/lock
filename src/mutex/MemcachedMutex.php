@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\mutex;
+namespace Malkusch\Lock\Mutex;
 
 /**
  * Memcached based spinlock implementation.

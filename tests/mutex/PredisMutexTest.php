@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\mutex;
+namespace Malkusch\Lock\Tests\Mutex;
 
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\LockReleaseException;
-use malkusch\lock\mutex\PredisMutex;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockReleaseException;
+use Malkusch\Lock\Mutex\PredisMutex;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;

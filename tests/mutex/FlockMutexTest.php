@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\mutex;
+namespace Malkusch\Lock\Tests\Mutex;
 
 use Eloquent\Liberator\Liberator;
-use malkusch\lock\exception\DeadlineException;
-use malkusch\lock\exception\TimeoutException;
-use malkusch\lock\mutex\FlockMutex;
-use malkusch\lock\util\LockUtil;
-use malkusch\lock\util\PcntlTimeout;
+use Malkusch\Lock\Exception\DeadlineException;
+use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Mutex\FlockMutex;
+use Malkusch\Lock\Util\LockUtil;
+use Malkusch\Lock\Util\PcntlTimeout;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

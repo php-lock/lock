@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\exception;
+namespace Malkusch\Lock\Exception;
 
 /**
  * Execution outside lock exception.
@@ -14,7 +14,7 @@ namespace malkusch\lock\exception;
  *
  * Should only be used in contexts where the is being released.
  *
- * @see \malkusch\lock\mutex\SpinlockMutex::unlock()
+ * @see \Malkusch\Lock\Mutex\SpinlockMutex::unlock()
  */
 class ExecutionOutsideLockException extends LockReleaseException
 {

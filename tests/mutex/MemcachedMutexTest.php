@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\mutex;
+namespace Malkusch\Lock\Tests\Mutex;
 
-use malkusch\lock\exception\LockReleaseException;
-use malkusch\lock\exception\TimeoutException;
-use malkusch\lock\mutex\MemcachedMutex;
+use Malkusch\Lock\Exception\LockReleaseException;
+use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Mutex\MemcachedMutex;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

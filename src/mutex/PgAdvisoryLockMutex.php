@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\mutex;
+namespace Malkusch\Lock\Mutex;
 
-use malkusch\lock\util\LockUtil;
+use Malkusch\Lock\Util\LockUtil;
 
 class PgAdvisoryLockMutex extends LockMutex
 {

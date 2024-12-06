@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\mutex;
+namespace Malkusch\Lock\Tests\Mutex;
 
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\mutex\TransactionalMutex;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Mutex\TransactionalMutex;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\util;
+namespace Malkusch\Lock\Util;
 
 /**
  * @internal

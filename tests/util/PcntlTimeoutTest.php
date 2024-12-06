@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\Tests\util;
+namespace Malkusch\Lock\Tests\Util;
 
-use malkusch\lock\exception\DeadlineException;
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\util\PcntlTimeout;
+use Malkusch\Lock\Exception\DeadlineException;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Util\PcntlTimeout;
 use PHPUnit\Framework\TestCase;
 
 /**

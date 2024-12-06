@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\mutex;
+namespace Malkusch\Lock\Mutex;
 
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\util\Loop;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Util\Loop;
 
 /**
  * Serialization is delegated to the DBS.

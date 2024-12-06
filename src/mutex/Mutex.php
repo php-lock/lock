@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\mutex;
+namespace Malkusch\Lock\Mutex;
 
-use malkusch\lock\exception\ExecutionOutsideLockException;
-use malkusch\lock\exception\LockAcquireException;
-use malkusch\lock\exception\LockReleaseException;
-use malkusch\lock\util\DoubleCheckedLocking;
+use Malkusch\Lock\Exception\ExecutionOutsideLockException;
+use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockReleaseException;
+use Malkusch\Lock\Util\DoubleCheckedLocking;
 
 /**
  * The mutex provides methods for exclusive execution.
@@ -40,7 +40,7 @@ abstract class Mutex
     /**
      * Performs a double-checked locking pattern.
      *
-     * Call {@link \malkusch\lock\util\DoubleCheckedLocking::then()} on the
+     * Call {@link \Malkusch\Lock\Util\DoubleCheckedLocking::then()} on the
      * returned object.
      *
      * Example:

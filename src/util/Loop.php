@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace malkusch\lock\util;
+namespace Malkusch\Lock\Util;
 
-use malkusch\lock\exception\TimeoutException;
+use Malkusch\Lock\Exception\TimeoutException;
 
 /**
  * Repeats executing a code until it was successful.
@@ -61,7 +61,7 @@ class Loop
      *
      * The code has to be designed in a way that it can be repeated without any
      * side effects. When execution was successful it should notify that event
-     * by calling {@link \malkusch\lock\util\Loop::end()}. I.e. the only side
+     * by calling {@link \Malkusch\Lock\Util\Loop::end()}. I.e. the only side
      * effects of the code may happen after a successful execution.
      *
      * If the code throws an exception it will stop repeating the execution.
