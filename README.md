@@ -18,7 +18,7 @@ php-lock/lock follows semantic versioning. Read more on [semver.org][1].
 
 ## Requirements
 
- - PHP 7.4 - 8.3
+ - PHP 7.4 - 8.4
  - Optionally [nrk/predis][2] to use the Predis locks.
  - Optionally the [php-pcntl][3] extension to enable locking with `flock()`
    without busy waiting in CLI scripts.
