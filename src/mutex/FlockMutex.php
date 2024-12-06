@@ -125,7 +125,7 @@ class FlockMutex extends LockMutex
     private function acquireNonBlockingLock(): bool
     {
         if (!flock($this->fileHandle, \LOCK_EX | \LOCK_NB, $wouldBlock)) {
-            if ($wouldBlock) { // @phpstan-ignore if.condNotBoolean
+            if ($wouldBlock === 1) {
                 // Another process holds the lock.
                 return false;
             }

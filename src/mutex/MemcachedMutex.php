@@ -19,7 +19,7 @@ class MemcachedMutex extends SpinlockMutex
      * it has to be added with Memcached::addServer().
      *
      * @param string $name    The lock name
-     * @param float  $timeout The time in seconds a lock expires
+     * @param float  $timeout The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */

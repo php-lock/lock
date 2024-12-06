@@ -343,7 +343,7 @@ The **MySQLMutex** uses MySQL's
 [`GET_LOCK`](https://dev.mysql.com/doc/refman/9.0/en/locking-functions.html#function_get-lock)
 function.
 
-It supports time outs. If the connection to the database server is lost or
+It supports timeouts. If the connection to the database server is lost or
 interrupted, the lock is automatically released.
 
 Note that before MySQL 5.7.5 you cannot use nested locks, any new lock will
@@ -376,7 +376,7 @@ functions.
 Named locks are offered. PostgreSQL locking functions require integers but the
 conversion is handled automatically.
 
-No time outs are supported. If the connection to the database server is lost or
+No timeouts are supported. If the connection to the database server is lost or
 interrupted, the lock is automatically released.
 
 ```php

@@ -38,7 +38,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
         $this->pdo->expects(self::once())
             ->method('prepare')
-            ->with('SELECT pg_advisory_lock(?,?)')
+            ->with('SELECT pg_advisory_lock(?, ?)')
             ->willReturn($statement);
 
         $statement->expects(self::once())
@@ -70,7 +70,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
         $this->pdo->expects(self::once())
             ->method('prepare')
-            ->with('SELECT pg_advisory_unlock(?,?)')
+            ->with('SELECT pg_advisory_unlock(?, ?)')
             ->willReturn($statement);
 
         $statement->expects(self::once())

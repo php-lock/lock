@@ -79,7 +79,7 @@ class Loop
     {
         $this->looping = true;
 
-        // At this time, the lock will time out.
+        // At this time, the lock will timeout.
         $deadline = microtime(true) + $this->timeout;
 
         $result = null;

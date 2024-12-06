@@ -7,6 +7,7 @@ namespace malkusch\lock\mutex;
 use malkusch\lock\exception\ExecutionOutsideLockException;
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\util\LockUtil;
 use malkusch\lock\util\Loop;
 
 /**
@@ -16,9 +17,6 @@ use malkusch\lock\util\Loop;
  */
 abstract class SpinlockMutex extends LockMutex
 {
-    /** The prefix for the lock key. */
-    private const PREFIX = 'php-malkusch-lock:';
-
     /** @var float The timeout in seconds a lock may live */
     private $timeout;
 
@@ -34,7 +32,7 @@ abstract class SpinlockMutex extends LockMutex
     /**
      * Sets the timeout.
      *
-     * @param float $timeout The time in seconds a lock expires
+     * @param float $timeout The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */
@@ -42,7 +40,7 @@ abstract class SpinlockMutex extends LockMutex
     {
         $this->timeout = $timeout;
         $this->loop = new Loop($this->timeout);
-        $this->key = self::PREFIX . $name;
+        $this->key = LockUtil::getInstance()->getKeyPrefix() . ':' . $name;
     }
 
     #[\Override]
@@ -52,7 +50,7 @@ abstract class SpinlockMutex extends LockMutex
             $this->acquired = microtime(true);
 
             /*
-             * The expiration time for the lock is increased by one second
+             * The expiration timeout for the lock is increased by one second
              * to ensure that we delete only our keys. This will prevent the
              * case that this key expires before the timeout, and another process
              * acquires successfully the same key which would then be deleted

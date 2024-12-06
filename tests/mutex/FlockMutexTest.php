@@ -8,6 +8,7 @@ use Eloquent\Liberator\Liberator;
 use malkusch\lock\exception\DeadlineException;
 use malkusch\lock\exception\TimeoutException;
 use malkusch\lock\mutex\FlockMutex;
+use malkusch\lock\util\LockUtil;
 use malkusch\lock\util\PcntlTimeout;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +26,8 @@ class FlockMutexTest extends TestCase
     {
         parent::setUp();
 
-        $this->file = tempnam(sys_get_temp_dir(), 'flock-');
+        $this->file = LockUtil::getInstance()->makeRandomTemporaryFilePath('flock');
+        touch($this->file);
         $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, 'r'), 1)); // @phpstan-ignore assign.propertyType
     }
 

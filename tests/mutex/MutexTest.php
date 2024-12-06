@@ -169,7 +169,7 @@ class MutexTest extends TestCase
                 $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new MySQLMutex($pdo, 'test' . time(), self::TIMEOUT);
+                return new MySQLMutex($pdo, 'test', self::TIMEOUT);
             }];
         }
 

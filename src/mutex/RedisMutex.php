@@ -6,6 +6,7 @@ namespace malkusch\lock\mutex;
 
 use malkusch\lock\exception\LockAcquireException;
 use malkusch\lock\exception\LockReleaseException;
+use malkusch\lock\util\LockUtil;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -29,7 +30,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
      * Sets the Redis APIs.
      *
      * @param array<int, mixed> $redisAPIs
-     * @param float             $timeout   The time in seconds a lock expires
+     * @param float             $timeout   The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */
@@ -50,7 +51,7 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
         // 2.
         $acquired = 0;
         $errored = 0;
-        $this->token = bin2hex(random_bytes(16)) . md5((string) $time);
+        $this->token = LockUtil::getInstance()->makeRandomToken();
         $exception = null;
         foreach ($this->redisAPIs as $index => $redisAPI) {
             try {
@@ -106,8 +107,8 @@ abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
          *
          * @link https://redis.io/commands/set
          */
-        $script = 'if redis.call("get",KEYS[1]) == ARGV[1] then
-                return redis.call("del",KEYS[1])
+        $script = 'if redis.call("get", KEYS[1]) == ARGV[1] then
+                return redis.call("del", KEYS[1])
             else
                 return 0
             end

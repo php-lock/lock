@@ -14,6 +14,7 @@ use malkusch\lock\mutex\PHPRedisMutex;
 use malkusch\lock\mutex\PredisMutex;
 use malkusch\lock\mutex\SemaphoreMutex;
 use malkusch\lock\mutex\TransactionalMutex;
+use malkusch\lock\util\LockUtil;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
@@ -116,7 +117,7 @@ class MutexConcurrencyTest extends TestCase
     public static function provideHighContentionCases(): iterable
     {
         foreach (static::provideExecutionIsSerializedWhenLockedCases() as $name => [$mutexFactory]) {
-            $filename = tempnam(sys_get_temp_dir(), 'php-lock-high-contention');
+            $filename = LockUtil::getInstance()->makeRandomTemporaryFilePath('test-mutex-concurrency');
 
             static::$temporaryFiles[] = $filename;
 
@@ -224,7 +225,7 @@ class MutexConcurrencyTest extends TestCase
      */
     public static function provideExecutionIsSerializedWhenLockedCases(): iterable
     {
-        $filename = tempnam(sys_get_temp_dir(), 'mutex-concurrency-test');
+        $filename = LockUtil::getInstance()->makeRandomTemporaryFilePath('test-mutex-concurrency');
 
         self::$temporaryFiles[] = $filename;
 

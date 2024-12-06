@@ -26,7 +26,7 @@ class PHPRedisMutex extends RedisMutex
      * called already.
      *
      * @param array<\Redis|\RedisCluster> $redisAPIs
-     * @param float                       $timeout   The time in seconds a lock expires after
+     * @param float                       $timeout   The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */

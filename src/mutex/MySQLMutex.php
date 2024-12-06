@@ -32,7 +32,7 @@ class MySQLMutex extends LockMutex
     #[\Override]
     public function lock(): void
     {
-        $statement = $this->pdo->prepare('SELECT GET_LOCK(?,?)');
+        $statement = $this->pdo->prepare('SELECT GET_LOCK(?, ?)');
 
         // MySQL rounds the value to whole seconds, sadly rounds, not ceils
         // TODO MariaDB supports microseconds precision since 10.1.2 version,

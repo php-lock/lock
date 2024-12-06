@@ -45,7 +45,7 @@ final class PcntlTimeout
     }
 
     /**
-     * Runs the code and would eventually time out.
+     * Runs the code and would eventually timeout.
      *
      * This method has the side effect, that any signal handler for SIGALRM will
      * be reset to the default hanlder (SIG_DFL). It also expects that there is

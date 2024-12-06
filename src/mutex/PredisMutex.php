@@ -20,7 +20,7 @@ class PredisMutex extends RedisMutex
      * Sets the Redis connections.
      *
      * @param ClientInterface[] $clients The Redis clients
-     * @param float             $timeout The time in seconds a lock expires
+     * @param float             $timeout The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */
