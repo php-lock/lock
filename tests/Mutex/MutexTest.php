@@ -6,7 +6,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 
 use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Mutex\FlockMutex;
-use Malkusch\Lock\Mutex\LockMutex;
+use Malkusch\Lock\Mutex\AbstractLockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
 use Malkusch\Lock\Mutex\MySQLMutex;
@@ -105,8 +105,8 @@ class MutexTest extends TestCase
             return $lock;
         }];
 
-        yield 'LockMutex' => [static function (): Mutex {
-            $lock = new class extends LockMutex {
+        yield 'AbstractLockMutex' => [static function (): Mutex {
+            $lock = new class extends AbstractLockMutex {
                 #[\Override]
                 protected function lock(): void {}
 

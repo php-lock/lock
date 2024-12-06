@@ -6,13 +6,13 @@ namespace Malkusch\Lock\Tests\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Malkusch\Lock\Mutex\LockMutex;
+use Malkusch\Lock\Mutex\AbstractLockMutex;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class LockMutexTest extends TestCase
+class AbstractLockMutexTest extends TestCase
 {
-    /** @var LockMutex&MockObject */
+    /** @var AbstractLockMutex&MockObject */
     private $mutex;
 
     #[\Override]
@@ -20,7 +20,7 @@ class LockMutexTest extends TestCase
     {
         parent::setUp();
 
-        $this->mutex = $this->getMockBuilder(LockMutex::class)
+        $this->mutex = $this->getMockBuilder(AbstractLockMutex::class)
             ->onlyMethods(['lock', 'unlock'])
             ->getMock();
     }

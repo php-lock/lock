@@ -127,7 +127,7 @@ if ($newBalance === false) {
 
 ### Extracting code result after lock release exception
 
-Mutex implementations based on [`Malkush\Lock\Mutex\LockMutex`][10] will throw
+Mutex implementations based on [`Malkush\Lock\Mutex\AbstractLockMutex`][10] will throw
 [`Malkusch\Lock\Exception\LockReleaseException`][11] in case of lock release
 problem, but the synchronized code block will be already executed at this point.
 In order to read the code result (or an exception thrown there),
