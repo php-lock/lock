@@ -12,11 +12,11 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 
 /**
- * Mutex based on the Redlock algorithm.
+ * Distributed mutex based on the Redlock algorithm.
  *
  * @see http://redis.io/topics/distlock
  */
-abstract class RedisMutex extends AbstractSpinlockMutex implements LoggerAwareInterface
+abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 

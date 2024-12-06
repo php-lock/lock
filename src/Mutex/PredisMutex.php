@@ -14,7 +14,7 @@ use Predis\PredisException;
  *
  * @see http://redis.io/topics/distlock
  */
-class PredisMutex extends RedisMutex
+class PredisMutex extends AbstractRedlockMutex
 {
     /**
      * Sets the Redis connections.
