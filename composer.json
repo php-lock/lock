@@ -59,7 +59,7 @@
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0",
         "predis/predis": "^1.1.8",
-        "spatie/async": "^1.5"
+        "spatie/async": "dev-main#570d7a70671d22e82fe2bac2601551b82ff83af3 as 1.5.0"
     },
     "suggest": {
         "ext-igbinary": "To use this library with PHP Redis igbinary serializer enabled.",
