@@ -12,27 +12,27 @@ parameters:
     ignoreErrors:
         # TODO
         -
-            path: 'src/mutex/RedisMutex.php'
+            path: 'src/Mutex/RedisMutex.php'
             identifier: if.condNotBoolean
             message: '~^Only booleans are allowed in an if condition, mixed given\.$~'
             count: 1
         -
-            path: 'src/mutex/TransactionalMutex.php'
+            path: 'src/Mutex/TransactionalMutex.php'
             identifier: if.condNotBoolean
             message: '~^Only booleans are allowed in an if condition, mixed given\.$~'
             count: 1
         -
             message: '~^Parameter #1 \$(redisAPI|redis) \(Redis\|RedisCluster\) of method Malkusch\\Lock\\Mutex\\PHPRedisMutex::(add|evalScript)\(\) should be contravariant with parameter \$redisAPI \(mixed\) of method Malkusch\\Lock\\Mutex\\RedisMutex::(add|evalScript)\(\)$~'
             identifier: method.childParameterType
-            path: 'src/mutex/PHPRedisMutex.php'
+            path: 'src/Mutex/PHPRedisMutex.php'
             count: 2
         -
             message: '~^Parameter #1 \$(redisAPI|client) \(Predis\\ClientInterface\) of method Malkusch\\Lock\\Mutex\\PredisMutex::(add|evalScript)\(\) should be contravariant with parameter \$redisAPI \(mixed\) of method Malkusch\\Lock\\Mutex\\RedisMutex::(add|evalScript)\(\)$~'
             identifier: method.childParameterType
-            path: 'src/mutex/PredisMutex.php'
+            path: 'src/Mutex/PredisMutex.php'
             count: 2
         -
-            path: 'tests/mutex/*Test.php'
+            path: 'tests/Mutex/*Test.php'
             identifier: empty.notAllowed
             message: '~^Construct empty\(\) is not allowed\. Use more strict comparison\.$~'
             count: 6
