@@ -164,8 +164,7 @@ implementations or create/extend your own implementation.
 
 - [`FlockMutex`](#flockmutex)
 - [`MemcachedMutex`](#memcachedmutex)
-- [`PHPRedisMutex`](#phpredismutex)
-- [`PredisMutex`](#predismutex)
+- [`RedisMutex`](#redismutex)
 - [`SemaphoreMutex`](#semaphoremutex)
 - [`TransactionalMutex`](#transactionalmutex)
 - [`MySQLMutex`](#mysqlmutex)
@@ -213,11 +212,12 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-#### PHPRedisMutex
+#### RedisMutex
 
-The **PHPRedisMutex** is the distributed lock implementation of
-[RedLock](http://redis.io/topics/distlock) which uses the
-[`phpredis` extension](https://github.com/phpredis/phpredis).
+The **RedisMutex** is the distributed lock implementation of
+[RedLock](http://redis.io/topics/distlock) which supports the
+[`phpredis` extension](https://github.com/phpredis/phpredis)
+or [`Predis` API](https://github.com/nrk/predis).
 
 This implementation requires at least `phpredis-2.2.4`.
 
@@ -228,29 +228,9 @@ Example:
 ```php
 $redis = new \Redis();
 $redis->connect('localhost');
+// OR $redis = new \Predis\Client('redis://localhost');
 
-$mutex = new PHPRedisMutex([$redis], 'balance');
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $bankAccount->setBalance($balance);
-});
-```
-
-#### PredisMutex
-
-The **PredisMutex** is the distributed lock implementation of
-[RedLock](http://redis.io/topics/distlock) which uses the
-[`Predis` API](https://github.com/nrk/predis).
-
-Example:
-```php
-$redis = new \Predis\Client('redis://localhost');
-
-$mutex = new PredisMutex([$redis], 'balance');
+$mutex = new RedisMutex([$redis], 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;

@@ -12,9 +12,8 @@ use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
 use Malkusch\Lock\Mutex\MySQLMutex;
 use Malkusch\Lock\Mutex\NoMutex;
-use Malkusch\Lock\Mutex\PHPRedisMutex;
+use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
-use Malkusch\Lock\Mutex\PredisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
 use Malkusch\Lock\Mutex\TransactionalMutex;
 use org\bovigo\vfs\vfsStream;
@@ -135,7 +134,7 @@ class MutexTest extends TestCase
                     $uris
                 );
 
-                return new PredisMutex($clients, 'test', self::TIMEOUT);
+                return new RedisMutex($clients, 'test', self::TIMEOUT);
             }];
 
             if (class_exists(\Redis::class)) {
@@ -160,7 +159,7 @@ class MutexTest extends TestCase
                             $uris
                         );
 
-                        return new PHPRedisMutex($apis, 'test', self::TIMEOUT);
+                        return new RedisMutex($apis, 'test', self::TIMEOUT);
                     },
                 ];
             }

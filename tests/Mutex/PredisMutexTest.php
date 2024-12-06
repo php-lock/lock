@@ -6,7 +6,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Malkusch\Lock\Mutex\PredisMutex;
+use Malkusch\Lock\Mutex\RedisMutex;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -37,7 +37,7 @@ class PredisMutexTest extends TestCase
     /** @var ClientInterface&MockObject */
     private $client;
 
-    /** @var PredisMutex */
+    /** @var RedisMutex */
     private $mutex;
 
     /** @var LoggerInterface&MockObject */
@@ -50,7 +50,7 @@ class PredisMutexTest extends TestCase
 
         $this->client = $this->createMock(ClientInterfaceWithSetAndEvalMethods::class);
 
-        $this->mutex = new PredisMutex([$this->client], 'test', 2.5);
+        $this->mutex = new RedisMutex([$this->client], 'test', 2.5);
 
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->mutex->setLogger($this->logger);

@@ -9,9 +9,8 @@ use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
 use Malkusch\Lock\Mutex\MySQLMutex;
-use Malkusch\Lock\Mutex\PHPRedisMutex;
+use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
-use Malkusch\Lock\Mutex\PredisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
 use Malkusch\Lock\Mutex\TransactionalMutex;
 use Malkusch\Lock\Util\LockUtil;
@@ -284,7 +283,7 @@ class MutexConcurrencyTest extends TestCase
                     $uris
                 );
 
-                return new PredisMutex($clients, 'test', $timeout);
+                return new RedisMutex($clients, 'test', $timeout);
             }];
 
             if (class_exists(\Redis::class)) {
@@ -309,7 +308,7 @@ class MutexConcurrencyTest extends TestCase
                             $uris
                         );
 
-                        return new PHPRedisMutex($apis, 'test', $timeout);
+                        return new RedisMutex($apis, 'test', $timeout);
                     },
                 ];
             }

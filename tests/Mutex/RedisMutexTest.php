@@ -7,7 +7,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
-use Malkusch\Lock\Mutex\PHPRedisMutex;
+use Malkusch\Lock\Mutex\RedisMutex;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
@@ -68,12 +68,12 @@ if (\PHP_MAJOR_VERSION >= 8) {
  */
 #[RequiresPhpExtension('redis')]
 #[Group('redis')]
-class PHPRedisMutexTest extends TestCase
+class RedisMutexTest extends TestCase
 {
     /** @var \Redis[] */
     private $connections = [];
 
-    /** @var PHPRedisMutex */
+    /** @var RedisMutex */
     private $mutex;
 
     #[\Override]
@@ -150,7 +150,7 @@ class PHPRedisMutexTest extends TestCase
             $this->connections[] = $connection;
         }
 
-        $this->mutex = new PHPRedisMutex($this->connections, 'test');
+        $this->mutex = new RedisMutex($this->connections, 'test');
     }
 
     #[\Override]

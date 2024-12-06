@@ -17,7 +17,7 @@ use Malkusch\Lock\Exception\LockReleaseException;
  * @see https://github.com/phpredis/phpredis/issues/1477
  * @see http://redis.io/topics/distlock
  */
-class PHPRedisMutex extends AbstractRedlockMutex
+class RedisMutex extends AbstractRedlockMutex
 {
     /**
      * Sets the connected Redis APIs.
