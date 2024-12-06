@@ -44,16 +44,16 @@ composer require malkusch/lock
 
 ## Usage
 
-This library uses the namespace `malkusch\lock`.
+This library uses the namespace `Malkusch\Lock`.
 
 ### Mutex
 
-The [`malkusch\lock\mutex\Mutex`][5] class is an abstract class and provides the
+The [`Malkusch\Lock\Mutex\Mutex`][5] class is an abstract class and provides the
 base API for this library.
 
 #### Mutex::synchronized()
 
-[`malkusch\lock\mutex\Mutex::synchronized()`][6] executes code exclusively. This
+[`Malkusch\Lock\Mutex\Mutex::synchronized()`][6] executes code exclusively. This
 method guarantees that the code is only executed by one process at once. Other
 processes have to wait until the mutex is available. The critical code may throw
 an exception, which would release the lock as well.
@@ -82,8 +82,8 @@ $newBalance = $mutex->synchronized(function () use (
 
 #### Mutex::check()
 
-[`malkusch\lock\mutex\Mutex::check()`][7] sets a callable, which will be
-executed when [`malkusch\lock\util\DoubleCheckedLocking::then()`][8] is called,
+[`Malkusch\Lock\Mutex\Mutex::check()`][7] sets a callable, which will be
+executed when [`Malkusch\Lock\Util\DoubleCheckedLocking::then()`][8] is called,
 and performs a double-checked locking pattern, where it's return value decides
 if the lock needs to be acquired and the synchronized code to be executed.
 
@@ -92,12 +92,12 @@ detailed explanation of that feature.
 
 If the check's callable returns `false`, no lock will be acquired and the
 synchronized code will not be executed. In this case the
-[`malkusch\lock\util\DoubleCheckedLocking::then()`][8] method, will also return
+[`Malkusch\Lock\Util\DoubleCheckedLocking::then()`][8] method, will also return
 `false` to indicate that the check did not pass either before or after acquiring
 the lock.
 
 In the case where the check's callable returns a value other than `false`, the
-[`malkusch\lock\util\DoubleCheckedLocking::then()`][8] method, will
+[`Malkusch\Lock\Util\DoubleCheckedLocking::then()`][8] method, will
 try to acquire the lock and on success will perform the check again. Only when
 the check returns something other than `false` a second time, the synchronized
 code callable, which has been passed to `then()` will be executed. In this case
@@ -127,8 +127,8 @@ if ($newBalance === false) {
 
 ### Extracting code result after lock release exception
 
-Mutex implementations based on [`malkush\lock\mutex\LockMutex`][12] will throw
-[`malkusch\lock\exception\LockReleaseException`][13] in case of lock release
+Mutex implementations based on [`Malkush\Lock\Mutex\LockMutex`][12] will throw
+[`Malkusch\Lock\Exception\LockReleaseException`][13] in case of lock release
 problem, but the synchronized code block will be already executed at this point.
 In order to read the code result (or an exception thrown there),
 `LockReleaseException` provides methods to extract it.
@@ -160,7 +160,7 @@ try {
 
 ### Implementations
 
-Because the [`malkusch\lock\mutex\Mutex`](#mutex) class is an abstract class,
+Because the [`Malkusch\Lock\Mutex\Mutex`](#mutex) class is an abstract class,
 you can choose from one of the provided implementations or create/extend your
 own implementation.
 
@@ -179,7 +179,7 @@ own implementation.
 The **CASMutex** has to be used with a [Compare-and-swap][10] operation. This
 mutex is lock free. It will repeat executing the code until the CAS operation
 was successful. The code should therefore notify the mutex by calling
-[`malkusch\lock\mutex\CASMutex::notify()`][11].
+[`Malkusch\Lock\Mutex\CASMutex::notify()`][11].
 
 As the mutex keeps executing the critical code, it must not have any side
 effects as long as the CAS operation was not successful.

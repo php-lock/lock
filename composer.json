@@ -71,12 +71,12 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "malkusch\\lock\\": "src/"
+            "Malkusch\\Lock\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "malkusch\\lock\\Tests\\": "tests/"
+            "Malkusch\\Lock\\Tests\\": "tests/"
         }
     },
     "config": {
