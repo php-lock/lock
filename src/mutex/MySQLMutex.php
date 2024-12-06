@@ -30,7 +30,7 @@ class MySQLMutex extends LockMutex
     }
 
     #[\Override]
-    public function lock(): void
+    protected function lock(): void
     {
         $statement = $this->pdo->prepare('SELECT GET_LOCK(?, ?)');
 
@@ -62,7 +62,7 @@ class MySQLMutex extends LockMutex
     }
 
     #[\Override]
-    public function unlock(): void
+    protected function unlock(): void
     {
         $statement = $this->pdo->prepare('DO RELEASE_LOCK(?)');
         $statement->execute([

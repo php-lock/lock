@@ -31,7 +31,7 @@ class PgAdvisoryLockMutex extends LockMutex
     }
 
     #[\Override]
-    public function lock(): void
+    protected function lock(): void
     {
         $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?, ?)');
 
@@ -42,7 +42,7 @@ class PgAdvisoryLockMutex extends LockMutex
     }
 
     #[\Override]
-    public function unlock(): void
+    protected function unlock(): void
     {
         $statement = $this->pdo->prepare('SELECT pg_advisory_unlock(?, ?)');
         $statement->execute([
