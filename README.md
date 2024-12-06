@@ -127,8 +127,8 @@ if ($newBalance === false) {
 
 ### Extracting code result after lock release exception
 
-Mutex implementations based on [`Malkush\Lock\Mutex\LockMutex`][12] will throw
-[`Malkusch\Lock\Exception\LockReleaseException`][13] in case of lock release
+Mutex implementations based on [`Malkush\Lock\Mutex\LockMutex`][10] will throw
+[`Malkusch\Lock\Exception\LockReleaseException`][11] in case of lock release
 problem, but the synchronized code block will be already executed at this point.
 In order to read the code result (or an exception thrown there),
 `LockReleaseException` provides methods to extract it.
@@ -164,7 +164,6 @@ Because the [`Malkusch\Lock\Mutex\Mutex`](#mutex) class is an abstract class,
 you can choose from one of the provided implementations or create/extend your
 own implementation.
 
-- [`CASMutex`](#casmutex)
 - [`FlockMutex`](#flockmutex)
 - [`MemcachedMutex`](#memcachedmutex)
 - [`PHPRedisMutex`](#phpredismutex)
@@ -173,30 +172,6 @@ own implementation.
 - [`TransactionalMutex`](#transactionalmutex)
 - [`MySQLMutex`](#mysqlmutex)
 - [`PgAdvisoryLockMutex`](#pgadvisorylockmutex)
-
-#### CASMutex
-
-The **CASMutex** has to be used with a [Compare-and-swap][10] operation. This
-mutex is lock free. It will repeat executing the code until the CAS operation
-was successful. The code should therefore notify the mutex by calling
-[`Malkusch\Lock\Mutex\CASMutex::notify()`][11].
-
-As the mutex keeps executing the critical code, it must not have any side
-effects as long as the CAS operation was not successful.
-
-Example:
-
-```php
-$mutex = new CASMutex();
-$mutex->synchronized(function () use ($memcached, $mutex, $amount): void {
-    $balance = $memcached->get('balance', null, $casToken);
-    $balance -= $amount;
-    if (!$memcached->cas($casToken, 'balance', $balance)) {
-        return;
-    }
-    $mutex->notify();
-});
-```
 
 #### FlockMutex
 
@@ -406,7 +381,5 @@ This project is free and is licensed under the MIT.
 [7]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L60
 [8]: https://github.com/php-lock/lock/blob/35526aee28/src/util/DoubleCheckedLocking.php#L63
 [9]: https://en.wikipedia.org/wiki/Double-checked_locking
-[10]: https://en.wikipedia.org/wiki/Compare-and-swap
-[11]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/CASMutex.php#L42
-[12]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/LockMutex.php
-[13]: https://github.com/php-lock/lock/blob/35526aee28/src/exception/LockReleaseException.php
+[10]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/LockMutex.php
+[11]: https://github.com/php-lock/lock/blob/35526aee28/src/exception/LockReleaseException.php
