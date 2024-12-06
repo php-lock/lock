@@ -171,7 +171,7 @@ own implementation.
 - [`SemaphoreMutex`](#semaphoremutex)
 - [`TransactionalMutex`](#transactionalmutex)
 - [`MySQLMutex`](#mysqlmutex)
-- [`PgAdvisoryLockMutex`](#pgadvisorylockmutex)
+- [`PostgreSQLMutex`](#PostgreSQLMutex)
 
 #### FlockMutex
 
@@ -342,9 +342,9 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-#### PgAdvisoryLockMutex
+#### PostgreSQLMutex
 
-The **PgAdvisoryLockMutex** uses PostgreSQL's
+The **PostgreSQLMutex** uses PostgreSQL's
 [advisory locking](https://www.postgresql.org/docs/9.4/static/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS)
 functions.
 
@@ -357,7 +357,7 @@ interrupted, the lock is automatically released.
 ```php
 $pdo = new \PDO('pgsql:host=localhost;dbname=test', 'username');
 
-$mutex = new PgAdvisoryLockMutex($pdo, 'balance');
+$mutex = new PostgreSQLMutex($pdo, 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;

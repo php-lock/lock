@@ -6,7 +6,7 @@ namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Util\LockUtil;
 
-class PgAdvisoryLockMutex extends AbstractLockMutex
+class PostgreSQLMutex extends AbstractLockMutex
 {
     /** @var \PDO */
     private $pdo;

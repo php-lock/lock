@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-use Malkusch\Lock\Mutex\PgAdvisoryLockMutex;
+use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class PgAdvisoryLockMutexTest extends TestCase
+class PostgreSQLMutexTest extends TestCase
 {
     /** @var \PDO&MockObject */
     private $pdo;
 
-    /** @var PgAdvisoryLockMutex */
+    /** @var PostgreSQLMutex */
     private $mutex;
 
     #[\Override]
@@ -24,7 +24,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
         $this->pdo = $this->createMock(\PDO::class);
 
-        $this->mutex = new PgAdvisoryLockMutex($this->pdo, 'test-one-negative-key');
+        $this->mutex = new PostgreSQLMutex($this->pdo, 'test-one-negative-key');
     }
 
     private function isPhpunit9x(): bool
@@ -62,7 +62,7 @@ class PgAdvisoryLockMutexTest extends TestCase
                 [533558444, -1716795572]
             ));
 
-        \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PgAdvisoryLockMutex::class)($this->mutex);
+        \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PostgreSQLMutex::class)($this->mutex);
     }
 
     public function testReleaseLock(): void
@@ -95,6 +95,6 @@ class PgAdvisoryLockMutexTest extends TestCase
                 [533558444, -1716795572]
             ));
 
-        \Closure::bind(static fn ($mutex) => $mutex->unlock(), null, PgAdvisoryLockMutex::class)($this->mutex);
+        \Closure::bind(static fn ($mutex) => $mutex->unlock(), null, PostgreSQLMutex::class)($this->mutex);
     }
 }
