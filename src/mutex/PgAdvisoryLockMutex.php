@@ -24,14 +24,15 @@ class PgAdvisoryLockMutex extends LockMutex
 
         [$keyBytes1, $keyBytes2] = str_split(md5(LockUtil::getInstance()->getKeyPrefix() . ':' . $name, true), 4);
 
-        $unpackToSignedIntFx = static function (string $v) {
+        // https://github.com/php/php-src/issues/17068
+        $unpackToSignedIntLeFx = static function (string $v) {
             $unpacked = unpack('va/Cb/cc', $v);
 
-            return ($unpacked['c'] << 24) | ($unpacked['b'] << 16) | $unpacked['a'];
+            return $unpacked['a'] | ($unpacked['b'] << 16) | ($unpacked['c'] << 24);
         };
 
-        $this->key1 = $unpackToSignedIntFx($keyBytes1);
-        $this->key2 = $unpackToSignedIntFx($keyBytes2);
+        $this->key1 = $unpackToSignedIntLeFx($keyBytes1);
+        $this->key2 = $unpackToSignedIntLeFx($keyBytes2);
     }
 
     #[\Override]
