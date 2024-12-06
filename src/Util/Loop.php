@@ -13,14 +13,10 @@ use Malkusch\Lock\Exception\TimeoutException;
  */
 class Loop
 {
-    /**
-     * Minimum time that we want to wait, between lock checks. In micro seconds.
-     */
+    /** Minimum time that we want to wait, between lock checks. In micro seconds. */
     private const MINIMUM_WAIT_US = 1e4; // 0.01 seconds
 
-    /**
-     * Maximum time that we want to wait, between lock checks. In micro seconds.
-     */
+    /** Maximum time that we want to wait, between lock checks. In micro seconds. */
     private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
     /** @var float The timeout in seconds */

@@ -28,7 +28,6 @@ jobs:
 
       - name: Configure PHP
         run: |
-          install-php-extensions memcached sysvsem
           rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
           php --version
 
@@ -37,6 +36,7 @@ jobs:
           if [ "${{ matrix.type }}" != "Phpunit" ] && [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpunit/phpunit ergebnis/phpunit-slow-test-detector --dev; fi
           if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer ergebnis/composer-normalize --dev; fi
           if [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpstan/\* --dev; fi
+          composer remove --no-interaction --no-update ext-lzf ext-memcached ext-sysvsem --dev
           composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
       - name: "Run tests (only for Phpunit)"

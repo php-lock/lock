@@ -14,6 +14,8 @@ use Malkusch\Lock\Mutex\Mutex;
  *
  * You should not instantiate this class directly. Use
  * {@link \Malkusch\Lock\Mutex\Mutex::check()}.
+ *
+ * @internal
  */
 class DoubleCheckedLocking
 {

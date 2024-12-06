@@ -251,18 +251,20 @@ class MutexConcurrencyTest extends TestCase
             return $lock->popsValue();
         }];
 
-        yield 'semaphore' => [static function () use ($filename): Mutex {
-            $semaphore = sem_get(ftok($filename, 'b'));
-            self::assertThat(
-                $semaphore,
-                self::logicalOr(
-                    self::isInstanceOf(\SysvSemaphore::class),
-                    new IsType(IsType::TYPE_RESOURCE)
-                )
-            );
+        if (extension_loaded('sysvsem')) {
+            yield 'semaphore' => [static function () use ($filename): Mutex {
+                $semaphore = sem_get(ftok($filename, 'b'));
+                self::assertThat(
+                    $semaphore,
+                    self::logicalOr(
+                        self::isInstanceOf(\SysvSemaphore::class),
+                        new IsType(IsType::TYPE_RESOURCE)
+                    )
+                );
 
-            return new SemaphoreMutex($semaphore);
-        }];
+                return new SemaphoreMutex($semaphore);
+            }];
+        }
 
         if (getenv('MEMCACHE_HOST')) {
             yield 'memcached' => [static function ($timeout): Mutex {

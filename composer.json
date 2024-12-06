@@ -39,11 +39,14 @@
         "symfony/polyfill-php80": "^1.28"
     },
     "require-dev": {
+        "ext-igbinary": "*",
+        "ext-lzf": "*",
         "ext-memcached": "*",
         "ext-pcntl": "*",
         "ext-pdo": "*",
         "ext-pdo_mysql": "*",
         "ext-pdo_sqlite": "*",
+        "ext-redis": "*",
         "ext-sysvsem": "*",
         "eloquent/liberator": "^2.0 || ^3.0",
         "ergebnis/composer-normalize": "^2.13",
@@ -62,7 +65,7 @@
     "suggest": {
         "ext-igbinary": "To use this library with PHP Redis igbinary serializer enabled.",
         "ext-lzf": "To use this library with PHP Redis lzf compression enabled.",
-        "ext-pnctl": "Enables locking with flock without busy waiting in CLI scripts.",
+        "ext-pcntl": "Enables locking with flock without busy waiting in CLI scripts.",
         "ext-redis": "To use this library with the PHP Redis extension.",
         "ext-sysvsem": "Enables locking using semaphores.",
         "predis/predis": "To use this library with predis."

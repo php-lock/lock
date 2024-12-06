@@ -81,9 +81,11 @@ class MutexTest extends TestCase
             return $lock->popsValue();
         }];
 
-        yield 'SemaphoreMutex' => [static function (): Mutex {
-            return new SemaphoreMutex(sem_get(ftok(__FILE__, 'a')));
-        }];
+        if (extension_loaded('sysvsem')) {
+            yield 'SemaphoreMutex' => [static function (): Mutex {
+                return new SemaphoreMutex(sem_get(ftok(__FILE__, 'a')));
+            }];
+        }
 
         yield 'SpinlockMutex' => [static function (): Mutex {
             $lock = new class('test') extends SpinlockMutex {
