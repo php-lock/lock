@@ -59,7 +59,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
                     return true;
                 }),
-                [-2117040481, 1702710408]
+                [-848589047, 1943216454]
             ));
 
         \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PgAdvisoryLockMutex::class)($this->mutex);
@@ -92,7 +92,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
                     return true;
                 }),
-                [-2117040481, 1702710408]
+                [-848589047, 1943216454]
             ));
 
         \Closure::bind(static fn ($mutex) => $mutex->unlock(), null, PgAdvisoryLockMutex::class)($this->mutex);

@@ -20,7 +20,7 @@ class PgAdvisoryLockMutex extends LockMutex
     {
         $this->pdo = $PDO;
 
-        [$keyBytes1, $keyBytes2] = str_split(hash('sha256', $name, true), 4);
+        [$keyBytes1, $keyBytes2] = str_split(md5($name, true), 4);
 
         $unpackToSignedIntFx = static function (string $v) {
             $unpacked = unpack('va/Cb/cc', $v);
