@@ -24,7 +24,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
         $this->pdo = $this->createMock(\PDO::class);
 
-        $this->mutex = new PgAdvisoryLockMutex($this->pdo, 'test');
+        $this->mutex = new PgAdvisoryLockMutex($this->pdo, 'test-one-negative-key');
     }
 
     private function isPhpunit9x(): bool
@@ -59,7 +59,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
                     return true;
                 }),
-                [355884658, 1705446324]
+                [533558444, -1716795572]
             ));
 
         \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PgAdvisoryLockMutex::class)($this->mutex);
@@ -92,7 +92,7 @@ class PgAdvisoryLockMutexTest extends TestCase
 
                     return true;
                 }),
-                [355884658, 1705446324]
+                [533558444, -1716795572]
             ));
 
         \Closure::bind(static fn ($mutex) => $mutex->unlock(), null, PgAdvisoryLockMutex::class)($this->mutex);
