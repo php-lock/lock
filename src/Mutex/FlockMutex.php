@@ -14,7 +14,7 @@ use Malkusch\Lock\Util\PcntlTimeout;
 /**
  * Flock() based mutex implementation.
  */
-class FlockMutex extends LockMutex
+class FlockMutex extends AbstractLockMutex
 {
     public const INFINITE_TIMEOUT = -1.0;
 

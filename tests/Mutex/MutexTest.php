@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Tests\Mutex;
 
 use Eloquent\Liberator\Liberator;
+use Malkusch\Lock\Mutex\AbstractLockMutex;
+use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use Malkusch\Lock\Mutex\FlockMutex;
-use Malkusch\Lock\Mutex\LockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
 use Malkusch\Lock\Mutex\MySQLMutex;
 use Malkusch\Lock\Mutex\NoMutex;
-use Malkusch\Lock\Mutex\PgAdvisoryLockMutex;
 use Malkusch\Lock\Mutex\PHPRedisMutex;
+use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\PredisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
-use Malkusch\Lock\Mutex\SpinlockMutex;
 use Malkusch\Lock\Mutex\TransactionalMutex;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -87,8 +87,8 @@ class MutexTest extends TestCase
             }];
         }
 
-        yield 'SpinlockMutex' => [static function (): Mutex {
-            $lock = new class('test') extends SpinlockMutex {
+        yield 'AbstractSpinlockMutex' => [static function (): Mutex {
+            $lock = new class('test') extends AbstractSpinlockMutex {
                 #[\Override]
                 protected function acquire(string $key, float $expire): bool
                 {
@@ -105,8 +105,8 @@ class MutexTest extends TestCase
             return $lock;
         }];
 
-        yield 'LockMutex' => [static function (): Mutex {
-            $lock = new class extends LockMutex {
+        yield 'AbstractLockMutex' => [static function (): Mutex {
+            $lock = new class extends AbstractLockMutex {
                 #[\Override]
                 protected function lock(): void {}
 
@@ -176,11 +176,11 @@ class MutexTest extends TestCase
         }
 
         if (getenv('PGSQL_DSN')) {
-            yield 'PgAdvisoryLockMutex' => [static function (): Mutex {
+            yield 'PostgreSQLMutex' => [static function (): Mutex {
                 $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new PgAdvisoryLockMutex($pdo, 'test');
+                return new PostgreSQLMutex($pdo, 'test');
             }];
         }
     }

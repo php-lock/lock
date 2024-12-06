@@ -8,14 +8,14 @@ use Malkusch\Lock\Exception\ExecutionOutsideLockException;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\TimeoutException;
-use Malkusch\Lock\Mutex\SpinlockMutex;
+use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class SpinlockMutexTest extends TestCase
+class AbstractSpinlockMutexTest extends TestCase
 {
     use PHPMock;
 
@@ -39,11 +39,11 @@ class SpinlockMutexTest extends TestCase
     }
 
     /**
-     * @return SpinlockMutex&MockObject
+     * @return AbstractSpinlockMutex&MockObject
      */
-    private function createSpinlockMutexMock(float $timeout = 3): SpinlockMutex
+    private function createAbstractSpinlockMutexMock(float $timeout = 3): AbstractSpinlockMutex
     {
-        return $this->getMockBuilder(SpinlockMutex::class)
+        return $this->getMockBuilder(AbstractSpinlockMutex::class)
             ->setConstructorArgs(['test', $timeout])
             ->onlyMethods(['acquire', 'release'])
             ->getMock();
@@ -56,7 +56,7 @@ class SpinlockMutexTest extends TestCase
     {
         $this->expectException(LockAcquireException::class);
 
-        $mutex = $this->createSpinlockMutexMock();
+        $mutex = $this->createAbstractSpinlockMutexMock();
         $mutex->expects(self::any())
             ->method('acquire')
             ->willThrowException(new LockAcquireException());
@@ -74,7 +74,7 @@ class SpinlockMutexTest extends TestCase
         $this->expectException(TimeoutException::class);
         $this->expectExceptionMessage('Timeout of 3.0 seconds exceeded');
 
-        $mutex = $this->createSpinlockMutexMock();
+        $mutex = $this->createAbstractSpinlockMutexMock();
         $mutex->expects(self::atLeastOnce())
             ->method('acquire')
             ->willReturn(false);
@@ -89,7 +89,7 @@ class SpinlockMutexTest extends TestCase
      */
     public function testExecuteTooLong(): void
     {
-        $mutex = $this->createSpinlockMutexMock(0.5);
+        $mutex = $this->createAbstractSpinlockMutexMock(0.5);
         $mutex->expects(self::any())
             ->method('acquire')
             ->willReturn(true);
@@ -114,7 +114,7 @@ class SpinlockMutexTest extends TestCase
      */
     public function testExecuteBarelySucceeds(): void
     {
-        $mutex = $this->createSpinlockMutexMock(0.5);
+        $mutex = $this->createAbstractSpinlockMutexMock(0.5);
         $mutex->expects(self::any())->method('acquire')->willReturn(true);
         $mutex->expects(self::once())->method('release')->willReturn(true);
 
@@ -130,7 +130,7 @@ class SpinlockMutexTest extends TestCase
     {
         $this->expectException(LockReleaseException::class);
 
-        $mutex = $this->createSpinlockMutexMock();
+        $mutex = $this->createAbstractSpinlockMutexMock();
         $mutex->expects(self::any())->method('acquire')->willReturn(true);
         $mutex->expects(self::any())->method('release')->willReturn(false);
 
@@ -142,7 +142,7 @@ class SpinlockMutexTest extends TestCase
      */
     public function testExecuteTimeoutLeavesOneSecondForKeyToExpire(): void
     {
-        $mutex = $this->createSpinlockMutexMock(0.2);
+        $mutex = $this->createAbstractSpinlockMutexMock(0.2);
         $mutex->expects(self::once())
             ->method('acquire')
             ->with(self::anything(), 1.2)

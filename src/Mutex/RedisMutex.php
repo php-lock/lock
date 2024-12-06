@@ -16,7 +16,7 @@ use Psr\Log\NullLogger;
  *
  * @see http://redis.io/topics/distlock
  */
-abstract class RedisMutex extends SpinlockMutex implements LoggerAwareInterface
+abstract class RedisMutex extends AbstractSpinlockMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 

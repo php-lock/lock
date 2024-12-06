@@ -14,7 +14,7 @@ namespace Malkusch\Lock\Exception;
  *
  * Should only be used in contexts where the is being released.
  *
- * @see \Malkusch\Lock\Mutex\SpinlockMutex::unlock()
+ * @see \Malkusch\Lock\Mutex\AbstractSpinlockMutex::unlock()
  */
 class ExecutionOutsideLockException extends LockReleaseException
 {

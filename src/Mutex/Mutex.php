@@ -10,9 +10,9 @@ use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Util\DoubleCheckedLocking;
 
 /**
- * The mutex provides methods for exclusive execution.
+ * Mutex interface for exclusive execution.
  */
-abstract class Mutex
+interface Mutex
 {
     /**
      * Executes a block of code exclusively.
@@ -35,7 +35,7 @@ abstract class Mutex
      * @throws LockReleaseException          The mutex could not be released, the code was already executed
      * @throws ExecutionOutsideLockException Some code has been executed outside of the lock
      */
-    abstract public function synchronized(callable $code);
+    public function synchronized(callable $code);
 
     /**
      * Performs a double-checked locking pattern.
@@ -57,8 +57,5 @@ abstract class Mutex
      *
      * @return DoubleCheckedLocking The double-checked locking pattern
      */
-    public function check(callable $check): DoubleCheckedLocking
-    {
-        return new DoubleCheckedLocking($this, $check);
-    }
+    public function check(callable $check): DoubleCheckedLocking;
 }

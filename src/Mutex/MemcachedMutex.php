@@ -7,7 +7,7 @@ namespace Malkusch\Lock\Mutex;
 /**
  * Memcached based spinlock implementation.
  */
-class MemcachedMutex extends SpinlockMutex
+class MemcachedMutex extends AbstractSpinlockMutex
 {
     /** @var \Memcached */
     private $memcache;

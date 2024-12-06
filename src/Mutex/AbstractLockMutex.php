@@ -12,7 +12,7 @@ use Malkusch\Lock\Exception\LockReleaseException;
  *
  * @internal
  */
-abstract class LockMutex extends Mutex
+abstract class AbstractLockMutex extends AbstractMutex
 {
     /**
      * Acquires the lock.

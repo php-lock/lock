@@ -9,8 +9,8 @@ use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
 use Malkusch\Lock\Mutex\MySQLMutex;
-use Malkusch\Lock\Mutex\PgAdvisoryLockMutex;
 use Malkusch\Lock\Mutex\PHPRedisMutex;
+use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\PredisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
 use Malkusch\Lock\Mutex\TransactionalMutex;
@@ -325,11 +325,11 @@ class MutexConcurrencyTest extends TestCase
         }
 
         if (getenv('PGSQL_DSN')) {
-            yield 'PgAdvisoryLockMutex' => [static function (): Mutex {
+            yield 'PostgreSQLMutex' => [static function (): Mutex {
                 $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                return new PgAdvisoryLockMutex($pdo, 'test');
+                return new PostgreSQLMutex($pdo, 'test');
             }];
         }
     }

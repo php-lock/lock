@@ -48,8 +48,7 @@ This library uses the namespace `Malkusch\Lock`.
 
 ### Mutex
 
-The [`Malkusch\Lock\Mutex\Mutex`][5] class is an abstract class and provides the
-base API for this library.
+The [`Malkusch\Lock\Mutex\Mutex`][5] interface provides the base API for this library.
 
 #### Mutex::synchronized()
 
@@ -125,9 +124,9 @@ if ($newBalance === false) {
 }
 ```
 
-### Extracting code result after lock release exception
+#### Extracting code result after lock release exception
 
-Mutex implementations based on [`Malkush\Lock\Mutex\LockMutex`][10] will throw
+Mutex implementations based on [`Malkush\Lock\Mutex\AbstractLockMutex`][10] will throw
 [`Malkusch\Lock\Exception\LockReleaseException`][11] in case of lock release
 problem, but the synchronized code block will be already executed at this point.
 In order to read the code result (or an exception thrown there),
@@ -160,9 +159,8 @@ try {
 
 ### Implementations
 
-Because the [`Malkusch\Lock\Mutex\Mutex`](#mutex) class is an abstract class,
-you can choose from one of the provided implementations or create/extend your
-own implementation.
+You can choose from one of the provided [`Malkusch\Lock\Mutex\Mutex`](#mutex) interface
+implementations or create/extend your own implementation.
 
 - [`FlockMutex`](#flockmutex)
 - [`MemcachedMutex`](#memcachedmutex)
@@ -171,7 +169,7 @@ own implementation.
 - [`SemaphoreMutex`](#semaphoremutex)
 - [`TransactionalMutex`](#transactionalmutex)
 - [`MySQLMutex`](#mysqlmutex)
-- [`PgAdvisoryLockMutex`](#pgadvisorylockmutex)
+- [`PostgreSQLMutex`](#PostgreSQLMutex)
 
 #### FlockMutex
 
@@ -342,9 +340,9 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-#### PgAdvisoryLockMutex
+#### PostgreSQLMutex
 
-The **PgAdvisoryLockMutex** uses PostgreSQL's
+The **PostgreSQLMutex** uses PostgreSQL's
 [advisory locking](https://www.postgresql.org/docs/9.4/static/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS)
 functions.
 
@@ -357,7 +355,7 @@ interrupted, the lock is automatically released.
 ```php
 $pdo = new \PDO('pgsql:host=localhost;dbname=test', 'username');
 
-$mutex = new PgAdvisoryLockMutex($pdo, 'balance');
+$mutex = new PostgreSQLMutex($pdo, 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;

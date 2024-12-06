@@ -15,7 +15,7 @@ use Malkusch\Lock\Util\Loop;
  *
  * @internal
  */
-abstract class SpinlockMutex extends LockMutex
+abstract class AbstractSpinlockMutex extends AbstractLockMutex
 {
     /** @var float The timeout in seconds a lock may live */
     private $timeout;

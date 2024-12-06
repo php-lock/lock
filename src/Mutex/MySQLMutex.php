@@ -8,7 +8,7 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\TimeoutException;
 use Malkusch\Lock\Util\LockUtil;
 
-class MySQLMutex extends LockMutex
+class MySQLMutex extends AbstractLockMutex
 {
     /** @var \PDO */
     private $pdo;

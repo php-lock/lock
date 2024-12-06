@@ -10,7 +10,7 @@ use Malkusch\Lock\Exception\LockReleaseException;
 /**
  * System V IPC based mutex implementation.
  */
-class SemaphoreMutex extends LockMutex
+class SemaphoreMutex extends AbstractLockMutex
 {
     /** @var \SysvSemaphore|resource The semaphore id */
     private $semaphore;
