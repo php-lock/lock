@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\util\LockUtil;
+
 class PgAdvisoryLockMutex extends LockMutex
 {
     /** @var \PDO */
@@ -20,7 +22,7 @@ class PgAdvisoryLockMutex extends LockMutex
     {
         $this->pdo = $PDO;
 
-        [$keyBytes1, $keyBytes2] = str_split(md5($name, true), 4);
+        [$keyBytes1, $keyBytes2] = str_split(md5(LockUtil::getInstance()->getKeyPrefix() . ':' . $name, true), 4);
 
         $unpackToSignedIntFx = static function (string $v) {
             $unpacked = unpack('va/Cb/cc', $v);
