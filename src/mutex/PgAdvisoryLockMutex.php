@@ -9,11 +9,9 @@ class PgAdvisoryLockMutex extends LockMutex
     /** @var \PDO */
     private $pdo;
 
-    /** @var int */
-    private $key1;
+    private int $key1;
 
-    /** @var int */
-    private $key2;
+    private int $key2;
 
     /**
      * @throws \RuntimeException
@@ -22,12 +20,16 @@ class PgAdvisoryLockMutex extends LockMutex
     {
         $this->pdo = $PDO;
 
-        $hashed_name = hash('sha256', $name, true);
+        [$keyBytes1, $keyBytes2] = str_split(hash('sha256', $name, true), 4);
 
-        [$bytes1, $bytes2] = str_split($hashed_name, 4);
+        $unpackToSignedIntFx = static function (string $v) {
+            $unpacked = unpack('va/Cb/cc', $v);
 
-        $this->key1 = unpack('i', $bytes1)[1];
-        $this->key2 = unpack('i', $bytes2)[1];
+            return ($unpacked['c'] << 24) | ($unpacked['b'] << 16) | $unpacked['a'];
+        };
+
+        $this->key1 = $unpackToSignedIntFx($keyBytes1);
+        $this->key2 = $unpackToSignedIntFx($keyBytes2);
     }
 
     #[\Override]

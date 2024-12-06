@@ -52,11 +52,14 @@ class PgAdvisoryLockMutexTest extends TestCase
                     }
 
                     foreach ($arguments as $v) {
+                        self::assertLessThan(1 << 32, $v);
+                        self::assertGreaterThanOrEqual(-(1 << 32), $v);
                         self::assertIsInt($v);
                     }
 
                     return true;
-                })
+                }),
+                [-2117040481, 1702710408]
             ));
 
         \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PgAdvisoryLockMutex::class)($this->mutex);
@@ -83,12 +86,13 @@ class PgAdvisoryLockMutexTest extends TestCase
 
                     foreach ($arguments as $v) {
                         self::assertLessThan(1 << 32, $v);
-                        self::assertGreaterThan(-(1 << 32), $v);
+                        self::assertGreaterThanOrEqual(-(1 << 32), $v);
                         self::assertIsInt($v);
                     }
 
                     return true;
-                })
+                }),
+                [-2117040481, 1702710408]
             ));
 
         \Closure::bind(static fn ($mutex) => $mutex->unlock(), null, PgAdvisoryLockMutex::class)($this->mutex);
