@@ -61,7 +61,7 @@ class PgAdvisoryLockMutexTest extends TestCase
                 )
             );
 
-        $this->mutex->lock();
+        \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PgAdvisoryLockMutex::class)($this->mutex);
     }
 
     public function testReleaseLock(): void
@@ -95,6 +95,6 @@ class PgAdvisoryLockMutexTest extends TestCase
                 )
             );
 
-        $this->mutex->unlock();
+        \Closure::bind(static fn ($mutex) => $mutex->unlock(), null, PgAdvisoryLockMutex::class)($this->mutex);
     }
 }
