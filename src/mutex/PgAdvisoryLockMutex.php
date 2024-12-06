@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace malkusch\lock\mutex;
 
+use malkusch\lock\util\LockUtil;
+
 class PgAdvisoryLockMutex extends LockMutex
 {
     /** @var \PDO */
     private $pdo;
 
-    /** @var int */
-    private $key1;
-
-    /** @var int */
-    private $key2;
+    /** @var array{int, int} */
+    private array $key;
 
     /**
      * @throws \RuntimeException
@@ -22,12 +21,19 @@ class PgAdvisoryLockMutex extends LockMutex
     {
         $this->pdo = $PDO;
 
-        $hashed_name = hash('sha256', $name, true);
+        [$keyBytes1, $keyBytes2] = str_split(md5(LockUtil::getInstance()->getKeyPrefix() . ':' . $name, true), 4);
 
-        [$bytes1, $bytes2] = str_split($hashed_name, 4);
+        // https://github.com/php/php-src/issues/17068
+        $unpackToSignedIntLeFx = static function (string $v) {
+            $unpacked = unpack('va/Cb/cc', $v);
 
-        $this->key1 = unpack('i', $bytes1)[1];
-        $this->key2 = unpack('i', $bytes2)[1];
+            return $unpacked['a'] | ($unpacked['b'] << 16) | ($unpacked['c'] << 24);
+        };
+
+        $this->key = [
+            $unpackToSignedIntLeFx($keyBytes1),
+            $unpackToSignedIntLeFx($keyBytes2),
+        ];
     }
 
     #[\Override]
@@ -35,19 +41,13 @@ class PgAdvisoryLockMutex extends LockMutex
     {
         $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?, ?)');
 
-        $statement->execute([
-            $this->key1,
-            $this->key2,
-        ]);
+        $statement->execute($this->key);
     }
 
     #[\Override]
     protected function unlock(): void
     {
         $statement = $this->pdo->prepare('SELECT pg_advisory_unlock(?, ?)');
-        $statement->execute([
-            $this->key1,
-            $this->key2,
-        ]);
+        $statement->execute($this->key);
     }
 }
