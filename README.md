@@ -48,8 +48,7 @@ This library uses the namespace `Malkusch\Lock`.
 
 ### Mutex
 
-The [`Malkusch\Lock\Mutex\Mutex`][5] class is an abstract class and provides the
-base API for this library.
+The [`Malkusch\Lock\Mutex\Mutex`][5] interface provides the base API for this library.
 
 #### Mutex::synchronized()
 
@@ -160,9 +159,8 @@ try {
 
 ### Implementations
 
-Because the [`Malkusch\Lock\Mutex\Mutex`](#mutex) class is an abstract class,
-you can choose from one of the provided implementations or create/extend your
-own implementation.
+You can choose from one of the provided [`Malkusch\Lock\Mutex\Mutex`](#mutex) interface
+implementations or create/extend your own implementation.
 
 - [`FlockMutex`](#flockmutex)
 - [`MemcachedMutex`](#memcachedmutex)

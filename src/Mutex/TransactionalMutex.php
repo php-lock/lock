@@ -15,7 +15,7 @@ use Malkusch\Lock\Util\Loop;
  *
  * A failing transaction will be replayed.
  */
-class TransactionalMutex extends Mutex
+class TransactionalMutex extends AbstractMutex
 {
     /** @var \PDO */
     private $pdo;

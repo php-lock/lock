@@ -10,7 +10,7 @@ namespace Malkusch\Lock\Mutex;
  * Synchronization is not provided! This mutex is just implementing the
  * interface without locking.
  */
-class NoMutex extends Mutex
+class NoMutex extends AbstractMutex
 {
     #[\Override]
     public function synchronized(callable $code)
