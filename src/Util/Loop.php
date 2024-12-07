@@ -13,11 +13,11 @@ use Malkusch\Lock\Exception\LockAcquireTimeoutException;
  */
 class Loop
 {
-    /** Minimum time that we want to wait, between lock checks. In micro seconds. */
-    private const MINIMUM_WAIT_US = 1e4; // 0.01 seconds
+    /** Minimum time to wait between lock checks. In micro seconds. */
+    private const MINIMUM_WAIT_US = 10_000;
 
-    /** Maximum time that we want to wait, between lock checks. In micro seconds. */
-    private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
+    /** Maximum time to wait between lock checks. In micro seconds. */
+    private const MAXIMUM_WAIT_US = 500_000;
 
     /** True while code execution is repeating */
     private bool $looping = false;
@@ -63,10 +63,10 @@ class Loop
         $this->looping = true;
 
         // At this time, the lock will timeout.
-        $deadline = microtime(true) + $timeout;
+        $deadlineTs = microtime(true) + $timeout;
 
         $result = null;
-        for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) { // @phpstan-ignore booleanAnd.leftAlwaysTrue
+        for ($i = 0; $this->looping && microtime(true) < $deadlineTs; ++$i) { // @phpstan-ignore booleanAnd.leftAlwaysTrue
             $result = $code();
             if (!$this->looping) { // @phpstan-ignore booleanNot.alwaysFalse
                 // The $code callback has called $this->end() and the lock has been acquired.
@@ -75,7 +75,7 @@ class Loop
             }
 
             // Calculate max time remaining, don't sleep any longer than that.
-            $usecRemaining = (int) (($deadline - microtime(true)) * 1e6);
+            $usecRemaining = (int) (($deadlineTs - microtime(true)) * 1e6);
 
             // We've ran out of time.
             if ($usecRemaining <= 0) {
@@ -83,7 +83,7 @@ class Loop
             }
 
             $min = min(
-                (int) self::MINIMUM_WAIT_US * 1.25 ** $i,
+                self::MINIMUM_WAIT_US * 1.25 ** $i,
                 self::MAXIMUM_WAIT_US
             );
             $max = min($min * 2, self::MAXIMUM_WAIT_US);

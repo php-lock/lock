@@ -15,7 +15,7 @@ use Malkusch\Lock\Exception\LockReleaseException;
 abstract class AbstractLockMutex extends AbstractMutex
 {
     /**
-     * Acquires the lock.
+     * Acquire a lock.
      *
      * This method blocks until the lock was acquired.
      *
@@ -24,39 +24,39 @@ abstract class AbstractLockMutex extends AbstractMutex
     abstract protected function lock(): void;
 
     /**
-     * Releases the lock.
+     * Release the lock.
      *
      * @throws LockReleaseException The lock could not be released
      */
     abstract protected function unlock(): void;
 
     #[\Override]
-    public function synchronized(callable $code)
+    public function synchronized(callable $fx)
     {
         $this->lock();
 
-        $codeResult = null;
-        $codeException = null;
+        $fxResult = null;
+        $fxException = null;
         try {
-            $codeResult = $code();
+            $fxResult = $fx();
         } catch (\Throwable $exception) {
-            $codeException = $exception;
+            $fxException = $exception;
 
             throw $exception;
         } finally {
             try {
                 $this->unlock();
             } catch (LockReleaseException $lockReleaseException) {
-                $lockReleaseException->setCodeResult($codeResult);
+                $lockReleaseException->setCodeResult($fxResult);
 
-                if ($codeException !== null) {
-                    $lockReleaseException->setCodeException($codeException);
+                if ($fxException !== null) {
+                    $lockReleaseException->setCodeException($fxException);
                 }
 
                 throw $lockReleaseException;
             }
         }
 
-        return $codeResult;
+        return $fxResult;
     }
 }
