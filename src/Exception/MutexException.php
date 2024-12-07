@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Exception;
 
 /**
- * Mutex exception.
- *
- * Generic exception for any other not covered reason. Usually extended by
- * child classes.
+ * Usually extended by more meaningful classes.
  */
 class MutexException extends \RuntimeException
 {

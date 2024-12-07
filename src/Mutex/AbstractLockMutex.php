@@ -48,6 +48,7 @@ abstract class AbstractLockMutex extends AbstractMutex
                 $this->unlock();
             } catch (LockReleaseException $lockReleaseException) {
                 $lockReleaseException->setCodeResult($codeResult);
+
                 if ($codeException !== null) {
                     $lockReleaseException->setCodeException($codeException);
                 }
