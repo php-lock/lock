@@ -51,13 +51,13 @@ class AbstractRedlockMutexTest extends TestCase
      */
     private function createAbstractRedlockMutexMock(int $count, float $timeout = 1): AbstractRedlockMutex
     {
-        $redisAPIs = array_map(
+        $clients = array_map(
             static fn ($id) => ['id' => $id],
             range(1, $count)
         );
 
         return $this->getMockBuilder(AbstractRedlockMutex::class)
-            ->setConstructorArgs([$redisAPIs, 'test', $timeout])
+            ->setConstructorArgs([$clients, 'test', $timeout])
             ->onlyMethods(['add', 'evalScript'])
             ->getMock();
     }

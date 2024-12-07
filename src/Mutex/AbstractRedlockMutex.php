@@ -24,21 +24,21 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
     private $token;
 
     /** @var array<int, mixed> */
-    private $redisAPIs;
+    private $clients;
 
     /**
      * Sets the Redis APIs.
      *
-     * @param array<int, mixed> $redisAPIs
-     * @param float             $timeout   The timeout in seconds a lock expires
+     * @param array<int, mixed> $clients
+     * @param float             $timeout The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */
-    public function __construct(array $redisAPIs, string $name, float $timeout = 3)
+    public function __construct(array $clients, string $name, float $timeout = 3)
     {
         parent::__construct($name, $timeout);
 
-        $this->redisAPIs = $redisAPIs;
+        $this->clients = $clients;
         $this->logger = new NullLogger();
     }
 
@@ -53,9 +53,9 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
         $errored = 0;
         $this->token = LockUtil::getInstance()->makeRandomToken();
         $exception = null;
-        foreach ($this->redisAPIs as $index => $redisAPI) {
+        foreach ($this->clients as $index => $client) {
             try {
-                if ($this->add($redisAPI, $key, $this->token, $expire)) {
+                if ($this->add($client, $key, $this->token, $expire)) {
                     ++$acquired;
                 }
             } catch (LockAcquireException $exception) {
@@ -85,7 +85,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
         $this->release($key);
 
         // In addition to RedLock it's an exception if too many servers fail.
-        if (!$this->isMajority(count($this->redisAPIs) - $errored)) {
+        if (!$this->isMajority(count($this->clients) - $errored)) {
             assert($exception !== null); // The last exception for some context.
 
             throw new LockAcquireException(
@@ -114,9 +114,9 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
             end
         ';
         $released = 0;
-        foreach ($this->redisAPIs as $index => $redisAPI) {
+        foreach ($this->clients as $index => $client) {
             try {
-                if ($this->evalScript($redisAPI, $script, 1, [$key, $this->token])) {
+                if ($this->evalScript($client, $script, 1, [$key, $this->token])) {
                     ++$released;
                 }
             } catch (LockReleaseException $e) {
@@ -141,21 +141,21 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
      */
     private function isMajority(int $count): bool
     {
-        return $count > count($this->redisAPIs) / 2;
+        return $count > count($this->clients) / 2;
     }
 
     /**
      * Sets the key only if such key doesn't exist at the server yet.
      *
-     * @param mixed $redisAPI
-     * @param float $expire   The TTL seconds
+     * @param mixed $client
+     * @param float $expire The TTL seconds
      *
      * @return bool True if the key was set
      */
-    abstract protected function add($redisAPI, string $key, string $value, float $expire): bool;
+    abstract protected function add($client, string $key, string $value, float $expire): bool;
 
     /**
-     * @param mixed       $redisAPI
+     * @param mixed       $client
      * @param string      $script    The Lua script
      * @param int         $numkeys   The number of values in $arguments that represent Redis key names
      * @param list<mixed> $arguments Keys and values
@@ -164,5 +164,5 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
      *
      * @throws LockReleaseException An unexpected error happened
      */
-    abstract protected function evalScript($redisAPI, string $script, int $numkeys, array $arguments);
+    abstract protected function evalScript($client, string $script, int $numkeys, array $arguments);
 }

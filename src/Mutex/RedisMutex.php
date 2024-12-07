@@ -8,7 +8,7 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 
 /**
- * Mutex based on the Redlock algorithm using the phpredis extension.
+ * Mutex based on the Redlock algorithm supporting the phpredis extension and Predis API.
  *
  * @see http://redis.io/topics/distlock
  */
@@ -20,29 +20,29 @@ class RedisMutex extends AbstractRedlockMutex
      * The Redis APIs needs to be connected. I.e. Redis::connect() was
      * called already.
      *
-     * @param array<\Redis|\RedisCluster> $redisAPIs
-     * @param float                       $timeout   The timeout in seconds a lock expires
+     * @param array<\Redis|\RedisCluster> $clients
+     * @param float                       $timeout The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */
-    public function __construct(array $redisAPIs, string $name, float $timeout = 3)
+    public function __construct(array $clients, string $name, float $timeout = 3)
     {
-        parent::__construct($redisAPIs, $name, $timeout);
+        parent::__construct($clients, $name, $timeout);
     }
 
     /**
-     * @param \Redis|\RedisCluster $redisAPI
+     * @param \Redis|\RedisCluster $client
      *
      * @throws LockAcquireException
      */
     #[\Override]
-    protected function add($redisAPI, string $key, string $value, float $expire): bool
+    protected function add($client, string $key, string $value, float $expire): bool
     {
         $expireMillis = (int) ceil($expire * 1000);
 
         try {
             //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-            return $redisAPI->set($key, $value, ['nx', 'px' => $expireMillis]);
+            return $client->set($key, $value, ['nx', 'px' => $expireMillis]);
         } catch (\RedisException $e) {
             $message = sprintf(
                 'Failed to acquire lock for key \'%s\'',

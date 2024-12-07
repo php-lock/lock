@@ -30,17 +30,17 @@ class PredisMutex extends AbstractRedlockMutex
     }
 
     /**
-     * @param ClientInterface $redisAPI
+     * @param ClientInterface $client
      *
      * @throws LockAcquireException
      */
     #[\Override]
-    protected function add($redisAPI, string $key, string $value, float $expire): bool
+    protected function add($client, string $key, string $value, float $expire): bool
     {
         $expireMillis = (int) ceil($expire * 1000);
 
         try {
-            return $redisAPI->set($key, $value, 'PX', $expireMillis, 'NX') !== null;
+            return $client->set($key, $value, 'PX', $expireMillis, 'NX') !== null;
         } catch (PredisException $e) {
             $message = sprintf(
                 'Failed to acquire lock for key \'%s\'',

@@ -22,7 +22,7 @@ parameters:
             message: '~^Only booleans are allowed in an if condition, mixed given\.$~'
             count: 1
         -
-            message: '~^Parameter #1 \$(redisAPI|redis) \(Redis\|RedisCluster\) of method Malkusch\\Lock\\Mutex\\RedisMutex::(add|evalScript)\(\) should be contravariant with parameter \$redisAPI \(mixed\) of method Malkusch\\Lock\\Mutex\\AbstractRedlockMutex::(add|evalScript)\(\)$~'
+            message: '~^Parameter #1 \$client \(Redis\|RedisCluster\) of method Malkusch\\Lock\\Mutex\\RedisMutex::(add|evalScript)\(\) should be contravariant with parameter \$client \(mixed\) of method Malkusch\\Lock\\Mutex\\AbstractRedlockMutex::(add|evalScript)\(\)$~'
             identifier: method.childParameterType
             path: 'src/Mutex/RedisMutex.php'
             count: 2
