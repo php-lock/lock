@@ -219,8 +219,6 @@ The **RedisMutex** is the distributed lock implementation of
 [`phpredis` extension](https://github.com/phpredis/phpredis)
 or [`Predis` API](https://github.com/nrk/predis).
 
-This implementation requires at least `phpredis-2.2.4`.
-
 If used with a cluster of Redis servers, acquiring and releasing locks will
 continue to function as long as a majority of the servers still works.
 
