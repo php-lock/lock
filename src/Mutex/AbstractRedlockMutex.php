@@ -31,6 +31,9 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
     /**
      * Sets the Redis APIs.
      *
+     * The Redis APIs needs to be connected. I.e. Redis::connect() was
+     * called already.
+     *
      * @param array<int, TClient> $clients
      * @param float               $timeout The timeout in seconds a lock expires
      *

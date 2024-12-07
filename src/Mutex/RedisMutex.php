@@ -7,6 +7,7 @@ namespace Malkusch\Lock\Mutex;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Predis\ClientInterface as PredisClientInterface;
+use Predis\PredisException;
 
 /**
  * Mutex based on the Redlock algorithm supporting the phpredis extension and Predis API.
@@ -20,19 +21,15 @@ use Predis\ClientInterface as PredisClientInterface;
 class RedisMutex extends AbstractRedlockMutex
 {
     /**
-     * Sets the connected Redis APIs.
-     *
-     * The Redis APIs needs to be connected. I.e. Redis::connect() was
-     * called already.
-     *
-     * @param array<TClient> $clients
-     * @param float          $timeout The timeout in seconds a lock expires
-     *
-     * @throws \LengthException The timeout must be greater than 0
+     * @param TClient $client
      */
-    public function __construct(array $clients, string $name, float $timeout = 3)
+    private function isClientPHPRedis($client): bool
     {
-        parent::__construct($clients, $name, $timeout);
+        $res = $client instanceof \Redis || $client instanceof \RedisCluster;
+
+        \assert($res === !$client instanceof PredisClientInterface);
+
+        return $res;
     }
 
     /**
@@ -43,60 +40,77 @@ class RedisMutex extends AbstractRedlockMutex
     {
         $expireMillis = (int) ceil($expire * 1000);
 
-        try {
-            //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-            return $client->set($key, $value, ['nx', 'px' => $expireMillis]);
-        } catch (\RedisException $e) {
-            $message = sprintf(
-                'Failed to acquire lock for key \'%s\'',
-                $key
-            );
+        if ($this->isClientPHPRedis($client)) {
+            try {
+                //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
+                return $client->set($key, $value, ['nx', 'px' => $expireMillis]);
+            } catch (\RedisException $e) {
+                $message = sprintf(
+                    'Failed to acquire lock for key \'%s\'',
+                    $key
+                );
 
-            throw new LockAcquireException($message, 0, $e);
+                throw new LockAcquireException($message, 0, $e);
+            }
+        } else {
+            try {
+                return $client->set($key, $value, 'PX', $expireMillis, 'NX') !== null;
+            } catch (PredisException $e) {
+                $message = sprintf(
+                    'Failed to acquire lock for key \'%s\'',
+                    $key
+                );
+
+                throw new LockAcquireException($message, 0, $e);
+            }
         }
     }
 
     #[\Override]
-    protected function evalScript($redis, string $script, int $numkeys, array $arguments)
+    protected function evalScript($client, string $script, int $numkeys, array $arguments)
     {
-        for ($i = $numkeys; $i < count($arguments); ++$i) {
-            /*
-             * If a serialization mode such as "php" or "igbinary" is enabled, the arguments must be
-             * serialized by us, because phpredis does not do this for the eval command.
-             *
-             * The keys must not be serialized.
-             */
-            $arguments[$i] = $redis->_serialize($arguments[$i]);
+        if ($this->isClientPHPRedis($client)) {
+            for ($i = $numkeys; $i < count($arguments); ++$i) {
+                /*
+                 * If a serialization mode such as "php" or "igbinary" is enabled, the arguments must be
+                 * serialized by us, because phpredis does not do this for the eval command.
+                 *
+                 * The keys must not be serialized.
+                 */
+                $arguments[$i] = $client->_serialize($arguments[$i]);
 
-            /*
-             * If LZF compression is enabled for the redis connection and the runtime has the LZF
-             * extension installed, compress the arguments as the final step.
-             */
-            if ($this->hasLzfCompression($redis)) {
-                $arguments[$i] = lzf_compress($arguments[$i]);
+                /*
+                 * If LZF compression is enabled for the redis connection and the runtime has the LZF
+                 * extension installed, compress the arguments as the final step.
+                 */
+                if ($this->isLzfCompressionEnabled($client)) {
+                    $arguments[$i] = lzf_compress($arguments[$i]);
+                }
             }
-        }
 
-        try {
-            return $redis->eval($script, $arguments, $numkeys);
-        } catch (\RedisException $e) {
-            throw new LockReleaseException('Failed to release lock', 0, $e);
+            try {
+                return $client->eval($script, $arguments, $numkeys);
+            } catch (\RedisException $e) {
+                throw new LockReleaseException('Failed to release lock', 0, $e);
+            }
+        } else {
+            try {
+                return $client->eval($script, $numkeys, ...$arguments);
+            } catch (PredisException $e) {
+                throw new LockReleaseException('Failed to release lock', 0, $e);
+            }
         }
     }
 
     /**
-     * Determines if lzf compression is enabled for the given connection.
-     *
-     * @param \Redis|\RedisCluster $redis
-     *
-     * @return bool True if lzf compression is enabled, false otherwise
+     * @param \Redis|\RedisCluster $client
      */
-    private function hasLzfCompression($redis): bool
+    private function isLzfCompressionEnabled($client): bool
     {
         if (!\defined('Redis::COMPRESSION_LZF')) {
             return false;
         }
 
-        return $redis->getOption(\Redis::OPT_COMPRESSION) === \Redis::COMPRESSION_LZF;
+        return $client->getOption(\Redis::OPT_COMPRESSION) === \Redis::COMPRESSION_LZF;
     }
 }
