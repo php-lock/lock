@@ -95,7 +95,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
 
             throw new LockAcquireException(
                 'It\'s not possible to acquire a lock because at least half of the Redis server are not available',
-                LockAcquireException::REDIS_NOT_ENOUGH_SERVERS,
+                LockAcquireException::CODE_REDLOCK_NOT_ENOUGH_SERVERS,
                 $exception
             );
         }

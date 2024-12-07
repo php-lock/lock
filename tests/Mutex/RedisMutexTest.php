@@ -190,7 +190,7 @@ class RedisMutexTest extends TestCase
     public function testAddFails(): void
     {
         $this->expectException(LockAcquireException::class);
-        $this->expectExceptionCode(MutexException::REDIS_NOT_ENOUGH_SERVERS);
+        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
 
         $this->closeMajorityConnections();
 

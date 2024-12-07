@@ -13,5 +13,5 @@ namespace Malkusch\Lock\Exception;
 class MutexException extends \RuntimeException implements PhpLockException
 {
     /** Not enough redis servers */
-    public const REDIS_NOT_ENOUGH_SERVERS = 1;
+    public const CODE_REDLOCK_NOT_ENOUGH_SERVERS = 23786;
 }
