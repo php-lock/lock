@@ -6,11 +6,15 @@ namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Predis\ClientInterface;
+use Predis\ClientInterface as PredisClientInterface;
 use Predis\PredisException;
 
 /**
  * Mutex based on the Redlock algorithm using the Predis API.
+ *
+ * @phpstan-type TClient PredisClientInterface
+ *
+ * @extends AbstractRedlockMutex<TClient>
  *
  * @see http://redis.io/topics/distlock
  */
@@ -19,8 +23,8 @@ class PredisMutex extends AbstractRedlockMutex
     /**
      * Sets the Redis connections.
      *
-     * @param ClientInterface[] $clients The Redis clients
-     * @param float             $timeout The timeout in seconds a lock expires
+     * @param array<TClient> $clients The Redis clients
+     * @param float          $timeout The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */
@@ -30,8 +34,6 @@ class PredisMutex extends AbstractRedlockMutex
     }
 
     /**
-     * @param ClientInterface $client
-     *
      * @throws LockAcquireException
      */
     #[\Override]
@@ -51,9 +53,6 @@ class PredisMutex extends AbstractRedlockMutex
         }
     }
 
-    /**
-     * @param ClientInterface $client
-     */
     #[\Override]
     protected function evalScript($client, string $script, int $numkeys, array $arguments)
     {

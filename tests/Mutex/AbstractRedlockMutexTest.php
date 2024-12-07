@@ -47,7 +47,7 @@ class AbstractRedlockMutexTest extends TestCase
     /**
      * @param int $count The amount of redis apis
      *
-     * @return AbstractRedlockMutex&MockObject
+     * @return AbstractRedlockMutex<object>&MockObject
      */
     private function createAbstractRedlockMutexMock(int $count, float $timeout = 1): AbstractRedlockMutex
     {
