@@ -19,8 +19,7 @@ use Malkusch\Lock\Mutex\Mutex;
  */
 class DoubleCheckedLocking
 {
-    /** @var Mutex */
-    private $mutex;
+    private Mutex $mutex;
 
     /** @var callable(): bool */
     private $check;

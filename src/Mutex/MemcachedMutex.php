@@ -9,8 +9,7 @@ namespace Malkusch\Lock\Mutex;
  */
 class MemcachedMutex extends AbstractSpinlockMutex
 {
-    /** @var \Memcached */
-    private $memcached;
+    private \Memcached $memcached;
 
     /**
      * The Memcached API needs to have at least one server in its pool. I.e.

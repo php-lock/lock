@@ -22,11 +22,10 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
 {
     use LoggerAwareTrait;
 
-    /** @var string The random value token for key identification */
-    private $token;
-
     /** @var array<int, TClient> */
-    private $clients;
+    private array $clients;
+
+    private string $token;
 
     /**
      * The Redis APIs needs to be connected. I.e. Redis::connect() was

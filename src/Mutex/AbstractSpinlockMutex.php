@@ -17,22 +17,21 @@ use Malkusch\Lock\Util\Loop;
  */
 abstract class AbstractSpinlockMutex extends AbstractLockMutex
 {
-    /** @var float The timeout in seconds a lock may live */
-    private $timeout;
+    private string $key;
 
-    /** @var string */
-    private $key;
+    /** In seconds */
+    private float $timeout;
 
-    /** @var float The timestamp when the lock was acquired */
-    private $acquiredTs;
+    /** The timestamp when the lock was acquired */
+    private ?float $acquiredTs = null;
 
     /**
      * @param float $timeout The timeout in seconds a lock expires
      */
     public function __construct(string $name, float $timeout = 3)
     {
-        $this->timeout = $timeout;
         $this->key = LockUtil::getInstance()->getKeyPrefix() . ':' . $name;
+        $this->timeout = $timeout;
     }
 
     #[\Override]

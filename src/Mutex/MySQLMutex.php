@@ -10,13 +10,11 @@ use Malkusch\Lock\Util\LockUtil;
 
 class MySQLMutex extends AbstractLockMutex
 {
-    /** @var \PDO */
-    private $pdo;
+    private \PDO $pdo;
 
-    /** @var string */
-    private $name;
-    /** @var float */
-    private $timeout;
+    private string $name;
+
+    private float $timeout;
 
     /**
      * @param float $timeout In seconds

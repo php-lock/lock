@@ -17,8 +17,7 @@ use Malkusch\Lock\Util\Loop;
  */
 class TransactionalMutex extends AbstractMutex
 {
-    /** @var \PDO */
-    private $pdo;
+    private \PDO $pdo;
 
     /** In seconds */
     private float $acquireTimeout;

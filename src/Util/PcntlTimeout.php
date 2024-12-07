@@ -18,8 +18,8 @@ use Malkusch\Lock\Exception\LockAcquireException;
  */
 final class PcntlTimeout
 {
-    /** @var int In seconds */
-    private $timeout;
+    /** In seconds */
+    private int $timeout;
 
     /**
      * @param int $timeout In seconds

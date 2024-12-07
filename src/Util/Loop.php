@@ -19,8 +19,8 @@ class Loop
     /** Maximum time that we want to wait, between lock checks. In micro seconds. */
     private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
-    /** @var bool true While code execution is repeating */
-    private $looping = false;
+    /** True while code execution is repeating */
+    private bool $looping = false;
 
     /**
      * Notifies that this was the last iteration.

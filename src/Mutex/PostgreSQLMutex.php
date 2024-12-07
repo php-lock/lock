@@ -8,8 +8,7 @@ use Malkusch\Lock\Util\LockUtil;
 
 class PostgreSQLMutex extends AbstractLockMutex
 {
-    /** @var \PDO */
-    private $pdo;
+    private \PDO $pdo;
 
     /** @var array{int, int} */
     private array $key;
