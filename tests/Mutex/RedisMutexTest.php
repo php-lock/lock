@@ -146,7 +146,7 @@ class RedisMutexTest extends TestCase
             $this->connections[] = $connection;
         }
 
-        $this->mutex = new RedisMutex($this->connections, 'test');
+        $this->mutex = new RedisMutex($this->connections, 'test', 10, 10); // TODO both timeouts should not be needed
     }
 
     #[\Override]
