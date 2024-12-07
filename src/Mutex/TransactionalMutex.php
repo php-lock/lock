@@ -8,9 +8,9 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Util\Loop;
 
 /**
- * Serialization is delegated to the DBS.
+ * Serialization is delegated to the database.
  *
- * The critical code is executed within a transaction. The DBS will decide
+ * The critical code is executed within a transaction. The database will decide
  * which parts of that code need to be locked (if at all).
  *
  * A failing transaction will be replayed.

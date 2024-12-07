@@ -264,7 +264,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 #### TransactionalMutex
 
 The **TransactionalMutex**
-delegates the serialization to the DBS. The exclusive code is executed within
+delegates the serialization to the database. The exclusive code is executed within
 a transaction. It's up to you to set the correct transaction isolation level.
 However if the transaction fails (i.e. a `PDOException` was thrown), the code
 will be executed again in a new transaction. Therefore the code must not have
