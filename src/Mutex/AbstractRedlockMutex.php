@@ -14,6 +14,8 @@ use Psr\Log\NullLogger;
 /**
  * Distributed mutex based on the Redlock algorithm.
  *
+ * @template TClient of object
+ *
  * @see http://redis.io/topics/distlock
  */
 abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements LoggerAwareInterface
@@ -23,14 +25,14 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
     /** @var string The random value token for key identification */
     private $token;
 
-    /** @var array<int, mixed> */
+    /** @var array<int, TClient> */
     private $clients;
 
     /**
      * Sets the Redis APIs.
      *
-     * @param array<int, mixed> $clients
-     * @param float             $timeout The timeout in seconds a lock expires
+     * @param array<int, TClient> $clients
+     * @param float               $timeout The timeout in seconds a lock expires
      *
      * @throws \LengthException The timeout must be greater than 0
      */
@@ -147,15 +149,15 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
     /**
      * Sets the key only if such key doesn't exist at the server yet.
      *
-     * @param mixed $client
-     * @param float $expire The TTL seconds
+     * @param TClient $client
+     * @param float   $expire The TTL seconds
      *
      * @return bool True if the key was set
      */
     abstract protected function add($client, string $key, string $value, float $expire): bool;
 
     /**
-     * @param mixed       $client
+     * @param TClient     $client
      * @param string      $script    The Lua script
      * @param int         $numkeys   The number of values in $arguments that represent Redis key names
      * @param list<mixed> $arguments Keys and values
