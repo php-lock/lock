@@ -9,36 +9,43 @@ use Malkusch\Lock\Util\LockUtil;
 /**
  * Memcached based spinlock implementation.
  */
-class MemcachedMutex extends AbstractSpinlockMutex
+class MemcachedMutex extends AbstractSpinlockExpireMutex
 {
     private \Memcached $memcached;
 
     /**
-     * The Memcached API needs to have at least one server in its pool. I.e.
+     * The Memcached instance needs to have at least one server in its pool. I.e.
      * it has to be added with Memcached::addServer().
      *
      * @param float $acquireTimeout In seconds
+     * @param float $expireTimeout  In seconds
      */
-    public function __construct(string $name, \Memcached $memcached, float $acquireTimeout = 3)
+    public function __construct(string $name, \Memcached $memcached, float $acquireTimeout = 3, float $expireTimeout = \PHP_INT_MAX)
     {
-        parent::__construct($name, $acquireTimeout);
+        parent::__construct($name, $acquireTimeout, $expireTimeout);
 
         $this->memcached = $memcached;
     }
 
     #[\Override]
-    protected function acquire(string $key, float $expire): bool
+    protected function acquireWithToken(string $key, float $expireTimeout)
     {
         // memcached supports only integer expire
         // https://github.com/memcached/memcached/wiki/Commands#standard-protocol
-        $expireInt = LockUtil::getInstance()->castFloatToInt(ceil($expire));
+        $expireTimeoutInt = LockUtil::getInstance()->castFloatToInt(ceil($expireTimeout));
 
-        return $this->memcached->add($key, true, $expireInt);
+        $token = LockUtil::getInstance()->makeRandomToken();
+
+        return $this->memcached->add($key, $token, $expireTimeoutInt)
+            ? $token
+            : false;
     }
 
     #[\Override]
-    protected function release(string $key): bool
+    protected function releaseWithToken(string $key, string $token): bool
     {
+        // TODO atomic delete only when the remove value matches token
+
         return $this->memcached->delete($key);
     }
 }

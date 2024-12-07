@@ -86,10 +86,22 @@ class MutexTest extends TestCase
             }];
         }
 
+        yield 'AbstractLockMutex' => [static function (): Mutex {
+            $lock = new class extends AbstractLockMutex {
+                #[\Override]
+                protected function lock(): void {}
+
+                #[\Override]
+                protected function unlock(): void {}
+            };
+
+            return $lock;
+        }];
+
         yield 'AbstractSpinlockMutex' => [static function (): Mutex {
             $lock = new class('test') extends AbstractSpinlockMutex {
                 #[\Override]
-                protected function acquire(string $key, float $expire): bool
+                protected function acquire(string $key): bool
                 {
                     return true;
                 }
@@ -99,18 +111,6 @@ class MutexTest extends TestCase
                 {
                     return true;
                 }
-            };
-
-            return $lock;
-        }];
-
-        yield 'AbstractLockMutex' => [static function (): Mutex {
-            $lock = new class extends AbstractLockMutex {
-                #[\Override]
-                protected function lock(): void {}
-
-                #[\Override]
-                protected function unlock(): void {}
             };
 
             return $lock;

@@ -8,8 +8,6 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 
 /**
- * Locking mutex.
- *
  * @internal
  */
 abstract class AbstractLockMutex extends AbstractMutex
