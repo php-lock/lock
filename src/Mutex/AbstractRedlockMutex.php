@@ -18,44 +18,43 @@ use Psr\Log\NullLogger;
  *
  * @see http://redis.io/topics/distlock
  */
-abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements LoggerAwareInterface
+abstract class AbstractRedlockMutex extends AbstractSpinlockExpireMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     /** @var array<int, TClient> */
     private array $clients;
 
-    private string $token;
-
     /**
-     * The Redis APIs needs to be connected. I.e. Redis::connect() was
+     * The Redis instance needs to be connected. I.e. Redis::connect() was
      * called already.
      *
      * @param array<int, TClient> $clients
      * @param float               $acquireTimeout In seconds
+     * @param float               $expireTimeout  In seconds
      */
-    public function __construct(array $clients, string $name, float $acquireTimeout = 3)
+    public function __construct(array $clients, string $name, float $acquireTimeout = 3, float $expireTimeout = \PHP_INT_MAX)
     {
-        parent::__construct($name, $acquireTimeout);
+        parent::__construct($name, $acquireTimeout, $expireTimeout);
 
         $this->clients = $clients;
         $this->logger = new NullLogger();
     }
 
     #[\Override]
-    protected function acquire(string $key, float $expire): bool
+    protected function acquireWithToken(string $key, float $expireTimeout)
     {
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
-        $time = microtime(true);
+        $startTs = microtime(true);
 
         // 2.
         $acquired = 0;
         $errored = 0;
-        $this->token = LockUtil::getInstance()->makeRandomToken();
+        $token = LockUtil::getInstance()->makeRandomToken();
         $exception = null;
         foreach ($this->clients as $index => $client) {
             try {
-                if ($this->add($client, $key, $this->token, $expire)) {
+                if ($this->add($client, $key, $token, $expireTimeout)) {
                     ++$acquired;
                 }
             } catch (LockAcquireException $exception) {
@@ -63,7 +62,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
                 $context = [
                     'key' => $key,
                     'index' => $index,
-                    'token' => $this->token,
+                    'token' => $token,
                     'exception' => $exception,
                 ];
                 $this->logger->warning('Could not set {key} = {token} at server #{index}', $context);
@@ -73,16 +72,16 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
         }
 
         // 3.
-        $elapsedTime = microtime(true) - $time;
-        $isAcquired = $this->isMajority($acquired) && $elapsedTime <= $expire;
+        $elapsedTime = microtime(true) - $startTs;
+        $isAcquired = $this->isMajority($acquired) && $elapsedTime <= $expireTimeout;
 
         if ($isAcquired) {
             // 4.
-            return true;
+            return $token;
         }
 
         // 5.
-        $this->release($key);
+        $this->releaseWithToken($key, $token);
 
         // In addition to RedLock it's an exception if too many servers fail.
         if (!$this->isMajority(count($this->clients) - $errored)) {
@@ -99,7 +98,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
     }
 
     #[\Override]
-    protected function release(string $key): bool
+    protected function releaseWithToken(string $key, string $token): bool
     {
         /*
          * All Redis commands must be analyzed before execution to determine which keys the command will operate on. In
@@ -117,7 +116,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
         $released = 0;
         foreach ($this->clients as $index => $client) {
             try {
-                if ($this->evalScript($client, $script, [$key], [$this->token])) {
+                if ($this->evalScript($client, $script, [$key], [$token])) {
                     ++$released;
                 }
             } catch (LockReleaseException $e) {
@@ -125,7 +124,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
                 $context = [
                     'key' => $key,
                     'index' => $index,
-                    'token' => $this->token,
+                    'token' => $token,
                     'exception' => $e,
                 ];
                 $this->logger->warning('Could not unset {key} = {token} at server #{index}', $context);

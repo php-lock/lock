@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Exception;
 
+use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use Malkusch\Lock\Util\LockUtil;
 
 /**
@@ -14,7 +15,7 @@ use Malkusch\Lock\Util\LockUtil;
  *
  * Should only be used in contexts where the lock is being released.
  *
- * @see \Malkusch\Lock\Mutex\AbstractSpinlockMutex::unlock()
+ * @see AbstractSpinlockMutex::unlock()
  */
 class ExecutionOutsideLockException extends LockReleaseException
 {
