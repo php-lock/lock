@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Tests\Util;
 
 use Malkusch\Lock\Util\LockUtil;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class LockUtilTest extends TestCase
@@ -53,5 +54,31 @@ class LockUtilTest extends TestCase
         self::assertMatchesRegularExpression('~^' . $pathPrefixRegex . '-fo-o-\w{64}.txt$~', LockUtil::getInstance()->makeRandomTemporaryFilePath('fo/o'));
         self::assertMatchesRegularExpression('~^' . $pathPrefixRegex . '-fo-o-\w{64}.txt$~', LockUtil::getInstance()->makeRandomTemporaryFilePath('fo\o'));
         self::assertMatchesRegularExpression('~^' . $pathPrefixRegex . '-fo-o-\w{64}.txt$~', LockUtil::getInstance()->makeRandomTemporaryFilePath('fo:o'));
+    }
+
+    /**
+     * @dataProvider provideFormatTimeoutCases
+     */
+    #[DataProvider('provideFormatTimeoutCases')]
+    public function testFormatTimeout(string $expectedResult, float $value): void
+    {
+        self::assertSame($expectedResult, LockUtil::getInstance()->formatTimeout($value));
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideFormatTimeoutCases(): iterable
+    {
+        yield ['0.5', 0.5];
+        yield ['10.123456', 10.123_456_4];
+        yield ['10.123457', 10.123_456_5];
+        yield ['-10.123456', -10.123_456_4];
+        yield ['-10.123457', -10.123_456_5];
+        yield ['0.0', 0];
+        yield ['0.0', -0];
+        yield ['-123456789.5', -123_456_789.5];
+        yield ['INF', \INF];
+        yield ['NAN', \NAN];
     }
 }

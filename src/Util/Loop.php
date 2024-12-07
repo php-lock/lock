@@ -52,10 +52,11 @@ class Loop
      */
     public function execute(callable $code, float $timeout)
     {
-        if ($timeout <= 0) {
-            throw new \LengthException(\sprintf(
-                'The timeout must be greater than 0 (%d was given)',
-                $timeout
+        if ($timeout < 0 || is_nan($timeout)) {
+            throw new \InvalidArgumentException(\sprintf(
+                'The lock acquire timeout must be greater than or equal to %s (%s was given)',
+                LockUtil::getInstance()->formatTimeout(0),
+                LockUtil::getInstance()->formatTimeout($timeout)
             ));
         }
 

@@ -53,4 +53,17 @@ class LockUtil
             . ($name !== '' ? str_replace(['/', '\\', ':'], '-', $name) . '-' : '')
             . $this->makeRandomToken() . '.txt';
     }
+
+    /**
+     * @return non-empty-string
+     */
+    public function formatTimeout(float $value): string
+    {
+        $res = (string) round($value, 6);
+        if (\is_finite($value) && strpos($res, '.') === false) {
+            $res .= '.0';
+        }
+
+        return $res;
+    }
 }
