@@ -6,163 +6,113 @@ namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Malkusch\Lock\Util\LockUtil;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\NullLogger;
+use Predis\ClientInterface as PredisClientInterface;
+use Predis\PredisException;
 
 /**
- * Mutex based on the Redlock algorithm.
+ * Distributed mutex based on the Redlock algorithm supporting the phpredis extension and Predis API.
+ *
+ * @phpstan-type TClient \Redis|\RedisCluster|PredisClientInterface
+ *
+ * @extends AbstractRedlockMutex<TClient>
  *
  * @see http://redis.io/topics/distlock
  */
-abstract class RedisMutex extends AbstractSpinlockMutex implements LoggerAwareInterface
+class RedisMutex extends AbstractRedlockMutex
 {
-    use LoggerAwareTrait;
+    /**
+     * @param TClient $client
+     *
+     * @phpstan-assert-if-true \Redis|\RedisCluster $client
+     */
+    private function isClientPHPRedis($client): bool
+    {
+        $res = $client instanceof \Redis || $client instanceof \RedisCluster;
 
-    /** @var string The random value token for key identification */
-    private $token;
+        \assert($res === !$client instanceof PredisClientInterface);
 
-    /** @var array<int, mixed> */
-    private $redisAPIs;
+        return $res;
+    }
 
     /**
-     * Sets the Redis APIs.
-     *
-     * @param array<int, mixed> $redisAPIs
-     * @param float             $timeout   The timeout in seconds a lock expires
-     *
-     * @throws \LengthException The timeout must be greater than 0
+     * @throws LockAcquireException
      */
-    public function __construct(array $redisAPIs, string $name, float $timeout = 3)
+    #[\Override]
+    protected function add($client, string $key, string $value, float $expire): bool
     {
-        parent::__construct($name, $timeout);
+        $expireMillis = (int) ceil($expire * 1000);
 
-        $this->redisAPIs = $redisAPIs;
-        $this->logger = new NullLogger();
+        if ($this->isClientPHPRedis($client)) {
+            try {
+                //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
+                return $client->set($key, $value, ['nx', 'px' => $expireMillis]);
+            } catch (\RedisException $e) {
+                $message = sprintf(
+                    'Failed to acquire lock for key \'%s\'',
+                    $key
+                );
+
+                throw new LockAcquireException($message, 0, $e);
+            }
+        } else {
+            try {
+                return $client->set($key, $value, 'PX', $expireMillis, 'NX') !== null;
+            } catch (PredisException $e) {
+                $message = sprintf(
+                    'Failed to acquire lock for key \'%s\'',
+                    $key
+                );
+
+                throw new LockAcquireException($message, 0, $e);
+            }
+        }
     }
 
     #[\Override]
-    protected function acquire(string $key, float $expire): bool
+    protected function evalScript($client, string $script, int $numkeys, array $arguments)
     {
-        // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
-        $time = microtime(true);
+        if ($this->isClientPHPRedis($client)) {
+            for ($i = $numkeys; $i < count($arguments); ++$i) {
+                /*
+                 * If a serialization mode such as "php" or "igbinary" is enabled, the arguments must be
+                 * serialized by us, because phpredis does not do this for the eval command.
+                 *
+                 * The keys must not be serialized.
+                 */
+                $arguments[$i] = $client->_serialize($arguments[$i]);
 
-        // 2.
-        $acquired = 0;
-        $errored = 0;
-        $this->token = LockUtil::getInstance()->makeRandomToken();
-        $exception = null;
-        foreach ($this->redisAPIs as $index => $redisAPI) {
-            try {
-                if ($this->add($redisAPI, $key, $this->token, $expire)) {
-                    ++$acquired;
+                /*
+                 * If LZF compression is enabled for the redis connection and the runtime has the LZF
+                 * extension installed, compress the arguments as the final step.
+                 */
+                if ($this->isLzfCompressionEnabled($client)) {
+                    $arguments[$i] = lzf_compress($arguments[$i]);
                 }
-            } catch (LockAcquireException $exception) {
-                // todo if there is only one redis server, throw immediately.
-                $context = [
-                    'key' => $key,
-                    'index' => $index,
-                    'token' => $this->token,
-                    'exception' => $exception,
-                ];
-                $this->logger->warning('Could not set {key} = {token} at server #{index}', $context);
+            }
 
-                ++$errored;
+            try {
+                return $client->eval($script, $arguments, $numkeys);
+            } catch (\RedisException $e) {
+                throw new LockReleaseException('Failed to release lock', 0, $e);
+            }
+        } else {
+            try {
+                return $client->eval($script, $numkeys, ...$arguments);
+            } catch (PredisException $e) {
+                throw new LockReleaseException('Failed to release lock', 0, $e);
             }
         }
-
-        // 3.
-        $elapsedTime = microtime(true) - $time;
-        $isAcquired = $this->isMajority($acquired) && $elapsedTime <= $expire;
-
-        if ($isAcquired) {
-            // 4.
-            return true;
-        }
-
-        // 5.
-        $this->release($key);
-
-        // In addition to RedLock it's an exception if too many servers fail.
-        if (!$this->isMajority(count($this->redisAPIs) - $errored)) {
-            assert($exception !== null); // The last exception for some context.
-
-            throw new LockAcquireException(
-                'It\'s not possible to acquire a lock because at least half of the Redis server are not available',
-                LockAcquireException::REDIS_NOT_ENOUGH_SERVERS,
-                $exception
-            );
-        }
-
-        return false;
     }
 
-    #[\Override]
-    protected function release(string $key): bool
+    /**
+     * @param \Redis|\RedisCluster $client
+     */
+    private function isLzfCompressionEnabled($client): bool
     {
-        /*
-         * All Redis commands must be analyzed before execution to determine which keys the command will operate on. In
-         * order for this to be true for EVAL, keys must be passed explicitly.
-         *
-         * @link https://redis.io/commands/set
-         */
-        $script = 'if redis.call("get", KEYS[1]) == ARGV[1] then
-                return redis.call("del", KEYS[1])
-            else
-                return 0
-            end
-        ';
-        $released = 0;
-        foreach ($this->redisAPIs as $index => $redisAPI) {
-            try {
-                if ($this->evalScript($redisAPI, $script, 1, [$key, $this->token])) {
-                    ++$released;
-                }
-            } catch (LockReleaseException $e) {
-                // todo throw if there is only one redis server
-                $context = [
-                    'key' => $key,
-                    'index' => $index,
-                    'token' => $this->token,
-                    'exception' => $e,
-                ];
-                $this->logger->warning('Could not unset {key} = {token} at server #{index}', $context);
-            }
+        if (!\defined('Redis::COMPRESSION_LZF')) {
+            return false;
         }
 
-        return $this->isMajority($released);
+        return $client->getOption(\Redis::OPT_COMPRESSION) === \Redis::COMPRESSION_LZF;
     }
-
-    /**
-     * Returns if a count is the majority of all servers.
-     *
-     * @return bool True if the count is the majority
-     */
-    private function isMajority(int $count): bool
-    {
-        return $count > count($this->redisAPIs) / 2;
-    }
-
-    /**
-     * Sets the key only if such key doesn't exist at the server yet.
-     *
-     * @param mixed $redisAPI
-     * @param float $expire   The TTL seconds
-     *
-     * @return bool True if the key was set
-     */
-    abstract protected function add($redisAPI, string $key, string $value, float $expire): bool;
-
-    /**
-     * @param mixed       $redisAPI
-     * @param string      $script    The Lua script
-     * @param int         $numkeys   The number of values in $arguments that represent Redis key names
-     * @param list<mixed> $arguments Keys and values
-     *
-     * @return mixed The script result, or false if executing failed
-     *
-     * @throws LockReleaseException An unexpected error happened
-     */
-    abstract protected function evalScript($redisAPI, string $script, int $numkeys, array $arguments);
 }

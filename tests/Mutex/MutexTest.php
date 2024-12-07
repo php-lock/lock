@@ -12,16 +12,15 @@ use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
 use Malkusch\Lock\Mutex\MySQLMutex;
 use Malkusch\Lock\Mutex\NoMutex;
-use Malkusch\Lock\Mutex\PHPRedisMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
-use Malkusch\Lock\Mutex\PredisMutex;
+use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
 use Malkusch\Lock\Mutex\TransactionalMutex;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
-use Predis\Client;
+use Predis\Client as PredisClient;
 
 /**
  * If you want to run integrations tests you should provide these environment variables:
@@ -129,19 +128,19 @@ class MutexTest extends TestCase
         if (getenv('REDIS_URIS')) {
             $uris = explode(',', getenv('REDIS_URIS'));
 
-            yield 'PredisMutex' => [static function () use ($uris): Mutex {
+            yield 'RedisMutex /w Predis' => [static function () use ($uris): Mutex {
                 $clients = array_map(
-                    static fn ($uri) => new Client($uri),
+                    static fn ($uri) => new PredisClient($uri),
                     $uris
                 );
 
-                return new PredisMutex($clients, 'test', self::TIMEOUT);
+                return new RedisMutex($clients, 'test', self::TIMEOUT);
             }];
 
             if (class_exists(\Redis::class)) {
-                yield 'PHPRedisMutex' => [
+                yield 'RedisMutex /w PHPRedis' => [
                     static function () use ($uris): Mutex {
-                        $apis = array_map(
+                        $clients = array_map(
                             static function ($uri) {
                                 $redis = new \Redis();
 
@@ -160,7 +159,7 @@ class MutexTest extends TestCase
                             $uris
                         );
 
-                        return new PHPRedisMutex($apis, 'test', self::TIMEOUT);
+                        return new RedisMutex($clients, 'test', self::TIMEOUT);
                     },
                 ];
             }

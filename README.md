@@ -10,9 +10,9 @@
 [![Build Status](https://github.com/php-lock/lock/actions/workflows/test-unit.yml/badge.svg?branch=master)](https://github.com/php-lock/lock/actions?query=branch:master)
 [![License](https://poser.pugx.org/malkusch/lock/license)](https://packagist.org/packages/malkusch/lock)
 
-This library helps executing critical code in concurrent situations.
+This library helps executing critical code in concurrent situations in serialized fashion.
 
-php-lock/lock follows semantic versioning. Read more on [semver.org][1].
+php-lock/lock follows [semantic versioning][1].
 
 ----
 
@@ -164,8 +164,7 @@ implementations or create/extend your own implementation.
 
 - [`FlockMutex`](#flockmutex)
 - [`MemcachedMutex`](#memcachedmutex)
-- [`PHPRedisMutex`](#phpredismutex)
-- [`PredisMutex`](#predismutex)
+- [`RedisMutex`](#redismutex)
 - [`SemaphoreMutex`](#semaphoremutex)
 - [`TransactionalMutex`](#transactionalmutex)
 - [`MySQLMutex`](#mysqlmutex)
@@ -195,7 +194,7 @@ extension if possible or busy waiting if not.
 #### MemcachedMutex
 
 The **MemcachedMutex** is a spinlock implementation which uses the
-[`Memcached` API](http://php.net/manual/en/book.memcached.php).
+[`Memcached` extension](http://php.net/manual/en/book.memcached.php).
 
 Example:
 ```php
@@ -213,13 +212,14 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
-#### PHPRedisMutex
+#### RedisMutex
 
-The **PHPRedisMutex** is the distributed lock implementation of
-[RedLock](http://redis.io/topics/distlock) which uses the
-[`phpredis` extension](https://github.com/phpredis/phpredis).
+The **RedisMutex** is the distributed lock implementation of
+[RedLock](http://redis.io/topics/distlock) which supports the
+[`phpredis` extension](https://github.com/phpredis/phpredis)
+or [`Predis` API](https://github.com/nrk/predis).
 
-This implementation requires at least `phpredis-2.2.4`.
+Both Redis and Valkey servers are supported.
 
 If used with a cluster of Redis servers, acquiring and releasing locks will
 continue to function as long as a majority of the servers still works.
@@ -228,29 +228,9 @@ Example:
 ```php
 $redis = new \Redis();
 $redis->connect('localhost');
+// OR $redis = new \Predis\Client('redis://localhost');
 
-$mutex = new PHPRedisMutex([$redis], 'balance');
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $bankAccount->setBalance($balance);
-});
-```
-
-#### PredisMutex
-
-The **PredisMutex** is the distributed lock implementation of
-[RedLock](http://redis.io/topics/distlock) which uses the
-[`Predis` API](https://github.com/nrk/predis).
-
-Example:
-```php
-$redis = new \Predis\Client('redis://localhost');
-
-$mutex = new PredisMutex([$redis], 'balance');
+$mutex = new RedisMutex([$redis], 'balance');
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
@@ -316,6 +296,8 @@ The **MySQLMutex** uses MySQL's
 [`GET_LOCK`](https://dev.mysql.com/doc/refman/9.0/en/locking-functions.html#function_get-lock)
 function.
 
+Both MySQL and MariaDB servers are supported.
+
 It supports timeouts. If the connection to the database server is lost or
 interrupted, the lock is automatically released.
 
@@ -365,6 +347,14 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
     $bankAccount->setBalance($balance);
 });
 ```
+
+## Authors
+
+Since year 2015 the development was led by Markus Malkusch, Willem Stuursma-Ruwen, Michael Voříšek and many GitHub contributors.
+
+Currently this library is maintained by Michael Voříšek - [GitHub][https://github.com/mvorisek] and [LinkedIn][https://www.linkedin.com/mvorisek].
+
+Commercial support is available.
 
 ## License
 
