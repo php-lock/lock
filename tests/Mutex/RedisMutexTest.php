@@ -82,7 +82,7 @@ class RedisMutexTest extends TestCase
         parent::setUp();
 
         if (!getenv('REDIS_URIS')) {
-            self::markTestSkipped('Redis server is needed');
+            self::markTestSkipped('Redis server is required');
         }
 
         $redisUris = explode(',', getenv('REDIS_URIS'));
