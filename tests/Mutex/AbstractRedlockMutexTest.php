@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Tests\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
-use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\AbstractRedlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;

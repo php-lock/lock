@@ -6,8 +6,8 @@ namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Exception\DeadlineException;
 use Malkusch\Lock\Exception\LockAcquireException;
-use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
+use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Util\Loop;
 use Malkusch\Lock\Util\PcntlTimeout;
 

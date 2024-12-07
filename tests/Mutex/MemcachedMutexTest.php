@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
+use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;

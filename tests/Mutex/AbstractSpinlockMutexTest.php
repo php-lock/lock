@@ -6,8 +6,8 @@ namespace Malkusch\Lock\Tests\Mutex;
 
 use Malkusch\Lock\Exception\ExecutionOutsideLockException;
 use Malkusch\Lock\Exception\LockAcquireException;
-use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
+use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
