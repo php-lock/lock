@@ -106,10 +106,7 @@ class DoubleCheckedLockingTest extends TestCase
 
         $checkCounter = 0;
         yield 'failSecondCheck' => [static function () use (&$checkCounter): bool {
-            $result = $checkCounter === 0;
-            ++$checkCounter;
-
-            return $result;
+            return $checkCounter++ === 0;
         }];
     }
 
