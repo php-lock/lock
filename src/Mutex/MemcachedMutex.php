@@ -20,8 +20,6 @@ class MemcachedMutex extends AbstractSpinlockMutex
      *
      * @param string $name    The lock name
      * @param float  $timeout The timeout in seconds a lock expires
-     *
-     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(string $name, \Memcached $memcached, float $timeout = 3)
     {

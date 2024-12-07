@@ -20,34 +20,30 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
     /** @var float The timeout in seconds a lock may live */
     private $timeout;
 
-    /** @var Loop */
-    private $loop;
-
     /** @var string */
     private $key;
 
     /** @var float The timestamp when the lock was acquired */
-    private $acquired;
+    private $acquiredTs;
 
     /**
      * Sets the timeout.
      *
      * @param float $timeout The timeout in seconds a lock expires
-     *
-     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(string $name, float $timeout = 3)
     {
         $this->timeout = $timeout;
-        $this->loop = new Loop($this->timeout);
         $this->key = LockUtil::getInstance()->getKeyPrefix() . ':' . $name;
     }
 
     #[\Override]
     protected function lock(): void
     {
-        $this->loop->execute(function (): void {
-            $this->acquired = microtime(true);
+        $loop = new Loop();
+
+        $loop->execute(function () use ($loop): void {
+            $this->acquiredTs = microtime(true);
 
             /*
              * The expiration timeout for the lock is increased by one second
@@ -57,17 +53,17 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
              * by this process.
              */
             if ($this->acquire($this->key, $this->timeout + 1)) {
-                $this->loop->end();
+                $loop->end();
             }
-        });
+        }, $this->timeout);
     }
 
     #[\Override]
     protected function unlock(): void
     {
-        $elapsed_time = microtime(true) - $this->acquired;
-        if ($elapsed_time > $this->timeout) {
-            throw ExecutionOutsideLockException::create($elapsed_time, $this->timeout);
+        $elapsedTime = microtime(true) - $this->acquiredTs;
+        if ($elapsedTime > $this->timeout) {
+            throw ExecutionOutsideLockException::create($elapsedTime, $this->timeout);
         }
 
         /*
@@ -80,20 +76,20 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
     }
 
     /**
-     * Tries to acquire a lock.
+     * Try to acquire a lock.
      *
      * @param float $expire The timeout in seconds when a lock expires
      *
-     * @return bool True if the lock could be acquired
+     * @return bool True if the lock was acquired
      *
      * @throws LockAcquireException an unexpected error happened
      */
     abstract protected function acquire(string $key, float $expire): bool;
 
     /**
-     * Tries to release a lock.
+     * Try to release a lock.
      *
-     * @return bool True if the lock could be released
+     * @return bool True if the lock was released
      */
     abstract protected function release(string $key): bool;
 }

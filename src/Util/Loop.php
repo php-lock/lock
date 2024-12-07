@@ -19,30 +19,8 @@ class Loop
     /** Maximum time that we want to wait, between lock checks. In micro seconds. */
     private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
-    /** @var float The timeout in seconds */
-    private $timeout;
-
     /** @var bool true While code execution is repeating */
     private $looping = false;
-
-    /**
-     * Sets the timeout.
-     *
-     * @param float $timeout the timeout in seconds
-     *
-     * @throws \LengthException The timeout must be greater than 0
-     */
-    public function __construct(float $timeout = 3)
-    {
-        if ($timeout <= 0) {
-            throw new \LengthException(\sprintf(
-                'The timeout must be greater than 0 (%d was given)',
-                $timeout
-            ));
-        }
-
-        $this->timeout = $timeout;
-    }
 
     /**
      * Notifies that this was the last iteration.
@@ -64,19 +42,27 @@ class Loop
      *
      * @template T
      *
-     * @param callable(): T $code The to be executed code callback
+     * @param callable(): T $code    The to be executed code callback
+     * @param float         $timeout In seconds
      *
      * @return T
      *
-     * @throws \Exception       The execution callback threw an exception
+     * @throws \Exception                  The execution callback threw an exception
      * @throws LockAcquireTimeoutException The timeout has been reached
      */
-    public function execute(callable $code)
+    public function execute(callable $code, float $timeout)
     {
+        if ($timeout <= 0) {
+            throw new \LengthException(\sprintf(
+                'The timeout must be greater than 0 (%d was given)',
+                $timeout
+            ));
+        }
+
         $this->looping = true;
 
         // At this time, the lock will timeout.
-        $deadline = microtime(true) + $this->timeout;
+        $deadline = microtime(true) + $timeout;
 
         $result = null;
         for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) { // @phpstan-ignore booleanAnd.leftAlwaysTrue
@@ -106,6 +92,6 @@ class Loop
             usleep($usecToSleep);
         }
 
-        throw LockAcquireTimeoutException::create($this->timeout);
+        throw LockAcquireTimeoutException::create($timeout);
     }
 }

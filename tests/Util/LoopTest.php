@@ -39,9 +39,12 @@ class LoopTest extends TestCase
      */
     public function testInvalidTimeout(): void
     {
-        $this->expectException(\LengthException::class);
+        $loop = new Loop();
 
-        new Loop(0);
+        $this->expectException(\LengthException::class);
+        $loop->execute(static function (): void {
+            self::fail();
+        }, 0);
     }
 
     /**
@@ -52,11 +55,11 @@ class LoopTest extends TestCase
     #[DoesNotPerformAssertions]
     public function testExecutionWithinTimeout(): void
     {
-        $loop = new Loop(0.5);
+        $loop = new Loop();
         $loop->execute(static function () use ($loop): void {
             usleep(499 * 1000);
             $loop->end();
-        });
+        }, 0.5);
     }
 
     /**
@@ -67,10 +70,10 @@ class LoopTest extends TestCase
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
 
-        $loop = new Loop(0.5);
+        $loop = new Loop();
         $loop->execute(static function (): void {
             usleep(10 * 1000);
-        });
+        }, 0.5);
     }
 
     /**
@@ -81,11 +84,11 @@ class LoopTest extends TestCase
     #[DoesNotPerformAssertions]
     public function testExceedTimeoutIsAcceptableIfEndWasCalled(): void
     {
-        $loop = new Loop(0.5);
+        $loop = new Loop();
         $loop->execute(static function () use ($loop): void {
             usleep(501 * 1000);
             $loop->end();
-        });
+        }, 0.5);
     }
 
     /**
@@ -96,10 +99,10 @@ class LoopTest extends TestCase
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
 
-        $loop = new Loop(0.5);
+        $loop = new Loop();
         $loop->execute(static function (): void {
             usleep(501 * 1000);
-        });
+        }, 0.5);
     }
 
     /**
@@ -112,7 +115,7 @@ class LoopTest extends TestCase
         $loop = new Loop();
         $loop->execute(static function () {
             throw new \DomainException();
-        });
+        }, 1);
     }
 
     /**
@@ -125,7 +128,7 @@ class LoopTest extends TestCase
         $loop->execute(static function () use ($loop, &$i) {
             ++$i;
             $loop->end();
-        });
+        }, 1);
         self::assertSame(1, $i);
     }
 
@@ -141,7 +144,7 @@ class LoopTest extends TestCase
             if ($i > 1) {
                 $loop->end();
             }
-        });
+        }, 1);
         self::assertSame(2, $i);
     }
 }

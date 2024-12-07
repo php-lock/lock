@@ -111,12 +111,13 @@ class FlockMutex extends AbstractLockMutex
      */
     private function lockBusy(): void
     {
-        $loop = new Loop($this->timeout);
+        $loop = new Loop();
+
         $loop->execute(function () use ($loop): void {
             if ($this->acquireNonBlockingLock()) {
                 $loop->end();
             }
-        });
+        }, $this->timeout);
     }
 
     /**

@@ -20,8 +20,8 @@ class TransactionalMutex extends AbstractMutex
     /** @var \PDO */
     private $pdo;
 
-    /** @var Loop */
-    private $loop;
+    /** In seconds */
+    private float $acquireTimeout;
 
     /**
      * Sets the PDO.
@@ -32,11 +32,9 @@ class TransactionalMutex extends AbstractMutex
      * As this implementation spans a transaction over a unit of work,
      * PDO::ATTR_AUTOCOMMIT SHOULD not be enabled.
      *
-     * @param float $timeout The timeout in seconds
-     *
-     * @throws \LengthException The timeout must be greater than 0
+     * @param float $acquireTimeout In seconds
      */
-    public function __construct(\PDO $pdo, float $timeout = 3)
+    public function __construct(\PDO $pdo, float $acquireTimeout = 3)
     {
         if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
             throw new \InvalidArgumentException('The pdo must have PDO::ERRMODE_EXCEPTION set');
@@ -44,7 +42,7 @@ class TransactionalMutex extends AbstractMutex
         self::checkAutocommit($pdo);
 
         $this->pdo = $pdo;
-        $this->loop = new Loop($timeout);
+        $this->acquireTimeout = $acquireTimeout;
     }
 
     /**
@@ -89,7 +87,9 @@ class TransactionalMutex extends AbstractMutex
     #[\Override]
     public function synchronized(callable $code)
     {
-        return $this->loop->execute(function () use ($code) {
+        $loop = new Loop();
+
+        return $loop->execute(function () use ($code, $loop) {
             try {
                 // BEGIN
                 $this->pdo->beginTransaction();
@@ -101,7 +101,7 @@ class TransactionalMutex extends AbstractMutex
                 // Unit of work
                 $result = $code();
                 $this->pdo->commit();
-                $this->loop->end();
+                $loop->end();
 
                 return $result;
             } catch (\Throwable $e) {
@@ -113,7 +113,7 @@ class TransactionalMutex extends AbstractMutex
 
                 throw $e;
             }
-        });
+        }, $this->acquireTimeout);
     }
 
     /**
