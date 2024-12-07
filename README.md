@@ -348,6 +348,14 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 });
 ```
 
+## Authors
+
+Since year 2015 the development was led by Markus Malkusch, Willem Stuursma-Ruwen, Michael Voříšek and many GitHub contributors.
+
+Currently this library is maintained by Michael Voříšek - [GitHub][https://github.com/mvorisek] and [LinkedIn][https://www.linkedin.com/mvorisek].
+
+Commercial support is available.
+
 ## License
 
 This project is free and is licensed under the MIT.
