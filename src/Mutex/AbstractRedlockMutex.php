@@ -32,7 +32,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
      * called already.
      *
      * @param array<int, TClient> $clients
-     * @param float               $timeout The timeout in seconds a lock expires
+     * @param float               $timeout In seconds
      */
     public function __construct(array $clients, string $name, float $timeout = 3)
     {

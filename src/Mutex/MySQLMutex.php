@@ -14,6 +14,7 @@ class MySQLMutex extends AbstractLockMutex
 
     private string $name;
 
+    /** In seconds */
     private float $timeout;
 
     /**

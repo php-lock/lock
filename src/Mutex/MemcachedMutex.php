@@ -15,8 +15,7 @@ class MemcachedMutex extends AbstractSpinlockMutex
      * The Memcached API needs to have at least one server in its pool. I.e.
      * it has to be added with Memcached::addServer().
      *
-     * @param string $name    The lock name
-     * @param float  $timeout The timeout in seconds a lock expires
+     * @param float $timeout In seconds
      */
     public function __construct(string $name, \Memcached $memcached, float $timeout = 3)
     {

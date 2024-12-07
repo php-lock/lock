@@ -62,9 +62,6 @@ class FlockMutex extends AbstractLockMutex
         return self::STRATEGY_LOOP;
     }
 
-    /**
-     * @throws LockAcquireException
-     */
     private function lockBlocking(): void
     {
         if (!flock($this->fileHandle, \LOCK_EX)) {
@@ -72,10 +69,6 @@ class FlockMutex extends AbstractLockMutex
         }
     }
 
-    /**
-     * @throws LockAcquireException
-     * @throws LockAcquireTimeoutException
-     */
     private function lockPcntl(): void
     {
         $timeoutInt = (int) ceil($this->timeout);
@@ -93,10 +86,6 @@ class FlockMutex extends AbstractLockMutex
         }
     }
 
-    /**
-     * @throws LockAcquireTimeoutException
-     * @throws LockAcquireException
-     */
     private function lockBusy(): void
     {
         $loop = new Loop();
@@ -108,9 +97,6 @@ class FlockMutex extends AbstractLockMutex
         }, $this->timeout);
     }
 
-    /**
-     * @throws LockAcquireException
-     */
     private function acquireNonBlockingLock(): bool
     {
         if (!flock($this->fileHandle, \LOCK_EX | \LOCK_NB, $wouldBlock)) {
@@ -125,10 +111,6 @@ class FlockMutex extends AbstractLockMutex
         return true;
     }
 
-    /**
-     * @throws LockAcquireException
-     * @throws LockAcquireTimeoutException
-     */
     #[\Override]
     protected function lock(): void
     {

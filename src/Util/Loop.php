@@ -47,7 +47,7 @@ class Loop
      *
      * @return T
      *
-     * @throws \Exception                  The execution callback threw an exception
+     * @throws \Throwable                  The execution callback threw an exception
      * @throws LockAcquireTimeoutException The timeout has been reached
      */
     public function execute(callable $code, float $timeout)

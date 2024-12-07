@@ -30,7 +30,7 @@ interface Mutex
      *
      * @return T
      *
-     * @throws \Exception                    The execution callback threw an exception
+     * @throws \Throwable                    The execution callback threw an exception
      * @throws LockAcquireException          The mutex could not be acquired, no further side effects
      * @throws LockReleaseException          The mutex could not be released, the code was already executed
      * @throws ExecutionOutsideLockException Some code has been executed outside of the lock
