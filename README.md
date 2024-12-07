@@ -194,7 +194,7 @@ extension if possible or busy waiting if not.
 #### MemcachedMutex
 
 The **MemcachedMutex** is a spinlock implementation which uses the
-[`Memcached` API](http://php.net/manual/en/book.memcached.php).
+[`Memcached` extension](http://php.net/manual/en/book.memcached.php).
 
 Example:
 ```php

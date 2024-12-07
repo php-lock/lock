@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 
 if (\PHP_MAJOR_VERSION >= 8) {
-    trait RedisTestTrait
+    trait RedisCompatibilityTrait
     {
         /**
          * @param list<mixed> $args
@@ -35,7 +35,7 @@ if (\PHP_MAJOR_VERSION >= 8) {
         }
     }
 } else {
-    trait RedisTestTrait
+    trait RedisCompatibilityTrait
     {
         /**
          * @return mixed
@@ -92,7 +92,7 @@ class RedisMutexTest extends TestCase
 
             // original Redis::set and Redis::eval calls will reopen the connection
             $connection = new class extends \Redis {
-                use RedisTestTrait;
+                use RedisCompatibilityTrait;
 
                 /** @var bool */
                 private $is_closed = false;

@@ -289,7 +289,7 @@ class MutexConcurrencyTest extends TestCase
             if (class_exists(\Redis::class)) {
                 yield 'RedisMutex /w PHPRedis' => [
                     static function ($timeout) use ($uris): Mutex {
-                        $apis = array_map(
+                        $clients = array_map(
                             static function (string $uri): \Redis {
                                 $redis = new \Redis();
 
@@ -308,7 +308,7 @@ class MutexConcurrencyTest extends TestCase
                             $uris
                         );
 
-                        return new RedisMutex($apis, 'test', $timeout);
+                        return new RedisMutex($clients, 'test', $timeout);
                     },
                 ];
             }

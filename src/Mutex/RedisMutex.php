@@ -10,7 +10,7 @@ use Predis\ClientInterface as PredisClientInterface;
 use Predis\PredisException;
 
 /**
- * Mutex based on the Redlock algorithm supporting the phpredis extension and Predis API.
+ * Distributed mutex based on the Redlock algorithm supporting the phpredis extension and Predis API.
  *
  * @phpstan-type TClient \Redis|\RedisCluster|PredisClientInterface
  *
