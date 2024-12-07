@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Util;
 
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
+use Malkusch\Lock\Util\LockUtil;
 use Malkusch\Lock\Util\Loop;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
 
@@ -35,13 +37,30 @@ class LoopTest extends TestCase
     }
 
     /**
-     * Test an invalid timeout.
+     * @dataProvider provideInvalidAcquireTimeoutCases
      */
-    public function testInvalidTimeout(): void
+    #[DataProvider('provideInvalidAcquireTimeoutCases')]
+    public function testInvalidAcquireTimeout(float $acquireTimeout): void
     {
-        $this->expectException(\LengthException::class);
+        $loop = new Loop();
 
-        new Loop(0);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The lock acquire timeout must be greater than or equal to 0.0 (' . LockUtil::getInstance()->formatTimeout($acquireTimeout) . ' was given)');
+
+        $loop->execute(static function (): void {
+            self::fail();
+        }, $acquireTimeout);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideInvalidAcquireTimeoutCases(): iterable
+    {
+        yield [-2];
+        yield [-0.1];
+        yield [-\INF];
+        yield [\NAN];
     }
 
     /**
@@ -52,25 +71,25 @@ class LoopTest extends TestCase
     #[DoesNotPerformAssertions]
     public function testExecutionWithinTimeout(): void
     {
-        $loop = new Loop(0.5);
+        $loop = new Loop();
         $loop->execute(static function () use ($loop): void {
             usleep(499 * 1000);
             $loop->end();
-        });
+        }, 0.5);
     }
 
     /**
      * Tests execution within the timeout without calling end().
      */
-    public function testExecutionWithinTimeoutWithoutExplicitEnd(): void
+    public function testExecutionWithinAcquireTimeoutWithoutExplicitEnd(): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
 
-        $loop = new Loop(0.5);
+        $loop = new Loop();
         $loop->execute(static function (): void {
             usleep(10 * 1000);
-        });
+        }, 0.5);
     }
 
     /**
@@ -81,25 +100,25 @@ class LoopTest extends TestCase
     #[DoesNotPerformAssertions]
     public function testExceedTimeoutIsAcceptableIfEndWasCalled(): void
     {
-        $loop = new Loop(0.5);
+        $loop = new Loop();
         $loop->execute(static function () use ($loop): void {
             usleep(501 * 1000);
             $loop->end();
-        });
+        }, 0.5);
     }
 
     /**
      * Tests exceeding the execution timeout without calling end().
      */
-    public function testExceedTimeoutWithoutExplicitEnd(): void
+    public function testExceedAcquireTimeoutWithoutExplicitEnd(): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
 
-        $loop = new Loop(0.5);
+        $loop = new Loop();
         $loop->execute(static function (): void {
             usleep(501 * 1000);
-        });
+        }, 0.5);
     }
 
     /**
@@ -112,7 +131,7 @@ class LoopTest extends TestCase
         $loop = new Loop();
         $loop->execute(static function () {
             throw new \DomainException();
-        });
+        }, 1);
     }
 
     /**
@@ -125,7 +144,7 @@ class LoopTest extends TestCase
         $loop->execute(static function () use ($loop, &$i) {
             ++$i;
             $loop->end();
-        });
+        }, 1);
         self::assertSame(1, $i);
     }
 
@@ -141,7 +160,7 @@ class LoopTest extends TestCase
             if ($i > 1) {
                 $loop->end();
             }
-        });
+        }, 1);
         self::assertSame(2, $i);
     }
 }

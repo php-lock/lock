@@ -1,6 +1,7 @@
 **[Requirements](#requirements)** |
 **[Installation](#installation)** |
 **[Usage](#usage)** |
+**[Authors](#authors)** |
 **[License](#license)**
 
 # php-lock/lock
@@ -198,10 +199,10 @@ The **MemcachedMutex** is a spinlock implementation which uses the
 
 Example:
 ```php
-$memcache = new \Memcached();
-$memcache->addServer('localhost', 11211);
+$memcached = new \Memcached();
+$memcached->addServer('localhost', 11211);
 
-$mutex = new MemcachedMutex('balance', $memcache);
+$mutex = new MemcachedMutex('balance', $memcached);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
@@ -263,7 +264,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 #### TransactionalMutex
 
 The **TransactionalMutex**
-delegates the serialization to the DBS. The exclusive code is executed within
+delegates the serialization to the database. The exclusive code is executed within
 a transaction. It's up to you to set the correct transaction isolation level.
 However if the transaction fails (i.e. a `PDOException` was thrown), the code
 will be executed again in a new transaction. Therefore the code must not have
@@ -350,9 +351,9 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 ## Authors
 
-Since year 2015 the development was led by Markus Malkusch, Willem Stuursma-Ruwen, Michael Voříšek and many GitHub contributors.
+Since year 2015 the development was led by Markus Malkusch, Willem Stuursma-Ruwen and many GitHub contributors.
 
-Currently this library is maintained by Michael Voříšek - [GitHub][https://github.com/mvorisek] and [LinkedIn][https://www.linkedin.com/mvorisek].
+Currently this library is maintained by Michael Voříšek - [GitHub](https://github.com/mvorisek) | [LinkedIn](https://www.linkedin.com/mvorisek).
 
 Commercial support is available.
 
@@ -364,10 +365,10 @@ This project is free and is licensed under the MIT.
 [2]: https://github.com/nrk/predis
 [3]: http://php.net/manual/en/book.pcntl.php
 [4]: https://getcomposer.org/
-[5]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L15
-[6]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L38
-[7]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L60
-[8]: https://github.com/php-lock/lock/blob/35526aee28/src/util/DoubleCheckedLocking.php#L63
+[5]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/Mutex.php#L15
+[6]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/Mutex.php#L38
+[7]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/Mutex.php#L60
+[8]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Util/DoubleCheckedLocking.php#L61
 [9]: https://en.wikipedia.org/wiki/Double-checked_locking
-[10]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/LockMutex.php
-[11]: https://github.com/php-lock/lock/blob/35526aee28/src/exception/LockReleaseException.php
+[10]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/AbstractLockMutex.php
+[11]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Exception/LockReleaseException.php

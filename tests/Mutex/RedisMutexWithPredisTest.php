@@ -7,7 +7,6 @@ namespace Malkusch\Lock\Tests\Mutex;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Mutex\RedisMutex;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -28,10 +27,6 @@ interface PredisClientInterfaceWithSetAndEvalMethods extends PredisClientInterfa
     public function set();
 }
 
-/**
- * @group redis
- */
-#[Group('redis')]
 class RedisMutexWithPredisTest extends TestCase
 {
     /** @var PredisClientInterface&MockObject */
@@ -73,7 +68,7 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->mutex->synchronized(
             static function (): void {
-                self::fail('Code execution is not expected');
+                self::fail();
             }
         );
     }
@@ -96,7 +91,7 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->mutex->synchronized(
             static function () {
-                self::fail('Code execution is not expected');
+                self::fail();
             }
         );
     }

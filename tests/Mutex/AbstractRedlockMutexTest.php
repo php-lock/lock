@@ -5,22 +5,17 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Tests\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
-use Malkusch\Lock\Exception\TimeoutException;
 use Malkusch\Lock\Mutex\AbstractRedlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group redis
- */
-#[Group('redis')]
 class AbstractRedlockMutexTest extends TestCase
 {
     use PHPMock;
@@ -52,8 +47,15 @@ class AbstractRedlockMutexTest extends TestCase
     private function createRedlockMutexMock(int $count, float $timeout = 1): AbstractRedlockMutex
     {
         $clients = array_map(
-            static fn ($id) => ['id' => $id],
-            range(1, $count)
+            static fn ($i) => new class($i) {
+                public int $i;
+
+                public function __construct(int $i)
+                {
+                    $this->i = $i;
+                }
+            },
+            range(0, $count - 1)
         );
 
         return $this->getMockBuilder(AbstractRedlockMutex::class)
@@ -74,7 +76,7 @@ class AbstractRedlockMutexTest extends TestCase
     public function testTooFewServerToAcquire(int $count, int $available): void
     {
         $this->expectException(LockAcquireException::class);
-        $this->expectExceptionCode(MutexException::REDIS_NOT_ENOUGH_SERVERS);
+        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
 
         $mutex = $this->createRedlockMutexMock($count);
 
@@ -94,7 +96,7 @@ class AbstractRedlockMutexTest extends TestCase
             );
 
         $mutex->synchronized(static function (): void {
-            self::fail('Code should not be executed');
+            self::fail();
         });
     }
 
@@ -143,8 +145,8 @@ class AbstractRedlockMutexTest extends TestCase
     #[DataProvider('provideMinorityCases')]
     public function testAcquireTooFewKeys(int $count, int $available): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
 
         $mutex = $this->createRedlockMutexMock($count);
 
@@ -160,7 +162,7 @@ class AbstractRedlockMutexTest extends TestCase
             );
 
         $mutex->synchronized(static function (): void {
-            self::fail('Code should not be executed');
+            self::fail();
         });
     }
 
@@ -171,18 +173,18 @@ class AbstractRedlockMutexTest extends TestCase
      * @param float $timeout The timeout in seconds
      * @param float $delay   The delay in seconds
      *
-     * @dataProvider provideTimingOutCases
+     * @dataProvider provideAcquireTimeoutsCases
      */
-    #[DataProvider('provideTimingOutCases')]
-    public function testTimingOut(int $count, float $timeout, float $delay): void
+    #[DataProvider('provideAcquireTimeoutsCases')]
+    public function testAcquireTimeouts(int $count, float $timeout, float $delay): void
     {
         $timeoutStr = (string) round($timeout, 6);
         if (strpos($timeoutStr, '.') === false) {
             $timeoutStr .= '.0';
         }
 
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of ' . $timeoutStr . ' seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of ' . $timeoutStr . ' seconds has been exceeded');
 
         $mutex = $this->createRedlockMutexMock($count, $timeout);
 
@@ -195,14 +197,14 @@ class AbstractRedlockMutexTest extends TestCase
             });
 
         $mutex->synchronized(static function (): void {
-            self::fail('Code should not be executed');
+            self::fail();
         });
     }
 
     /**
      * @return iterable<list<mixed>>
      */
-    public static function provideTimingOutCases(): iterable
+    public static function provideAcquireTimeoutsCases(): iterable
     {
         yield [1, 1.2 - 1, 1.201];
         yield [2, 1.2 - 1, 1.401];

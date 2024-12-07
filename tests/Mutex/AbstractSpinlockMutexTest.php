@@ -6,8 +6,8 @@ namespace Malkusch\Lock\Tests\Mutex;
 
 use Malkusch\Lock\Exception\ExecutionOutsideLockException;
 use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Malkusch\Lock\Exception\TimeoutException;
 use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
@@ -62,17 +62,17 @@ class AbstractSpinlockMutexTest extends TestCase
             ->willThrowException(new LockAcquireException());
 
         $mutex->synchronized(static function () {
-            self::fail('execution is not expected');
+            self::fail();
         });
     }
 
     /**
      * Tests failing to acquire the lock due to a timeout.
      */
-    public function testAcquireTimesOut(): void
+    public function testAcquireTimeouts(): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 3.0 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 3.0 seconds has been exceeded');
 
         $mutex = $this->createSpinlockMutexMock();
         $mutex->expects(self::atLeastOnce())
@@ -80,7 +80,7 @@ class AbstractSpinlockMutexTest extends TestCase
             ->willReturn(false);
 
         $mutex->synchronized(static function () {
-            self::fail('execution is not expected');
+            self::fail();
         });
     }
 
@@ -99,10 +99,7 @@ class AbstractSpinlockMutexTest extends TestCase
             ->willReturn(true);
 
         $this->expectException(ExecutionOutsideLockException::class);
-        $this->expectExceptionMessageMatches(
-            '/The code executed for 0\.5\d+ seconds. But the timeout is 0\.5 ' .
-            'seconds. The last 0\.0\d+ seconds were executed outside of the lock./'
-        );
+        $this->expectExceptionMessageMatches('~^The code executed for 0\.5\d+ seconds\. But the timeout is 0\.5 seconds. The last 0\.0\d+ seconds were executed outside of the lock\.$~');
 
         $mutex->synchronized(static function () {
             usleep(501 * 1000);

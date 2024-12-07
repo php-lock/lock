@@ -37,7 +37,7 @@ class AbstractLockMutexTest extends TestCase
             ->willThrowException(new LockAcquireException());
 
         $this->mutex->synchronized(static function (): void {
-            self::fail('Should not execute code');
+            self::fail();
         });
     }
 

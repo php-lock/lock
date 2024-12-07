@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Util\LockUtil;
 
 class MySQLMutex extends AbstractLockMutex
 {
-    /** @var \PDO */
-    private $pdo;
+    private \PDO $pdo;
 
-    /** @var string */
-    private $name;
-    /** @var float */
-    private $timeout;
+    private string $name;
 
+    private float $timeout;
+
+    /**
+     * @param float $timeout In seconds
+     */
     public function __construct(\PDO $PDO, string $name, float $timeout = 0)
     {
         $this->pdo = $PDO;
@@ -61,7 +62,7 @@ class MySQLMutex extends AbstractLockMutex
             throw new LockAcquireException('An error occurred while acquiring the lock');
         }
 
-        throw TimeoutException::create($this->timeout);
+        throw LockAcquireTimeoutException::create($this->timeout);
     }
 
     #[\Override]

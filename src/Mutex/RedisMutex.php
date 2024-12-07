@@ -25,7 +25,7 @@ class RedisMutex extends AbstractRedlockMutex
      *
      * @phpstan-assert-if-true \Redis|\RedisCluster $client
      */
-    private function isClientPHPRedis($client): bool
+    private function isClientPHPRedis(object $client): bool
     {
         $res = $client instanceof \Redis || $client instanceof \RedisCluster;
 
@@ -38,7 +38,7 @@ class RedisMutex extends AbstractRedlockMutex
      * @throws LockAcquireException
      */
     #[\Override]
-    protected function add($client, string $key, string $value, float $expire): bool
+    protected function add(object $client, string $key, string $value, float $expire): bool
     {
         $expireMillis = (int) ceil($expire * 1000);
 
@@ -69,35 +69,37 @@ class RedisMutex extends AbstractRedlockMutex
     }
 
     #[\Override]
-    protected function evalScript($client, string $script, int $numkeys, array $arguments)
+    protected function evalScript(object $client, string $luaScript, array $keys, array $arguments)
     {
         if ($this->isClientPHPRedis($client)) {
-            for ($i = $numkeys; $i < count($arguments); ++$i) {
+            $arguments = array_map(function ($v) use ($client) {
                 /*
                  * If a serialization mode such as "php" or "igbinary" is enabled, the arguments must be
                  * serialized by us, because phpredis does not do this for the eval command.
                  *
                  * The keys must not be serialized.
                  */
-                $arguments[$i] = $client->_serialize($arguments[$i]);
+                $v = $client->_serialize($v);
 
                 /*
                  * If LZF compression is enabled for the redis connection and the runtime has the LZF
                  * extension installed, compress the arguments as the final step.
                  */
                 if ($this->isLzfCompressionEnabled($client)) {
-                    $arguments[$i] = lzf_compress($arguments[$i]);
+                    $v = lzf_compress($v);
                 }
-            }
+
+                return $v;
+            }, $arguments);
 
             try {
-                return $client->eval($script, $arguments, $numkeys);
+                return $client->eval($luaScript, [...$keys, ...$arguments], count($keys));
             } catch (\RedisException $e) {
                 throw new LockReleaseException('Failed to release lock', 0, $e);
             }
         } else {
             try {
-                return $client->eval($script, $numkeys, ...$arguments);
+                return $client->eval($luaScript, count($keys), ...[...$keys, ...$arguments]);
             } catch (PredisException $e) {
                 throw new LockReleaseException('Failed to release lock', 0, $e);
             }
@@ -107,7 +109,7 @@ class RedisMutex extends AbstractRedlockMutex
     /**
      * @param \Redis|\RedisCluster $client
      */
-    private function isLzfCompressionEnabled($client): bool
+    private function isLzfCompressionEnabled(object $client): bool
     {
         if (!\defined('Redis::COMPRESSION_LZF')) {
             return false;

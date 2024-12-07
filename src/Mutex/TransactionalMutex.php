@@ -8,35 +8,30 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Util\Loop;
 
 /**
- * Serialization is delegated to the DBS.
+ * Serialization is delegated to the database.
  *
- * The critical code is executed within a transaction. The DBS will decide
+ * The critical code is executed within a transaction. The database will decide
  * which parts of that code need to be locked (if at all).
  *
  * A failing transaction will be replayed.
  */
 class TransactionalMutex extends AbstractMutex
 {
-    /** @var \PDO */
-    private $pdo;
+    private \PDO $pdo;
 
-    /** @var Loop */
-    private $loop;
+    /** In seconds */
+    private float $acquireTimeout;
 
     /**
-     * Sets the PDO.
-     *
      * The PDO object MUST be configured with PDO::ATTR_ERRMODE
      * to throw exceptions on errors.
      *
      * As this implementation spans a transaction over a unit of work,
      * PDO::ATTR_AUTOCOMMIT SHOULD not be enabled.
      *
-     * @param float $timeout The timeout in seconds
-     *
-     * @throws \LengthException The timeout must be greater than 0
+     * @param float $acquireTimeout In seconds
      */
-    public function __construct(\PDO $pdo, float $timeout = 3)
+    public function __construct(\PDO $pdo, float $acquireTimeout = 3)
     {
         if ($pdo->getAttribute(\PDO::ATTR_ERRMODE) !== \PDO::ERRMODE_EXCEPTION) {
             throw new \InvalidArgumentException('The pdo must have PDO::ERRMODE_EXCEPTION set');
@@ -44,7 +39,7 @@ class TransactionalMutex extends AbstractMutex
         self::checkAutocommit($pdo);
 
         $this->pdo = $pdo;
-        $this->loop = new Loop($timeout);
+        $this->acquireTimeout = $acquireTimeout;
     }
 
     /**
@@ -89,7 +84,9 @@ class TransactionalMutex extends AbstractMutex
     #[\Override]
     public function synchronized(callable $code)
     {
-        return $this->loop->execute(function () use ($code) {
+        $loop = new Loop();
+
+        return $loop->execute(function () use ($code, $loop) {
             try {
                 // BEGIN
                 $this->pdo->beginTransaction();
@@ -101,10 +98,10 @@ class TransactionalMutex extends AbstractMutex
                 // Unit of work
                 $result = $code();
                 $this->pdo->commit();
-                $this->loop->end();
+                $loop->end();
 
                 return $result;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->rollBack($e);
 
                 if (self::hasPDOException($e)) {
@@ -113,7 +110,7 @@ class TransactionalMutex extends AbstractMutex
 
                 throw $e;
             }
-        });
+        }, $this->acquireTimeout);
     }
 
     /**
@@ -132,11 +129,9 @@ class TransactionalMutex extends AbstractMutex
     /**
      * Rolls back a transaction.
      *
-     * @param \Exception $exception The causing exception
-     *
      * @throws LockAcquireException The roll back failed
      */
-    private function rollBack(\Exception $exception): void
+    private function rollBack(\Throwable $exception): void
     {
         try {
             $this->pdo->rollBack();

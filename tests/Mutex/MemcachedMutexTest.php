@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Malkusch\Lock\Exception\TimeoutException;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -39,7 +39,7 @@ class MemcachedMutexTest extends TestCase
      */
     public function testFailAcquireLock(): void
     {
-        $this->expectException(TimeoutException::class);
+        $this->expectException(LockAcquireTimeoutException::class);
 
         $this->memcached->expects(self::atLeastOnce())
             ->method('add')
@@ -47,7 +47,7 @@ class MemcachedMutexTest extends TestCase
             ->willReturn(false);
 
         $this->mutex->synchronized(static function (): void {
-            self::fail('execution is not expected');
+            self::fail();
         });
     }
 

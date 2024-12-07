@@ -6,8 +6,8 @@ namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Exception\DeadlineException;
 use Malkusch\Lock\Exception\LockAcquireException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Malkusch\Lock\Exception\TimeoutException;
 use Malkusch\Lock\Util\Loop;
 use Malkusch\Lock\Util\PcntlTimeout;
 
@@ -18,33 +18,21 @@ class FlockMutex extends AbstractLockMutex
 {
     public const INFINITE_TIMEOUT = -1.0;
 
-    /**
-     * @internal
-     */
-    public const STRATEGY_BLOCK = 1;
+    private const STRATEGY_BLOCK = 'block';
 
-    /**
-     * @internal
-     */
-    public const STRATEGY_PCNTL = 2;
+    private const STRATEGY_PCNTL = 'pcntl';
 
-    /**
-     * @internal
-     */
-    public const STRATEGY_BUSY = 3;
+    private const STRATEGY_LOOP = 'loop';
 
     /** @var resource */
     private $fileHandle;
 
-    /** @var float */
-    private $timeout;
+    private float $timeout;
 
     /** @var self::STRATEGY_* */
     private $strategy;
 
     /**
-     * Sets the file handle.
-     *
      * @param resource $fileHandle
      */
     public function __construct($fileHandle, float $timeout = self::INFINITE_TIMEOUT)
@@ -61,7 +49,7 @@ class FlockMutex extends AbstractLockMutex
     /**
      * @return self::STRATEGY_*
      */
-    private function determineLockingStrategy(): int
+    private function determineLockingStrategy(): string
     {
         if ($this->timeout === self::INFINITE_TIMEOUT) {
             return self::STRATEGY_BLOCK;
@@ -71,7 +59,7 @@ class FlockMutex extends AbstractLockMutex
             return self::STRATEGY_PCNTL;
         }
 
-        return self::STRATEGY_BUSY;
+        return self::STRATEGY_LOOP;
     }
 
     /**
@@ -86,7 +74,7 @@ class FlockMutex extends AbstractLockMutex
 
     /**
      * @throws LockAcquireException
-     * @throws TimeoutException
+     * @throws LockAcquireTimeoutException
      */
     private function lockPcntl(): void
     {
@@ -101,22 +89,23 @@ class FlockMutex extends AbstractLockMutex
                 }
             );
         } catch (DeadlineException $e) {
-            throw TimeoutException::create($timeoutInt);
+            throw LockAcquireTimeoutException::create($timeoutInt);
         }
     }
 
     /**
-     * @throws TimeoutException
+     * @throws LockAcquireTimeoutException
      * @throws LockAcquireException
      */
     private function lockBusy(): void
     {
-        $loop = new Loop($this->timeout);
+        $loop = new Loop();
+
         $loop->execute(function () use ($loop): void {
             if ($this->acquireNonBlockingLock()) {
                 $loop->end();
             }
-        });
+        }, $this->timeout);
     }
 
     /**
@@ -138,7 +127,7 @@ class FlockMutex extends AbstractLockMutex
 
     /**
      * @throws LockAcquireException
-     * @throws TimeoutException
+     * @throws LockAcquireTimeoutException
      */
     #[\Override]
     protected function lock(): void
@@ -152,7 +141,7 @@ class FlockMutex extends AbstractLockMutex
                 $this->lockPcntl();
 
                 return;
-            case self::STRATEGY_BUSY:
+            case self::STRATEGY_LOOP:
                 $this->lockBusy();
 
                 return;

@@ -23,9 +23,6 @@ class DoubleCheckedLockingTest extends TestCase
         $this->mutex = $this->createMock(Mutex::class);
     }
 
-    /**
-     * Tests that the lock will not be acquired for a failing test.
-     */
     public function testCheckFailsAcquiresNoLock(): void
     {
         $this->mutex->expects(self::never())->method('synchronized');
@@ -38,13 +35,9 @@ class DoubleCheckedLockingTest extends TestCase
             self::fail();
         });
 
-        // Failed check should return false.
         self::assertFalse($result); // @phpstan-ignore staticMethod.impossibleType
     }
 
-    /**
-     * Tests that the check and execution are in the same lock.
-     */
     public function testLockedCheckAndExecution(): void
     {
         $lock = 0;
@@ -72,18 +65,15 @@ class DoubleCheckedLockingTest extends TestCase
         $result = $checkedLocking->then(static function () use (&$lock) {
             self::assertSame(1, $lock);
 
-            return 'test';
+            return 'foo';
         });
 
         self::assertSame(2, $check);
 
-        // Synchronized code should return a test string.
-        self::assertSame('test', $result);
+        self::assertSame('foo', $result);
     }
 
     /**
-     * Tests that the code is not executed if the first or second check fails.
-     *
      * @param \Closure(): bool $check
      *
      * @dataProvider provideCodeNotExecutedCases
@@ -102,34 +92,24 @@ class DoubleCheckedLockingTest extends TestCase
             self::fail();
         });
 
-        // Each failed check should return false.
         self::assertFalse($result); // @phpstan-ignore staticMethod.impossibleType
     }
 
     /**
-     * Returns checks for testCodeNotExecuted().
-     *
      * @return iterable<list<mixed>>
      */
     public static function provideCodeNotExecutedCases(): iterable
     {
-        yield [static function (): bool {
+        yield 'failFirstCheck' => [static function (): bool {
             return false;
         }];
 
         $checkCounter = 0;
-
-        yield [static function () use (&$checkCounter): bool {
-            $result = $checkCounter === 0;
-            ++$checkCounter;
-
-            return $result;
+        yield 'failSecondCheck' => [static function () use (&$checkCounter): bool {
+            return $checkCounter++ === 0;
         }];
     }
 
-    /**
-     * Tests that the code executed if the checks are true.
-     */
     public function testCodeExecuted(): void
     {
         $this->mutex->expects(self::once())
@@ -142,14 +122,14 @@ class DoubleCheckedLockingTest extends TestCase
             return true;
         });
 
-        $executed = false;
-        $result = $checkedLocking->then(static function () use (&$executed) {
-            $executed = true;
+        $executedCount = 0;
+        $result = $checkedLocking->then(static function () use (&$executedCount) {
+            ++$executedCount;
 
-            return 'test';
+            return 'foo';
         });
 
-        self::assertTrue($executed);
-        self::assertSame('test', $result);
+        self::assertSame(1, $executedCount);
+        self::assertSame('foo', $result);
     }
 }

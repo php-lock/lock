@@ -9,25 +9,20 @@ namespace Malkusch\Lock\Mutex;
  */
 class MemcachedMutex extends AbstractSpinlockMutex
 {
-    /** @var \Memcached */
-    private $memcache;
+    private \Memcached $memcached;
 
     /**
-     * Sets the lock's name and the connected Memcached API.
-     *
      * The Memcached API needs to have at least one server in its pool. I.e.
      * it has to be added with Memcached::addServer().
      *
      * @param string $name    The lock name
      * @param float  $timeout The timeout in seconds a lock expires
-     *
-     * @throws \LengthException The timeout must be greater than 0
      */
-    public function __construct(string $name, \Memcached $memcache, float $timeout = 3)
+    public function __construct(string $name, \Memcached $memcached, float $timeout = 3)
     {
         parent::__construct($name, $timeout);
 
-        $this->memcache = $memcache;
+        $this->memcached = $memcached;
     }
 
     #[\Override]
@@ -37,12 +32,12 @@ class MemcachedMutex extends AbstractSpinlockMutex
         // https://github.com/memcached/memcached/wiki/Commands#standard-protocol
         $expireInt = (int) ceil($expire);
 
-        return $this->memcache->add($key, true, $expireInt);
+        return $this->memcached->add($key, true, $expireInt);
     }
 
     #[\Override]
     protected function release(string $key): bool
     {
-        return $this->memcache->delete($key);
+        return $this->memcached->delete($key);
     }
 }

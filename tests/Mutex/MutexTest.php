@@ -67,15 +67,15 @@ class MutexTest extends TestCase
         yield 'flockWithTimoutPcntl' => [static function (): Mutex {
             $file = fopen(vfsStream::url('test/lock'), 'w');
             $lock = Liberator::liberate(new FlockMutex($file, 3));
-            $lock->strategy = FlockMutex::STRATEGY_PCNTL; // @phpstan-ignore property.notFound
+            $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
 
             return $lock->popsValue();
         }];
 
-        yield 'flockWithTimoutBusy' => [static function (): Mutex {
+        yield 'flockWithTimoutLoop' => [static function (): Mutex {
             $file = fopen(vfsStream::url('test/lock'), 'w');
             $lock = Liberator::liberate(new FlockMutex($file, 3));
-            $lock->strategy = FlockMutex::STRATEGY_BUSY; // @phpstan-ignore property.notFound
+            $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
 
             return $lock->popsValue();
         }];
@@ -118,10 +118,10 @@ class MutexTest extends TestCase
 
         if (getenv('MEMCACHE_HOST')) {
             yield 'MemcachedMutex' => [static function (): Mutex {
-                $memcache = new \Memcached();
-                $memcache->addServer(getenv('MEMCACHE_HOST'), 11211);
+                $memcached = new \Memcached();
+                $memcached->addServer(getenv('MEMCACHE_HOST'), 11211);
 
-                return new MemcachedMutex('test', $memcache, self::TIMEOUT);
+                return new MemcachedMutex('test', $memcached, self::TIMEOUT);
             }];
         }
 

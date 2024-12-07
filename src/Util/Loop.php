@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Util;
 
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 
 /**
  * Repeats executing a code until it was successful.
@@ -19,30 +19,8 @@ class Loop
     /** Maximum time that we want to wait, between lock checks. In micro seconds. */
     private const MAXIMUM_WAIT_US = 5e5; // 0.50 seconds
 
-    /** @var float The timeout in seconds */
-    private $timeout;
-
-    /** @var bool true While code execution is repeating */
-    private $looping = false;
-
-    /**
-     * Sets the timeout.
-     *
-     * @param float $timeout the timeout in seconds
-     *
-     * @throws \LengthException The timeout must be greater than 0
-     */
-    public function __construct(float $timeout = 3)
-    {
-        if ($timeout <= 0) {
-            throw new \LengthException(\sprintf(
-                'The timeout must be greater than 0 (%d was given)',
-                $timeout
-            ));
-        }
-
-        $this->timeout = $timeout;
-    }
+    /** True while code execution is repeating */
+    private bool $looping = false;
 
     /**
      * Notifies that this was the last iteration.
@@ -64,19 +42,28 @@ class Loop
      *
      * @template T
      *
-     * @param callable(): T $code The to be executed code callback
+     * @param callable(): T $code    The to be executed code callback
+     * @param float         $timeout In seconds
      *
      * @return T
      *
-     * @throws \Exception       The execution callback threw an exception
-     * @throws TimeoutException The timeout has been reached
+     * @throws \Exception                  The execution callback threw an exception
+     * @throws LockAcquireTimeoutException The timeout has been reached
      */
-    public function execute(callable $code)
+    public function execute(callable $code, float $timeout)
     {
+        if ($timeout < 0 || is_nan($timeout)) {
+            throw new \InvalidArgumentException(\sprintf(
+                'The lock acquire timeout must be greater than or equal to %s (%s was given)',
+                LockUtil::getInstance()->formatTimeout(0),
+                LockUtil::getInstance()->formatTimeout($timeout)
+            ));
+        }
+
         $this->looping = true;
 
         // At this time, the lock will timeout.
-        $deadline = microtime(true) + $this->timeout;
+        $deadline = microtime(true) + $timeout;
 
         $result = null;
         for ($i = 0; $this->looping && microtime(true) < $deadline; ++$i) { // @phpstan-ignore booleanAnd.leftAlwaysTrue
@@ -92,7 +79,7 @@ class Loop
 
             // We've ran out of time.
             if ($usecRemaining <= 0) {
-                throw TimeoutException::create($this->timeout);
+                break;
             }
 
             $min = min(
@@ -106,6 +93,6 @@ class Loop
             usleep($usecToSleep);
         }
 
-        throw TimeoutException::create($this->timeout);
+        throw LockAcquireTimeoutException::create($timeout);
     }
 }

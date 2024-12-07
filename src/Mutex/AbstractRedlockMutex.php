@@ -22,22 +22,17 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
 {
     use LoggerAwareTrait;
 
-    /** @var string The random value token for key identification */
-    private $token;
-
     /** @var array<int, TClient> */
-    private $clients;
+    private array $clients;
+
+    private string $token;
 
     /**
-     * Sets the Redis APIs.
-     *
      * The Redis APIs needs to be connected. I.e. Redis::connect() was
      * called already.
      *
      * @param array<int, TClient> $clients
      * @param float               $timeout The timeout in seconds a lock expires
-     *
-     * @throws \LengthException The timeout must be greater than 0
      */
     public function __construct(array $clients, string $name, float $timeout = 3)
     {
@@ -95,7 +90,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
 
             throw new LockAcquireException(
                 'It\'s not possible to acquire a lock because at least half of the Redis server are not available',
-                LockAcquireException::REDIS_NOT_ENOUGH_SERVERS,
+                LockAcquireException::CODE_REDLOCK_NOT_ENOUGH_SERVERS,
                 $exception
             );
         }
@@ -112,16 +107,17 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
          *
          * @link https://redis.io/commands/set
          */
-        $script = 'if redis.call("get", KEYS[1]) == ARGV[1] then
+        $script = <<<'EOD'
+            if redis.call("get", KEYS[1]) == ARGV[1] then
                 return redis.call("del", KEYS[1])
             else
                 return 0
             end
-        ';
+            EOD;
         $released = 0;
         foreach ($this->clients as $index => $client) {
             try {
-                if ($this->evalScript($client, $script, 1, [$key, $this->token])) {
+                if ($this->evalScript($client, $script, [$key], [$this->token])) {
                     ++$released;
                 }
             } catch (LockReleaseException $e) {
@@ -157,17 +153,16 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
      *
      * @return bool True if the key was set
      */
-    abstract protected function add($client, string $key, string $value, float $expire): bool;
+    abstract protected function add(object $client, string $key, string $value, float $expire): bool;
 
     /**
-     * @param TClient     $client
-     * @param string      $script    The Lua script
-     * @param int         $numkeys   The number of values in $arguments that represent Redis key names
-     * @param list<mixed> $arguments Keys and values
+     * @param TClient      $client
+     * @param list<string> $keys
+     * @param list<mixed>  $arguments
      *
      * @return mixed The script result, or false if executing failed
      *
      * @throws LockReleaseException An unexpected error happened
      */
-    abstract protected function evalScript($client, string $script, int $numkeys, array $arguments);
+    abstract protected function evalScript(object $client, string $luaScript, array $keys, array $arguments);
 }

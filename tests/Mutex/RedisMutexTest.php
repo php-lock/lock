@@ -9,7 +9,6 @@ use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
 use Malkusch\Lock\Mutex\RedisMutex;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 
@@ -63,11 +62,8 @@ if (\PHP_MAJOR_VERSION >= 8) {
  * REDIS_URIS - a comma separated list of redis:// URIs.
  *
  * @requires extension redis
- *
- * @group redis
  */
 #[RequiresPhpExtension('redis')]
-#[Group('redis')]
 class RedisMutexTest extends TestCase
 {
     /** @var \Redis[] */
@@ -82,7 +78,7 @@ class RedisMutexTest extends TestCase
         parent::setUp();
 
         if (!getenv('REDIS_URIS')) {
-            self::markTestSkipped('Redis server is needed');
+            self::markTestSkipped('Redis server is required');
         }
 
         $redisUris = explode(',', getenv('REDIS_URIS'));
@@ -190,12 +186,12 @@ class RedisMutexTest extends TestCase
     public function testAddFails(): void
     {
         $this->expectException(LockAcquireException::class);
-        $this->expectExceptionCode(MutexException::REDIS_NOT_ENOUGH_SERVERS);
+        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
 
         $this->closeMajorityConnections();
 
         $this->mutex->synchronized(static function (): void {
-            self::fail('Code execution is not expected');
+            self::fail();
         });
     }
 

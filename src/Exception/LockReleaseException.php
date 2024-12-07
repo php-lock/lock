@@ -5,31 +5,22 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Exception;
 
 /**
- * Lock release exception.
+ * Failed to release the lock.
  *
- * Failed to release the lock. Take this exception very serious. Failing to
- * release a lock might have the potential to introduce deadlocks. Also the
+ * Take this exception very serious.
+ *
+ * Failing to release a lock might have the potential to introduce deadlocks. Also the
  * critical code was executed i.e. side effects may have happened.
  */
 class LockReleaseException extends MutexException
 {
-    /**
-     * Result that has been returned during the critical code execution.
-     *
-     * @var mixed
-     */
+    /** @var mixed */
     private $codeResult;
 
-    /**
-     * Exception that has happened during the critical code execution.
-     *
-     * @var \Throwable|null
-     */
-    private $codeException;
+    private ?\Throwable $codeException = null;
 
     /**
-     * Gets the result that has been returned during the critical code
-     * execution.
+     * Gets the result that has been returned during the critical code execution.
      *
      * @return mixed The return value of the executed code block
      */
@@ -39,10 +30,7 @@ class LockReleaseException extends MutexException
     }
 
     /**
-     * Sets the result that has been returned during the critical code
-     * execution.
-     *
-     * @param mixed $codeResult The return value of the executed code block
+     * @param mixed $codeResult
      *
      * @return $this
      */
@@ -54,10 +42,7 @@ class LockReleaseException extends MutexException
     }
 
     /**
-     * Gets the exception that has happened during the synchronized code
-     * execution.
-     *
-     * @return \Throwable|null The exception thrown by the code block or null when there has been no exception
+     * Gets the exception that has happened during the synchronized code execution.
      */
     public function getCodeException(): ?\Throwable
     {
@@ -65,11 +50,6 @@ class LockReleaseException extends MutexException
     }
 
     /**
-     * Sets the exception that has happened during the critical code
-     * execution.
-     *
-     * @param \Throwable $codeException The exception thrown by the code block
-     *
      * @return $this
      */
     public function setCodeException(\Throwable $codeException): self

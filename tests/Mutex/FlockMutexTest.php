@@ -6,7 +6,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 
 use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Exception\DeadlineException;
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Util\LockUtil;
 use Malkusch\Lock\Util\PcntlTimeout;
@@ -45,7 +45,7 @@ class FlockMutexTest extends TestCase
      * @dataProvider provideTimeoutableStrategiesCases
      */
     #[DataProvider('provideTimeoutableStrategiesCases')]
-    public function testCodeExecutedOutsideLockIsNotThrown(int $strategy): void
+    public function testCodeExecutedOutsideLockIsNotThrown(string $strategy): void
     {
         $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
 
@@ -62,10 +62,10 @@ class FlockMutexTest extends TestCase
      * @dataProvider provideTimeoutableStrategiesCases
      */
     #[DataProvider('provideTimeoutableStrategiesCases')]
-    public function testTimeoutOccurs(int $strategy): void
+    public function testAcquireTimeoutOccurs(string $strategy): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
 
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, \LOCK_EX);
@@ -75,7 +75,7 @@ class FlockMutexTest extends TestCase
         try {
             $this->mutex->synchronized(
                 static function () {
-                    self::fail('Did not expect code to be executed');
+                    self::fail();
                 }
             );
         } finally {
@@ -88,8 +88,8 @@ class FlockMutexTest extends TestCase
      */
     public static function provideTimeoutableStrategiesCases(): iterable
     {
-        yield [FlockMutex::STRATEGY_PCNTL];
-        yield [FlockMutex::STRATEGY_BUSY];
+        yield [\Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)()];
+        yield [\Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)()];
     }
 
     public function testNoTimeoutWaitsForever(): void
@@ -99,12 +99,12 @@ class FlockMutexTest extends TestCase
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, \LOCK_EX);
 
-        $this->mutex->strategy = FlockMutex::STRATEGY_BLOCK; // @phpstan-ignore property.private
+        $this->mutex->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_BLOCK, null, FlockMutex::class)(); // @phpstan-ignore property.private
 
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {
             $this->mutex->synchronized(static function (): void {
-                self::fail('Did not expect code execution');
+                self::fail();
             });
         });
     }
