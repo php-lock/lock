@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Util;
 
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 
 /**
  * Repeats executing a code until it was successful.
@@ -69,7 +69,7 @@ class Loop
      * @return T
      *
      * @throws \Exception       The execution callback threw an exception
-     * @throws TimeoutException The timeout has been reached
+     * @throws LockAcquireTimeoutException The timeout has been reached
      */
     public function execute(callable $code)
     {
@@ -92,7 +92,7 @@ class Loop
 
             // We've ran out of time.
             if ($usecRemaining <= 0) {
-                throw TimeoutException::create($this->timeout);
+                break;
             }
 
             $min = min(
@@ -106,6 +106,6 @@ class Loop
             usleep($usecToSleep);
         }
 
-        throw TimeoutException::create($this->timeout);
+        throw LockAcquireTimeoutException::create($this->timeout);
     }
 }

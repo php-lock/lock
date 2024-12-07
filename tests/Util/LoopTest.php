@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Util;
 
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Util\Loop;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
@@ -62,10 +62,10 @@ class LoopTest extends TestCase
     /**
      * Tests execution within the timeout without calling end().
      */
-    public function testExecutionWithinTimeoutWithoutExplicitEnd(): void
+    public function testExecutionWithinAcquireTimeoutWithoutExplicitEnd(): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
 
         $loop = new Loop(0.5);
         $loop->execute(static function (): void {
@@ -91,10 +91,10 @@ class LoopTest extends TestCase
     /**
      * Tests exceeding the execution timeout without calling end().
      */
-    public function testExceedTimeoutWithoutExplicitEnd(): void
+    public function testExceedAcquireTimeoutWithoutExplicitEnd(): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 0.5 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
 
         $loop = new Loop(0.5);
         $loop->execute(static function (): void {

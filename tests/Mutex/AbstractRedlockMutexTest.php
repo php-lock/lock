@@ -7,7 +7,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\AbstractRedlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
@@ -143,8 +143,8 @@ class AbstractRedlockMutexTest extends TestCase
     #[DataProvider('provideMinorityCases')]
     public function testAcquireTooFewKeys(int $count, int $available): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
 
         $mutex = $this->createRedlockMutexMock($count);
 
@@ -171,18 +171,18 @@ class AbstractRedlockMutexTest extends TestCase
      * @param float $timeout The timeout in seconds
      * @param float $delay   The delay in seconds
      *
-     * @dataProvider provideTimingOutCases
+     * @dataProvider provideAcquireTimeoutsCases
      */
-    #[DataProvider('provideTimingOutCases')]
-    public function testTimingOut(int $count, float $timeout, float $delay): void
+    #[DataProvider('provideAcquireTimeoutsCases')]
+    public function testAcquireTimeouts(int $count, float $timeout, float $delay): void
     {
         $timeoutStr = (string) round($timeout, 6);
         if (strpos($timeoutStr, '.') === false) {
             $timeoutStr .= '.0';
         }
 
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of ' . $timeoutStr . ' seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of ' . $timeoutStr . ' seconds has been exceeded');
 
         $mutex = $this->createRedlockMutexMock($count, $timeout);
 
@@ -202,7 +202,7 @@ class AbstractRedlockMutexTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public static function provideTimingOutCases(): iterable
+    public static function provideAcquireTimeoutsCases(): iterable
     {
         yield [1, 1.2 - 1, 1.201];
         yield [2, 1.2 - 1, 1.401];

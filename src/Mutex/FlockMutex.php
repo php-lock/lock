@@ -7,7 +7,7 @@ namespace Malkusch\Lock\Mutex;
 use Malkusch\Lock\Exception\DeadlineException;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Util\Loop;
 use Malkusch\Lock\Util\PcntlTimeout;
 
@@ -86,7 +86,7 @@ class FlockMutex extends AbstractLockMutex
 
     /**
      * @throws LockAcquireException
-     * @throws TimeoutException
+     * @throws LockAcquireTimeoutException
      */
     private function lockPcntl(): void
     {
@@ -101,12 +101,12 @@ class FlockMutex extends AbstractLockMutex
                 }
             );
         } catch (DeadlineException $e) {
-            throw TimeoutException::create($timeoutInt);
+            throw LockAcquireTimeoutException::create($timeoutInt);
         }
     }
 
     /**
-     * @throws TimeoutException
+     * @throws LockAcquireTimeoutException
      * @throws LockAcquireException
      */
     private function lockBusy(): void
@@ -138,7 +138,7 @@ class FlockMutex extends AbstractLockMutex
 
     /**
      * @throws LockAcquireException
-     * @throws TimeoutException
+     * @throws LockAcquireTimeoutException
      */
     #[\Override]
     protected function lock(): void

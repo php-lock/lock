@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Util\LockUtil;
 
 class MySQLMutex extends AbstractLockMutex
@@ -61,7 +61,7 @@ class MySQLMutex extends AbstractLockMutex
             throw new LockAcquireException('An error occurred while acquiring the lock');
         }
 
-        throw TimeoutException::create($this->timeout);
+        throw LockAcquireTimeoutException::create($this->timeout);
     }
 
     #[\Override]

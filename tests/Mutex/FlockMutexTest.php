@@ -6,7 +6,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 
 use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Exception\DeadlineException;
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Util\LockUtil;
 use Malkusch\Lock\Util\PcntlTimeout;
@@ -62,10 +62,10 @@ class FlockMutexTest extends TestCase
      * @dataProvider provideTimeoutableStrategiesCases
      */
     #[DataProvider('provideTimeoutableStrategiesCases')]
-    public function testTimeoutOccurs(int $strategy): void
+    public function testAcquireTimeoutOccurs(int $strategy): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 1.0 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
 
         $another_resource = fopen($this->file, 'r');
         flock($another_resource, \LOCK_EX);

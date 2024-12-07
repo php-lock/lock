@@ -7,7 +7,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 use Malkusch\Lock\Exception\ExecutionOutsideLockException;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
-use Malkusch\Lock\Exception\TimeoutException;
+use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
@@ -69,10 +69,10 @@ class AbstractSpinlockMutexTest extends TestCase
     /**
      * Tests failing to acquire the lock due to a timeout.
      */
-    public function testAcquireTimesOut(): void
+    public function testAcquireTimeouts(): void
     {
-        $this->expectException(TimeoutException::class);
-        $this->expectExceptionMessage('Timeout of 3.0 seconds exceeded');
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 3.0 seconds has been exceeded');
 
         $mutex = $this->createSpinlockMutexMock();
         $mutex->expects(self::atLeastOnce())
