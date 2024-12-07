@@ -17,7 +17,7 @@ use Malkusch\Lock\Util\LockUtil;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
-use Predis\Client;
+use Predis\Client as PredisClient;
 use Spatie\Async\Pool;
 
 /**
@@ -277,9 +277,9 @@ class MutexConcurrencyTest extends TestCase
         if (getenv('REDIS_URIS')) {
             $uris = explode(',', getenv('REDIS_URIS'));
 
-            yield 'PredisMutex' => [static function ($timeout) use ($uris): Mutex {
+            yield 'RedisMutex /w Predis' => [static function ($timeout) use ($uris): Mutex {
                 $clients = array_map(
-                    static fn ($uri) => new Client($uri),
+                    static fn ($uri) => new PredisClient($uri),
                     $uris
                 );
 
@@ -287,7 +287,7 @@ class MutexConcurrencyTest extends TestCase
             }];
 
             if (class_exists(\Redis::class)) {
-                yield 'PHPRedisMutex' => [
+                yield 'RedisMutex /w PHPRedis' => [
                     static function ($timeout) use ($uris): Mutex {
                         $apis = array_map(
                             static function (string $uri): \Redis {

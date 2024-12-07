@@ -11,11 +11,11 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Predis\ClientInterface;
+use Predis\ClientInterface as PredisClientInterface;
 use Predis\PredisException;
 use Psr\Log\LoggerInterface;
 
-interface ClientInterfaceWithSetAndEvalMethods extends ClientInterface
+interface PredisClientInterfaceWithSetAndEvalMethods extends PredisClientInterface
 {
     /**
      * @return mixed
@@ -32,9 +32,9 @@ interface ClientInterfaceWithSetAndEvalMethods extends ClientInterface
  * @group redis
  */
 #[Group('redis')]
-class PredisMutexTest extends TestCase
+class RedisMutexWithPredisTest extends TestCase
 {
-    /** @var ClientInterface&MockObject */
+    /** @var PredisClientInterface&MockObject */
     private $client;
 
     /** @var RedisMutex */
@@ -48,7 +48,7 @@ class PredisMutexTest extends TestCase
     {
         parent::setUp();
 
-        $this->client = $this->createMock(ClientInterfaceWithSetAndEvalMethods::class);
+        $this->client = $this->createMock(PredisClientInterfaceWithSetAndEvalMethods::class);
 
         $this->mutex = new RedisMutex([$this->client], 'test', 2.5);
 
