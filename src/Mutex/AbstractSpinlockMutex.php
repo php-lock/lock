@@ -27,8 +27,6 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
     private $acquiredTs;
 
     /**
-     * Sets the timeout.
-     *
      * @param float $timeout The timeout in seconds a lock expires
      */
     public function __construct(string $name, float $timeout = 3)

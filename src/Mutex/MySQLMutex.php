@@ -18,6 +18,9 @@ class MySQLMutex extends AbstractLockMutex
     /** @var float */
     private $timeout;
 
+    /**
+     * @param float $timeout In seconds
+     */
     public function __construct(\PDO $PDO, string $name, float $timeout = 0)
     {
         $this->pdo = $PDO;

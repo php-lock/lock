@@ -26,8 +26,6 @@ class DoubleCheckedLocking
     private $check;
 
     /**
-     * Constructs a new instance of the DoubleCheckedLocking pattern.
-     *
      * @param Mutex            $mutex Provides methods for exclusive code execution
      * @param callable(): bool $check Callback that decides if the lock should be acquired and if the critical code
      *                                callback should be executed after acquiring the lock

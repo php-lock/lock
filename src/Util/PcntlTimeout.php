@@ -18,16 +18,11 @@ use Malkusch\Lock\Exception\LockAcquireException;
  */
 final class PcntlTimeout
 {
-    /** @var int Timeout in seconds */
+    /** @var int In seconds */
     private $timeout;
 
     /**
-     * Builds the timeout.
-     *
-     * @param int $timeout Timeout in seconds
-     *
-     * @throws \RuntimeException         When the PCNTL module is not enabled
-     * @throws \InvalidArgumentException When the timeout is zero or negative
+     * @param int $timeout In seconds
      */
     public function __construct(int $timeout)
     {

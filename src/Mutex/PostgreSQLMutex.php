@@ -14,9 +14,6 @@ class PostgreSQLMutex extends AbstractLockMutex
     /** @var array{int, int} */
     private array $key;
 
-    /**
-     * @throws \RuntimeException
-     */
     public function __construct(\PDO $PDO, string $name)
     {
         $this->pdo = $PDO;

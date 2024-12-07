@@ -13,8 +13,6 @@ class MemcachedMutex extends AbstractSpinlockMutex
     private $memcached;
 
     /**
-     * Sets the lock's name and the connected Memcached API.
-     *
      * The Memcached API needs to have at least one server in its pool. I.e.
      * it has to be added with Memcached::addServer().
      *

@@ -34,8 +34,6 @@ class FlockMutex extends AbstractLockMutex
     private $strategy;
 
     /**
-     * Sets the file handle.
-     *
      * @param resource $fileHandle
      */
     public function __construct($fileHandle, float $timeout = self::INFINITE_TIMEOUT)

@@ -16,8 +16,6 @@ class SemaphoreMutex extends AbstractLockMutex
     private $semaphore;
 
     /**
-     * Sets the semaphore id.
-     *
      * Use {@link sem_get()} to create the semaphore id.
      *
      * Example:
@@ -27,8 +25,6 @@ class SemaphoreMutex extends AbstractLockMutex
      * </code>
      *
      * @param \SysvSemaphore|resource $semaphore The semaphore id
-     *
-     * @throws \InvalidArgumentException The semaphore id is not a valid resource
      */
     public function __construct($semaphore)
     {

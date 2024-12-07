@@ -29,8 +29,6 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
     private $clients;
 
     /**
-     * Sets the Redis APIs.
-     *
      * The Redis APIs needs to be connected. I.e. Redis::connect() was
      * called already.
      *

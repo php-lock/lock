@@ -24,8 +24,6 @@ class TransactionalMutex extends AbstractMutex
     private float $acquireTimeout;
 
     /**
-     * Sets the PDO.
-     *
      * The PDO object MUST be configured with PDO::ATTR_ERRMODE
      * to throw exceptions on errors.
      *
