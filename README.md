@@ -1,6 +1,7 @@
 **[Requirements](#requirements)** |
 **[Installation](#installation)** |
 **[Usage](#usage)** |
+**[Authors](#authors)** |
 **[License](#license)**
 
 # php-lock/lock
@@ -350,9 +351,9 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 
 ## Authors
 
-Since year 2015 the development was led by Markus Malkusch, Willem Stuursma-Ruwen, Michael Voříšek and many GitHub contributors.
+Since year 2015 the development was led by Markus Malkusch, Willem Stuursma-Ruwen and many GitHub contributors.
 
-Currently this library is maintained by Michael Voříšek - [GitHub][https://github.com/mvorisek] and [LinkedIn][https://www.linkedin.com/mvorisek].
+Currently this library is maintained by Michael Voříšek - [GitHub](https://github.com/mvorisek) | [LinkedIn](https://www.linkedin.com/mvorisek).
 
 Commercial support is available.
 
@@ -364,10 +365,10 @@ This project is free and is licensed under the MIT.
 [2]: https://github.com/nrk/predis
 [3]: http://php.net/manual/en/book.pcntl.php
 [4]: https://getcomposer.org/
-[5]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L15
-[6]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L38
-[7]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/Mutex.php#L60
-[8]: https://github.com/php-lock/lock/blob/35526aee28/src/util/DoubleCheckedLocking.php#L63
+[5]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/Mutex.php#L15
+[6]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/Mutex.php#L38
+[7]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/Mutex.php#L60
+[8]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Util/DoubleCheckedLocking.php#L61
 [9]: https://en.wikipedia.org/wiki/Double-checked_locking
-[10]: https://github.com/php-lock/lock/blob/35526aee28/src/mutex/LockMutex.php
-[11]: https://github.com/php-lock/lock/blob/35526aee28/src/exception/LockReleaseException.php
+[10]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/AbstractLockMutex.php
+[11]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Exception/LockReleaseException.php
