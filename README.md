@@ -10,9 +10,9 @@
 [![Build Status](https://github.com/php-lock/lock/actions/workflows/test-unit.yml/badge.svg?branch=master)](https://github.com/php-lock/lock/actions?query=branch:master)
 [![License](https://poser.pugx.org/malkusch/lock/license)](https://packagist.org/packages/malkusch/lock)
 
-This library helps executing critical code in concurrent situations.
+This library helps executing critical code in concurrent situations in serialized fashion.
 
-php-lock/lock follows semantic versioning. Read more on [semver.org][1].
+php-lock/lock follows [semantic versioning][1].
 
 ----
 
@@ -219,6 +219,8 @@ The **RedisMutex** is the distributed lock implementation of
 [`phpredis` extension](https://github.com/phpredis/phpredis)
 or [`Predis` API](https://github.com/nrk/predis).
 
+Both Redis and Valkey servers are supported.
+
 If used with a cluster of Redis servers, acquiring and releasing locks will
 continue to function as long as a majority of the servers still works.
 
@@ -293,6 +295,8 @@ $mutex->synchronized(function () use ($pdo, $accountId, $amount) {
 The **MySQLMutex** uses MySQL's
 [`GET_LOCK`](https://dev.mysql.com/doc/refman/9.0/en/locking-functions.html#function_get-lock)
 function.
+
+Both MySQL and MariaDB servers are supported.
 
 It supports timeouts. If the connection to the database server is lost or
 interrupted, the lock is automatically released.
