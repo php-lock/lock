@@ -35,7 +35,7 @@ class AbstractRedlockMutexTest extends TestCase
             $this->registerForTearDown($sleep);
         } catch (MockEnabledException $e) {
             // workaround for burn testing
-            \assert($e->getMessage() === 'microtime is already enabled.Call disable() on the existing mock.');
+            \assert($e->getMessage() === 'microtime is already enabled. Call disable() on the existing mock.');
         }
     }
 
