@@ -22,6 +22,8 @@ class RedisMutex extends AbstractRedlockMutex
 {
     /**
      * @param TClient $client
+     *
+     * @phpstan-assert-if-true \Redis|\RedisCluster $client
      */
     private function isClientPHPRedis($client): bool
     {
