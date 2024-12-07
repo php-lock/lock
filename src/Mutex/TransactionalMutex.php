@@ -104,7 +104,7 @@ class TransactionalMutex extends AbstractMutex
                 $this->loop->end();
 
                 return $result;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->rollBack($e);
 
                 if (self::hasPDOException($e)) {
@@ -132,11 +132,9 @@ class TransactionalMutex extends AbstractMutex
     /**
      * Rolls back a transaction.
      *
-     * @param \Exception $exception The causing exception
-     *
      * @throws LockAcquireException The roll back failed
      */
-    private function rollBack(\Exception $exception): void
+    private function rollBack(\Throwable $exception): void
     {
         try {
             $this->pdo->rollBack();
