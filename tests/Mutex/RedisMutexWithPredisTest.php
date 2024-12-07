@@ -45,7 +45,7 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->client = $this->createMock(PredisClientInterfaceWithSetAndEvalMethods::class);
 
-        $this->mutex = new RedisMutex([$this->client], 'test', 2.5);
+        $this->mutex = new RedisMutex([$this->client], 'test', 2.5, 3);
 
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->mutex->setLogger($this->logger);
@@ -58,7 +58,7 @@ class RedisMutexWithPredisTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 4000, 'NX')
             ->willReturn(null);
 
         $this->logger->expects(self::never())
@@ -80,7 +80,7 @@ class RedisMutexWithPredisTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 4000, 'NX')
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects(self::once())
@@ -100,7 +100,7 @@ class RedisMutexWithPredisTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 4000, 'NX')
             ->willReturnSelf();
 
         $this->client->expects(self::once())
@@ -124,7 +124,7 @@ class RedisMutexWithPredisTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 4000, 'NX')
             ->willReturnSelf();
 
         $this->client->expects(self::once())
