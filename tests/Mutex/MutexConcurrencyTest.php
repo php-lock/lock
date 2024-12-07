@@ -270,7 +270,7 @@ class MutexConcurrencyTest extends TestCase
                 $memcached = new \Memcached();
                 $memcached->addServer(getenv('MEMCACHE_HOST'), 11211);
 
-                return new MemcachedMutex('test', $memcached, $timeout);
+                return new MemcachedMutex('test', $memcached, $timeout, $timeout); // TODO 2nd timeout should be probably different
             }];
         }
 
@@ -283,7 +283,7 @@ class MutexConcurrencyTest extends TestCase
                     $uris
                 );
 
-                return new RedisMutex($clients, 'test', $timeout);
+                return new RedisMutex($clients, 'test', $timeout, $timeout); // TODO 2nd timeout should be probably different
             }];
 
             if (class_exists(\Redis::class)) {
@@ -308,7 +308,7 @@ class MutexConcurrencyTest extends TestCase
                             $uris
                         );
 
-                        return new RedisMutex($clients, 'test', $timeout);
+                        return new RedisMutex($clients, 'test', $timeout, $timeout); // TODO 2nd timeout should be probably different
                     },
                 ];
             }

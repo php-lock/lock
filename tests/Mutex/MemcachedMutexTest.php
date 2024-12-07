@@ -31,7 +31,7 @@ class MemcachedMutexTest extends TestCase
         parent::setUp();
 
         $this->memcached = $this->createMock(\Memcached::class);
-        $this->mutex = new MemcachedMutex('test', $this->memcached, 1);
+        $this->mutex = new MemcachedMutex('test', $this->memcached, 1, 1); // TODO 2nd timeout should be probably different
     }
 
     /**
