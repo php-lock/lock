@@ -32,11 +32,11 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockMutex implements Log
      * called already.
      *
      * @param array<int, TClient> $clients
-     * @param float               $timeout In seconds
+     * @param float               $acquireTimeout In seconds
      */
-    public function __construct(array $clients, string $name, float $timeout = 3)
+    public function __construct(array $clients, string $name, float $acquireTimeout = 3)
     {
-        parent::__construct($name, $timeout);
+        parent::__construct($name, $acquireTimeout);
 
         $this->clients = $clients;
         $this->logger = new NullLogger();

@@ -19,30 +19,29 @@ class FlockMutex extends AbstractLockMutex
     public const INFINITE_TIMEOUT = -1.0;
 
     private const STRATEGY_BLOCK = 'block';
-
     private const STRATEGY_PCNTL = 'pcntl';
-
     private const STRATEGY_LOOP = 'loop';
 
     /** @var resource */
     private $fileHandle;
 
-    private float $timeout;
+    private float $acquireTimeout;
 
     /** @var self::STRATEGY_* */
     private $strategy;
 
     /**
      * @param resource $fileHandle
+     * @param float    $acquireTimeout In seconds
      */
-    public function __construct($fileHandle, float $timeout = self::INFINITE_TIMEOUT)
+    public function __construct($fileHandle, float $acquireTimeout = self::INFINITE_TIMEOUT)
     {
         if (!is_resource($fileHandle)) {
             throw new \InvalidArgumentException('The file handle is not a valid resource');
         }
 
         $this->fileHandle = $fileHandle;
-        $this->timeout = $timeout;
+        $this->acquireTimeout = $acquireTimeout;
         $this->strategy = $this->determineLockingStrategy();
     }
 
@@ -51,7 +50,7 @@ class FlockMutex extends AbstractLockMutex
      */
     private function determineLockingStrategy(): string
     {
-        if ($this->timeout === self::INFINITE_TIMEOUT) {
+        if ($this->acquireTimeout === self::INFINITE_TIMEOUT) {
             return self::STRATEGY_BLOCK;
         }
 
@@ -71,9 +70,9 @@ class FlockMutex extends AbstractLockMutex
 
     private function lockPcntl(): void
     {
-        $timeoutInt = (int) ceil($this->timeout);
+        $acquireTimeoutInt = (int) ceil($this->acquireTimeout);
 
-        $timebox = new PcntlTimeout($timeoutInt);
+        $timebox = new PcntlTimeout($acquireTimeoutInt);
 
         try {
             $timebox->timeBoxed(
@@ -82,7 +81,7 @@ class FlockMutex extends AbstractLockMutex
                 }
             );
         } catch (DeadlineException $e) {
-            throw LockAcquireTimeoutException::create($timeoutInt);
+            throw LockAcquireTimeoutException::create($acquireTimeoutInt);
         }
     }
 
@@ -94,7 +93,7 @@ class FlockMutex extends AbstractLockMutex
             if ($this->acquireNonBlockingLock()) {
                 $loop->end();
             }
-        }, $this->timeout);
+        }, $this->acquireTimeout);
     }
 
     private function acquireNonBlockingLock(): bool

@@ -15,12 +15,12 @@ class MySQLMutex extends AbstractLockMutex
     private string $name;
 
     /** In seconds */
-    private float $timeout;
+    private float $acquireTimeout;
 
     /**
-     * @param float $timeout In seconds
+     * @param float $acquireTimeout In seconds
      */
-    public function __construct(\PDO $PDO, string $name, float $timeout = 0)
+    public function __construct(\PDO $PDO, string $name, float $acquireTimeout = 0)
     {
         $this->pdo = $PDO;
 
@@ -31,7 +31,7 @@ class MySQLMutex extends AbstractLockMutex
         }
 
         $this->name = $namePrefix . $name;
-        $this->timeout = $timeout;
+        $this->acquireTimeout = $acquireTimeout;
     }
 
     #[\Override]
@@ -43,11 +43,11 @@ class MySQLMutex extends AbstractLockMutex
         // TODO MariaDB supports microseconds precision since 10.1.2 version,
         // but we need to detect the support reliably first
         // https://github.com/MariaDB/server/commit/3e792e6cbccb5d7bf5b84b38336f8a40ad232020
-        $timeoutInt = (int) ceil($this->timeout);
+        $acquireTimeoutInt = (int) ceil($this->acquireTimeout);
 
         $statement->execute([
             $this->name,
-            $timeoutInt,
+            $acquireTimeoutInt,
         ]);
 
         $statement->setFetchMode(\PDO::FETCH_NUM);
@@ -63,7 +63,7 @@ class MySQLMutex extends AbstractLockMutex
             throw new LockAcquireException('An error occurred while acquiring the lock');
         }
 
-        throw LockAcquireTimeoutException::create($this->timeout);
+        throw LockAcquireTimeoutException::create($this->acquireTimeout);
     }
 
     #[\Override]
