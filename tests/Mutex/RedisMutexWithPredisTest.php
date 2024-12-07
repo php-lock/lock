@@ -73,7 +73,7 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->mutex->synchronized(
             static function (): void {
-                self::fail('Code execution is not expected');
+                self::fail();
             }
         );
     }
@@ -96,7 +96,7 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->mutex->synchronized(
             static function () {
-                self::fail('Code execution is not expected');
+                self::fail();
             }
         );
     }

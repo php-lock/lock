@@ -94,7 +94,7 @@ class AbstractRedlockMutexTest extends TestCase
             );
 
         $mutex->synchronized(static function (): void {
-            self::fail('Code should not be executed');
+            self::fail();
         });
     }
 
@@ -160,7 +160,7 @@ class AbstractRedlockMutexTest extends TestCase
             );
 
         $mutex->synchronized(static function (): void {
-            self::fail('Code should not be executed');
+            self::fail();
         });
     }
 
@@ -195,7 +195,7 @@ class AbstractRedlockMutexTest extends TestCase
             });
 
         $mutex->synchronized(static function (): void {
-            self::fail('Code should not be executed');
+            self::fail();
         });
     }
 

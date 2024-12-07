@@ -62,7 +62,7 @@ class AbstractSpinlockMutexTest extends TestCase
             ->willThrowException(new LockAcquireException());
 
         $mutex->synchronized(static function () {
-            self::fail('execution is not expected');
+            self::fail();
         });
     }
 
@@ -80,7 +80,7 @@ class AbstractSpinlockMutexTest extends TestCase
             ->willReturn(false);
 
         $mutex->synchronized(static function () {
-            self::fail('execution is not expected');
+            self::fail();
         });
     }
 

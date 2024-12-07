@@ -47,7 +47,7 @@ class MemcachedMutexTest extends TestCase
             ->willReturn(false);
 
         $this->mutex->synchronized(static function (): void {
-            self::fail('execution is not expected');
+            self::fail();
         });
     }
 

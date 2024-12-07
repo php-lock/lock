@@ -75,7 +75,7 @@ class FlockMutexTest extends TestCase
         try {
             $this->mutex->synchronized(
                 static function () {
-                    self::fail('Did not expect code to be executed');
+                    self::fail();
                 }
             );
         } finally {
@@ -104,7 +104,7 @@ class FlockMutexTest extends TestCase
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {
             $this->mutex->synchronized(static function (): void {
-                self::fail('Did not expect code execution');
+                self::fail();
             });
         });
     }

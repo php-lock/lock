@@ -195,7 +195,7 @@ class RedisMutexTest extends TestCase
         $this->closeMajorityConnections();
 
         $this->mutex->synchronized(static function (): void {
-            self::fail('Code execution is not expected');
+            self::fail();
         });
     }
 
