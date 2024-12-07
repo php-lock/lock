@@ -18,20 +18,11 @@ class FlockMutex extends AbstractLockMutex
 {
     public const INFINITE_TIMEOUT = -1.0;
 
-    /**
-     * @internal
-     */
-    public const STRATEGY_BLOCK = 1;
+    private const STRATEGY_BLOCK = 'block';
 
-    /**
-     * @internal
-     */
-    public const STRATEGY_PCNTL = 2;
+    private const STRATEGY_PCNTL = 'pcntl';
 
-    /**
-     * @internal
-     */
-    public const STRATEGY_BUSY = 3;
+    private const STRATEGY_LOOP = 'loop';
 
     /** @var resource */
     private $fileHandle;
@@ -61,7 +52,7 @@ class FlockMutex extends AbstractLockMutex
     /**
      * @return self::STRATEGY_*
      */
-    private function determineLockingStrategy(): int
+    private function determineLockingStrategy(): string
     {
         if ($this->timeout === self::INFINITE_TIMEOUT) {
             return self::STRATEGY_BLOCK;
@@ -71,7 +62,7 @@ class FlockMutex extends AbstractLockMutex
             return self::STRATEGY_PCNTL;
         }
 
-        return self::STRATEGY_BUSY;
+        return self::STRATEGY_LOOP;
     }
 
     /**
@@ -153,7 +144,7 @@ class FlockMutex extends AbstractLockMutex
                 $this->lockPcntl();
 
                 return;
-            case self::STRATEGY_BUSY:
+            case self::STRATEGY_LOOP:
                 $this->lockBusy();
 
                 return;

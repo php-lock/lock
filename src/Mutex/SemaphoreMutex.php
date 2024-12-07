@@ -38,9 +38,6 @@ class SemaphoreMutex extends AbstractLockMutex
         $this->semaphore = $semaphore;
     }
 
-    /**
-     * @internal
-     */
     #[\Override]
     protected function lock(): void
     {
@@ -49,9 +46,6 @@ class SemaphoreMutex extends AbstractLockMutex
         }
     }
 
-    /**
-     * @internal
-     */
     #[\Override]
     protected function unlock(): void
     {
