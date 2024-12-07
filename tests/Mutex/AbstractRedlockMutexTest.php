@@ -13,14 +13,9 @@ use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group redis
- */
-#[Group('redis')]
 class AbstractRedlockMutexTest extends TestCase
 {
     use PHPMock;
@@ -52,8 +47,15 @@ class AbstractRedlockMutexTest extends TestCase
     private function createRedlockMutexMock(int $count, float $timeout = 1): AbstractRedlockMutex
     {
         $clients = array_map(
-            static fn ($id) => ['id' => $id],
-            range(1, $count)
+            static fn ($i) => new class($i) {
+                public int $i;
+
+                public function __construct(int $i)
+                {
+                    $this->i = $i;
+                }
+            },
+            range(0, $count - 1)
         );
 
         return $this->getMockBuilder(AbstractRedlockMutex::class)

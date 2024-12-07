@@ -9,7 +9,6 @@ use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
 use Malkusch\Lock\Mutex\RedisMutex;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 
@@ -63,11 +62,8 @@ if (\PHP_MAJOR_VERSION >= 8) {
  * REDIS_URIS - a comma separated list of redis:// URIs.
  *
  * @requires extension redis
- *
- * @group redis
  */
 #[RequiresPhpExtension('redis')]
-#[Group('redis')]
 class RedisMutexTest extends TestCase
 {
     /** @var \Redis[] */
