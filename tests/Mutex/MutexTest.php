@@ -118,10 +118,10 @@ class MutexTest extends TestCase
 
         if (getenv('MEMCACHE_HOST')) {
             yield 'MemcachedMutex' => [static function (): Mutex {
-                $memcache = new \Memcached();
-                $memcache->addServer(getenv('MEMCACHE_HOST'), 11211);
+                $memcached = new \Memcached();
+                $memcached->addServer(getenv('MEMCACHE_HOST'), 11211);
 
-                return new MemcachedMutex('test', $memcache, self::TIMEOUT);
+                return new MemcachedMutex('test', $memcached, self::TIMEOUT);
             }];
         }
 

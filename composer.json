@@ -10,7 +10,7 @@
         "flock",
         "semaphore",
         "redlock",
-        "memcache",
+        "memcached",
         "redis",
         "advisory-locks",
         "mysql",

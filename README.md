@@ -199,10 +199,10 @@ The **MemcachedMutex** is a spinlock implementation which uses the
 
 Example:
 ```php
-$memcache = new \Memcached();
-$memcache->addServer('localhost', 11211);
+$memcached = new \Memcached();
+$memcached->addServer('localhost', 11211);
 
-$mutex = new MemcachedMutex('balance', $memcache);
+$mutex = new MemcachedMutex('balance', $memcached);
 $mutex->synchronized(function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
