@@ -19,14 +19,14 @@ abstract class AbstractLockMutex extends AbstractMutex
      *
      * This method blocks until the lock was acquired.
      *
-     * @throws LockAcquireException The lock could not be acquired
+     * @throws LockAcquireException
      */
     abstract protected function lock(): void;
 
     /**
      * Release the lock.
      *
-     * @throws LockReleaseException The lock could not be released
+     * @throws LockReleaseException
      */
     abstract protected function unlock(): void;
 

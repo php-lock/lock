@@ -129,7 +129,7 @@ class TransactionalMutex extends AbstractMutex
     /**
      * Rolls back a transaction.
      *
-     * @throws LockAcquireException The roll back failed
+     * @throws LockAcquireException
      */
     private function rollBack(\Throwable $exception): void
     {

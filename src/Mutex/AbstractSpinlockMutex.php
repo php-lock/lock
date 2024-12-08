@@ -79,7 +79,7 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
      *
      * @return bool True if the lock was acquired
      *
-     * @throws LockAcquireException an unexpected error happened
+     * @throws LockAcquireException An unexpected error happened
      */
     abstract protected function acquire(string $key, float $expire): bool;
 
