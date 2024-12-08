@@ -33,7 +33,7 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockExpireMutex implemen
      * @param float               $acquireTimeout In seconds
      * @param float               $expireTimeout  In seconds
      */
-    public function __construct(array $clients, string $name, float $acquireTimeout = 3, float $expireTimeout = \PHP_INT_MAX)
+    public function __construct(array $clients, string $name, float $acquireTimeout = 3, float $expireTimeout = \INF)
     {
         parent::__construct($name, $acquireTimeout, $expireTimeout);
 

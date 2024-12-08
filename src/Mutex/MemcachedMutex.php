@@ -20,7 +20,7 @@ class MemcachedMutex extends AbstractSpinlockExpireMutex
      * @param float $acquireTimeout In seconds
      * @param float $expireTimeout  In seconds
      */
-    public function __construct(string $name, \Memcached $memcached, float $acquireTimeout = 3, float $expireTimeout = \PHP_INT_MAX)
+    public function __construct(string $name, \Memcached $memcached, float $acquireTimeout = 3, float $expireTimeout = \INF)
     {
         parent::__construct($name, $acquireTimeout, $expireTimeout);
 

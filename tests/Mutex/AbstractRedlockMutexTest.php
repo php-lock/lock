@@ -45,7 +45,7 @@ class AbstractRedlockMutexTest extends TestCase
      *
      * @return AbstractRedlockMutex<object>&MockObject
      */
-    private function createRedlockMutexMock(int $count, float $acquireTimeout = 1, float $expireTimeout = \PHP_INT_MAX): AbstractRedlockMutex
+    private function createRedlockMutexMock(int $count, float $acquireTimeout = 1, float $expireTimeout = \INF): AbstractRedlockMutex
     {
         $clients = array_map(
             static fn ($i) => new class($i) {

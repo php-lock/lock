@@ -38,7 +38,7 @@ class AbstractSpinlockExpireMutexTest extends TestCase
     /**
      * @return AbstractSpinlockExpireMutex&MockObject
      */
-    private function createSpinlockExpireMutexMock(float $acquireTimeout = 3, float $expireTimeout = \PHP_INT_MAX): AbstractSpinlockExpireMutex
+    private function createSpinlockExpireMutexMock(float $acquireTimeout = 3, float $expireTimeout = \INF): AbstractSpinlockExpireMutex
     {
         return $this->getMockBuilder(AbstractSpinlockExpireMutex::class)
             ->setConstructorArgs(['test', $acquireTimeout, $expireTimeout])
