@@ -66,17 +66,18 @@ abstract class AbstractSpinlockExpireMutex extends AbstractSpinlockMutex
     #[\Override]
     protected function release(string $key): bool
     {
-        // TODO expire timeout should be checked here and token should be always tried to be released
-        $acquireTimeout = \Closure::bind(fn () => $this->acquireTimeout, $this, parent::class)();
-        $elapsedTime = microtime(true) - $this->acquireTs;
-        if ($elapsedTime > $acquireTimeout) {
-            throw ExecutionOutsideLockException::create($elapsedTime, $acquireTimeout);
-        }
-
         try {
             return $this->releaseWithToken($key, $this->token);
         } finally {
-            $this->token = null;
+            try {
+                $elapsedTime = microtime(true) - $this->acquireTs;
+                if ($elapsedTime >= $this->expireTimeout) {
+                    throw ExecutionOutsideLockException::create($elapsedTime, $this->expireTimeout);
+                }
+            } finally {
+                $this->token = null;
+                $this->acquireTs = null;
+            }
         }
     }
 
