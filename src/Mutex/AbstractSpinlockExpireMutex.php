@@ -42,16 +42,7 @@ abstract class AbstractSpinlockExpireMutex extends AbstractSpinlockMutex
     {
         $acquireTs = microtime(true);
 
-        /*
-         * The expiration timeout for the lock is increased by 1 second
-         * to ensure that we delete only our keys. This will prevent the
-         * case that this key expires before the timeout, and another process
-         * acquires successfully the same key which would then be deleted
-         * by this process.
-         *
-         * TODO 1 second should no longer be added as there are two separate timeouts newly - acquire and expire
-         */
-        $token = $this->acquireWithToken($key, $this->expireTimeout + 1);
+        $token = $this->acquireWithToken($key, $this->expireTimeout);
 
         if ($token === false) {
             return false;
