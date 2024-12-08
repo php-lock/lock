@@ -39,10 +39,8 @@ abstract class AbstractLockMutex extends AbstractMutex
         $fxException = null;
         try {
             $fxResult = $fx();
-        } catch (\Throwable $exception) {
-            $fxException = $exception;
-
-            throw $exception;
+        } catch (\Throwable $fxException) {
+            throw $fxException;
         } finally {
             try {
                 $this->unlock();
