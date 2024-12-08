@@ -40,7 +40,7 @@ class RedisMutex extends AbstractRedlockMutex
         $res = LockUtil::getInstance()->castFloatToInt(ceil($value * 1000));
 
         // workaround https://github.com/redis/docs/blob/377fb96c09/content/commands/expire/index.md?plain=1#L224
-        if ($res < \PHP_INT_MAX) {
+        if ($res > 0 && $res < \PHP_INT_MAX) {
             ++$res;
         }
 

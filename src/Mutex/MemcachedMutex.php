@@ -50,7 +50,7 @@ class MemcachedMutex extends AbstractSpinlockWithTokenMutex
         $res = LockUtil::getInstance()->castFloatToInt(ceil($value));
 
         // workaround https://github.com/memcached/memcached/issues/307
-        if ($res < \PHP_INT_MAX) {
+        if ($res > 0 && $res < \PHP_INT_MAX) {
             ++$res;
         }
 
