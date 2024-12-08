@@ -182,7 +182,10 @@ class AbstractRedlockMutexTest extends TestCase
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of ' . LockUtil::getInstance()->formatTimeout($timeout) . ' seconds has been exceeded');
 
-        $mutex = $this->createRedlockMutexMock($count, $timeout);
+        $mutex = $this->createRedlockMutexMock($count, $timeout, $timeout);
+        $mutex->expects(self::exactly($count))
+            ->method('evalScript')
+            ->willReturn(true);
 
         $mutex->expects(self::exactly($count))
             ->method('add')
