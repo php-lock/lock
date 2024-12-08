@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Mutex;
 
+use Malkusch\Lock\Exception\ExecutionOutsideLockException;
+
 /**
  * Spinlock implementation with expirable resource locking.
  *
@@ -11,11 +13,13 @@ namespace Malkusch\Lock\Mutex;
  */
 abstract class AbstractSpinlockExpireMutex extends AbstractSpinlockMutex
 {
-    /** @var non-falsy-string */
-    private ?string $token = null;
-
     /** In seconds */
     private float $expireTimeout;
+
+    private ?float $acquireTs = null;
+
+    /** @var non-falsy-string */
+    private ?string $token = null;
 
     /**
      * @param float $acquireTimeout In seconds
@@ -29,31 +33,41 @@ abstract class AbstractSpinlockExpireMutex extends AbstractSpinlockMutex
     }
 
     #[\Override]
-    final protected function acquire(string $key): bool
+    protected function acquire(string $key): bool
     {
+        $acquireTs = microtime(true);
+
         /*
-         * The expiration timeout for the lock is increased by one second
+         * The expiration timeout for the lock is increased by 1 second
          * to ensure that we delete only our keys. This will prevent the
          * case that this key expires before the timeout, and another process
          * acquires successfully the same key which would then be deleted
          * by this process.
+         *
+         * TODO 1 second should no longer be added as there are two separate timeouts newly - acquire and expire
          */
-        $res = $this->acquireWithToken($key, $this->expireTimeout + 1);
+        $token = $this->acquireWithToken($key, $this->expireTimeout + 1);
 
-        if ($res === false) {
+        if ($token === false) {
             return false;
         }
 
-        \assert(is_string($res) && strlen($res) > 1); // @phpstan-ignore function.alreadyNarrowedType
-
-        $this->token = $res;
+        $this->acquireTs = $acquireTs;
+        $this->token = $token;
 
         return true;
     }
 
     #[\Override]
-    final protected function release(string $key): bool
+    protected function release(string $key): bool
     {
+        // TODO expire timeout should be checked here and token should be always tried to be released
+        $acquireTimeout = \Closure::bind(fn () => $this->acquireTimeout, $this, parent::class)();
+        $elapsedTime = microtime(true) - $this->acquireTs;
+        if ($elapsedTime > $acquireTimeout) {
+            throw ExecutionOutsideLockException::create($elapsedTime, $acquireTimeout);
+        }
+
         try {
             return $this->releaseWithToken($key, $this->token);
         } finally {
