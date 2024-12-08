@@ -29,6 +29,11 @@ abstract class AbstractSpinlockExpireMutex extends AbstractSpinlockMutex
     {
         parent::__construct($name, $acquireTimeout);
 
+        // TODO remove this BC once all tests fixed
+        if ($expireTimeout === (float) \PHP_INT_MAX) {
+            $expireTimeout = $acquireTimeout;
+        }
+
         $this->expireTimeout = $expireTimeout;
     }
 
