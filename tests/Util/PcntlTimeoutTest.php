@@ -7,11 +7,13 @@ namespace Malkusch\Lock\Tests\Util;
 use Malkusch\Lock\Exception\DeadlineException;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Util\PcntlTimeout;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @requires pcntl
+ * @requires extension pcntl
  */
+#[RequiresPhpExtension('pcntl')]
 class PcntlTimeoutTest extends TestCase
 {
     /**
