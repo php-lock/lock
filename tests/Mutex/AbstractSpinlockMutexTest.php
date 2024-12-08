@@ -89,8 +89,12 @@ class AbstractSpinlockMutexTest extends TestCase
     public function testExecuteBarelySucceeds(): void
     {
         $mutex = $this->createSpinlockMutexMock(0.5);
-        $mutex->expects(self::any())->method('acquire')->willReturn(true);
-        $mutex->expects(self::once())->method('release')->willReturn(true);
+        $mutex->expects(self::any())
+            ->method('acquire')
+            ->willReturn(true);
+        $mutex->expects(self::once())
+            ->method('release')
+            ->willReturn(true);
 
         $mutex->synchronized(static function () {
             usleep(499 * 1000);
@@ -105,8 +109,12 @@ class AbstractSpinlockMutexTest extends TestCase
         $this->expectException(LockReleaseException::class);
 
         $mutex = $this->createSpinlockMutexMock();
-        $mutex->expects(self::any())->method('acquire')->willReturn(true);
-        $mutex->expects(self::any())->method('release')->willReturn(false);
+        $mutex->expects(self::any())
+            ->method('acquire')
+            ->willReturn(true);
+        $mutex->expects(self::any())
+            ->method('release')
+            ->willReturn(false);
 
         $mutex->synchronized(static function () {});
     }

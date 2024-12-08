@@ -79,7 +79,9 @@ class AbstractSpinlockExpireMutexTest extends TestCase
             ->with(self::anything(), 1.3)
             ->willReturn('xx');
 
-        $mutex->expects(self::once())->method('releaseWithToken')->willReturn(true);
+        $mutex->expects(self::once())
+            ->method('releaseWithToken')
+            ->willReturn(true);
 
         $mutex->synchronized(static function () {
             usleep(199 * 1000);
