@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Util;
 
-use Malkusch\Lock\Exception\ExecutionOutsideLockException;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Mutex\Mutex;
@@ -50,10 +49,9 @@ class DoubleCheckedLocking
      *
      * @return T|false False if check did not pass
      *
-     * @throws \Exception                    The execution callback or the check threw an exception
-     * @throws LockAcquireException          The mutex could not be acquired
-     * @throws LockReleaseException          The mutex could not be released
-     * @throws ExecutionOutsideLockException Some code has been executed outside of the lock
+     * @throws \Throwable
+     * @throws LockAcquireException
+     * @throws LockReleaseException
      */
     public function then(callable $code)
     {

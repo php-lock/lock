@@ -9,8 +9,9 @@ namespace Malkusch\Lock\Exception;
  *
  * Take this exception very serious.
  *
- * Failing to release a lock might have the potential to introduce deadlocks. Also the
- * critical code was executed i.e. side effects may have happened.
+ * This exception implies that the critical code was executed, i.e. side effects may have happened.
+ *
+ * Failing to release a lock might have the potential to introduce deadlocks.
  */
 class LockReleaseException extends MutexException
 {
@@ -20,9 +21,9 @@ class LockReleaseException extends MutexException
     private ?\Throwable $codeException = null;
 
     /**
-     * Gets the result that has been returned during the critical code execution.
+     * The return value of the executed critical code.
      *
-     * @return mixed The return value of the executed code block
+     * @return mixed
      */
     public function getCodeResult()
     {
@@ -42,7 +43,7 @@ class LockReleaseException extends MutexException
     }
 
     /**
-     * Gets the exception that has happened during the synchronized code execution.
+     * The exception that has happened during the critical code execution.
      */
     public function getCodeException(): ?\Throwable
     {

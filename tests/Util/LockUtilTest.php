@@ -57,6 +57,37 @@ class LockUtilTest extends TestCase
     }
 
     /**
+     * @dataProvider provideCastFloatToIntCases
+     */
+    #[DataProvider('provideCastFloatToIntCases')]
+    public function testCastFloatToInt(int $expectedResult, float $value): void
+    {
+        self::assertSame($expectedResult, LockUtil::getInstance()->castFloatToInt($value));
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideCastFloatToIntCases(): iterable
+    {
+        yield [10, 10];
+        yield [0, 0];
+        yield [0, -0.0];
+        yield [0, 0.49];
+        yield [0, -0.49];
+        yield [1, 0.5];
+        yield [-1, -0.5];
+        yield [1020304050607080, 1020304050607080];
+        yield [-1020304050607080, -1020304050607080];
+        yield [\PHP_INT_MAX, \PHP_INT_MAX];
+        yield [\PHP_INT_MIN, \PHP_INT_MIN];
+        yield [\PHP_INT_MAX, (float) \PHP_INT_MAX + 2000];
+        yield [\PHP_INT_MIN, (float) \PHP_INT_MIN - 2000];
+        yield [\PHP_INT_MAX, \INF];
+        yield [\PHP_INT_MIN, -\INF];
+    }
+
+    /**
      * @dataProvider provideFormatTimeoutCases
      */
     #[DataProvider('provideFormatTimeoutCases')]

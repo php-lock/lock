@@ -6,6 +6,7 @@ namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
+use Malkusch\Lock\Util\LockUtil;
 use Predis\ClientInterface as PredisClientInterface;
 use Predis\PredisException;
 
@@ -40,7 +41,7 @@ class RedisMutex extends AbstractRedlockMutex
     #[\Override]
     protected function add(object $client, string $key, string $value, float $expire): bool
     {
-        $expireMillis = (int) ceil($expire * 1000);
+        $expireMillis = LockUtil::getInstance()->castFloatToInt(ceil($expire * 1000));
 
         if ($this->isClientPHPRedis($client)) {
             try {

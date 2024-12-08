@@ -8,6 +8,7 @@ use Malkusch\Lock\Exception\DeadlineException;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
+use Malkusch\Lock\Util\LockUtil;
 use Malkusch\Lock\Util\Loop;
 use Malkusch\Lock\Util\PcntlTimeout;
 
@@ -16,33 +17,30 @@ use Malkusch\Lock\Util\PcntlTimeout;
  */
 class FlockMutex extends AbstractLockMutex
 {
-    public const INFINITE_TIMEOUT = -1.0;
-
     private const STRATEGY_BLOCK = 'block';
-
     private const STRATEGY_PCNTL = 'pcntl';
-
     private const STRATEGY_LOOP = 'loop';
 
     /** @var resource */
     private $fileHandle;
 
-    private float $timeout;
+    private float $acquireTimeout;
 
     /** @var self::STRATEGY_* */
     private $strategy;
 
     /**
      * @param resource $fileHandle
+     * @param float    $acquireTimeout In seconds
      */
-    public function __construct($fileHandle, float $timeout = self::INFINITE_TIMEOUT)
+    public function __construct($fileHandle, float $acquireTimeout = \INF)
     {
         if (!is_resource($fileHandle)) {
             throw new \InvalidArgumentException('The file handle is not a valid resource');
         }
 
         $this->fileHandle = $fileHandle;
-        $this->timeout = $timeout;
+        $this->acquireTimeout = $acquireTimeout;
         $this->strategy = $this->determineLockingStrategy();
     }
 
@@ -51,7 +49,7 @@ class FlockMutex extends AbstractLockMutex
      */
     private function determineLockingStrategy(): string
     {
-        if ($this->timeout === self::INFINITE_TIMEOUT) {
+        if ($this->acquireTimeout > 100 * 365.25 * 24 * 60 * 60) { // 100 years
             return self::STRATEGY_BLOCK;
         }
 
@@ -62,9 +60,6 @@ class FlockMutex extends AbstractLockMutex
         return self::STRATEGY_LOOP;
     }
 
-    /**
-     * @throws LockAcquireException
-     */
     private function lockBlocking(): void
     {
         if (!flock($this->fileHandle, \LOCK_EX)) {
@@ -72,15 +67,11 @@ class FlockMutex extends AbstractLockMutex
         }
     }
 
-    /**
-     * @throws LockAcquireException
-     * @throws LockAcquireTimeoutException
-     */
     private function lockPcntl(): void
     {
-        $timeoutInt = (int) ceil($this->timeout);
+        $acquireTimeoutInt = LockUtil::getInstance()->castFloatToInt(ceil($this->acquireTimeout));
 
-        $timebox = new PcntlTimeout($timeoutInt);
+        $timebox = new PcntlTimeout($acquireTimeoutInt);
 
         try {
             $timebox->timeBoxed(
@@ -89,14 +80,10 @@ class FlockMutex extends AbstractLockMutex
                 }
             );
         } catch (DeadlineException $e) {
-            throw LockAcquireTimeoutException::create($timeoutInt);
+            throw LockAcquireTimeoutException::create($acquireTimeoutInt);
         }
     }
 
-    /**
-     * @throws LockAcquireTimeoutException
-     * @throws LockAcquireException
-     */
     private function lockBusy(): void
     {
         $loop = new Loop();
@@ -105,12 +92,9 @@ class FlockMutex extends AbstractLockMutex
             if ($this->acquireNonBlockingLock()) {
                 $loop->end();
             }
-        }, $this->timeout);
+        }, $this->acquireTimeout);
     }
 
-    /**
-     * @throws LockAcquireException
-     */
     private function acquireNonBlockingLock(): bool
     {
         if (!flock($this->fileHandle, \LOCK_EX | \LOCK_NB, $wouldBlock)) {
@@ -125,10 +109,6 @@ class FlockMutex extends AbstractLockMutex
         return true;
     }
 
-    /**
-     * @throws LockAcquireException
-     * @throws LockAcquireTimeoutException
-     */
     #[\Override]
     protected function lock(): void
     {

@@ -129,15 +129,15 @@ class TransactionalMutex extends AbstractMutex
     /**
      * Rolls back a transaction.
      *
-     * @throws LockAcquireException The roll back failed
+     * @throws LockAcquireException
      */
     private function rollBack(\Throwable $exception): void
     {
         try {
             $this->pdo->rollBack();
-        } catch (\PDOException $e2) {
+        } catch (\PDOException $e) {
             throw new LockAcquireException(
-                'Could not roll back transaction: ' . $e2->getMessage(),
+                'Could not roll back transaction: ' . $e->getMessage(),
                 0,
                 $exception
             );

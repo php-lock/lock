@@ -20,18 +20,18 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
     private string $key;
 
     /** In seconds */
-    private float $timeout;
+    private float $acquireTimeout;
 
     /** The timestamp when the lock was acquired */
     private ?float $acquiredTs = null;
 
     /**
-     * @param float $timeout The timeout in seconds a lock expires
+     * @param float $acquireTimeout In seconds
      */
-    public function __construct(string $name, float $timeout = 3)
+    public function __construct(string $name, float $acquireTimeout = 3)
     {
         $this->key = LockUtil::getInstance()->getKeyPrefix() . ':' . $name;
-        $this->timeout = $timeout;
+        $this->acquireTimeout = $acquireTimeout;
     }
 
     #[\Override]
@@ -49,18 +49,18 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
              * acquires successfully the same key which would then be deleted
              * by this process.
              */
-            if ($this->acquire($this->key, $this->timeout + 1)) {
+            if ($this->acquire($this->key, $this->acquireTimeout + 1)) {
                 $loop->end();
             }
-        }, $this->timeout);
+        }, $this->acquireTimeout);
     }
 
     #[\Override]
     protected function unlock(): void
     {
         $elapsedTime = microtime(true) - $this->acquiredTs;
-        if ($elapsedTime > $this->timeout) {
-            throw ExecutionOutsideLockException::create($elapsedTime, $this->timeout);
+        if ($elapsedTime > $this->acquireTimeout) {
+            throw ExecutionOutsideLockException::create($elapsedTime, $this->acquireTimeout);
         }
 
         /*
@@ -75,11 +75,11 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
     /**
      * Try to acquire a lock.
      *
-     * @param float $expire The timeout in seconds when a lock expires
+     * @param float $expire In seconds
      *
      * @return bool True if the lock was acquired
      *
-     * @throws LockAcquireException an unexpected error happened
+     * @throws LockAcquireException An unexpected error happened
      */
     abstract protected function acquire(string $key, float $expire): bool;
 

@@ -170,8 +170,8 @@ class AbstractRedlockMutexTest extends TestCase
      * Tests acquiring keys takes too long.
      *
      * @param int   $count   The total count of servers
-     * @param float $timeout The timeout in seconds
-     * @param float $delay   The delay in seconds
+     * @param float $timeout In seconds
+     * @param float $delay   In seconds
      *
      * @dataProvider provideAcquireTimeoutsCases
      */
