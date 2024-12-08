@@ -18,7 +18,7 @@ use Psr\Log\NullLogger;
  *
  * @see http://redis.io/topics/distlock
  */
-abstract class AbstractRedlockMutex extends AbstractSpinlockExpireMutex implements LoggerAwareInterface
+abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 

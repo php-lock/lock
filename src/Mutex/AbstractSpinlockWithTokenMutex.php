@@ -11,7 +11,7 @@ use Malkusch\Lock\Exception\ExecutionOutsideLockException;
  *
  * Lock is acquired with an unique token that is verified when the lock is being released.
  */
-abstract class AbstractSpinlockExpireMutex extends AbstractSpinlockMutex
+abstract class AbstractSpinlockWithTokenMutex extends AbstractSpinlockMutex
 {
     /** In seconds */
     private float $expireTimeout;

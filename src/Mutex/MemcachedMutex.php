@@ -9,7 +9,7 @@ use Malkusch\Lock\Util\LockUtil;
 /**
  * Memcached based spinlock implementation.
  */
-class MemcachedMutex extends AbstractSpinlockExpireMutex
+class MemcachedMutex extends AbstractSpinlockWithTokenMutex
 {
     private \Memcached $memcached;
 
