@@ -117,6 +117,23 @@ class RedisMutexWithPredisTest extends TestCase
         self::assertTrue($executed);
     }
 
+    public function testAcquireExpireTimeoutLimit(): void
+    {
+        $this->mutex = new RedisMutex([$this->client], 'test');
+
+        $this->client->expects(self::once())
+            ->method('set')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 31_557_600_000_000, 'NX')
+            ->willReturnSelf();
+
+        $this->client->expects(self::once())
+            ->method('eval')
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
+            ->willReturn(true);
+
+        $this->mutex->synchronized(static function (): void {});
+    }
+
     /**
      * Tests evalScript() fails.
      */
