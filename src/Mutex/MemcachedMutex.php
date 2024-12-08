@@ -30,13 +30,9 @@ class MemcachedMutex extends AbstractSpinlockExpireMutex
     #[\Override]
     protected function acquireWithToken(string $key, float $expireTimeout)
     {
-        // memcached supports only integer expire
-        // https://github.com/memcached/memcached/wiki/Commands#standard-protocol
-        $expireTimeoutInt = LockUtil::getInstance()->castFloatToInt(ceil($expireTimeout));
-
         $token = LockUtil::getInstance()->makeRandomToken();
 
-        return $this->memcached->add($key, $token, $expireTimeoutInt)
+        return $this->memcached->add($key, $token, $this->makeMemcachedExpireTimeout($expireTimeout))
             ? $token
             : false;
     }
@@ -47,5 +43,26 @@ class MemcachedMutex extends AbstractSpinlockExpireMutex
         // TODO atomic delete only when the remove value matches token
 
         return $this->memcached->delete($key);
+    }
+
+    private function makeMemcachedExpireTimeout(float $value): int
+    {
+        $res = LockUtil::getInstance()->castFloatToInt(ceil($value));
+
+        // workaround https://github.com/memcached/memcached/issues/307
+        if ($res < \PHP_INT_MAX) {
+            ++$res;
+        }
+
+        // 0 means no expire
+        // https://github.com/php/doc-en/blob/af4410a7e1/reference/memcached/expiration.xml#L17
+        $res = max(1, $res);
+        // >= 30 days means TS instead of TTL
+        // https://github.com/php/doc-en/blob/af4410a7e1/reference/memcached/expiration.xml#L12
+        if ($res >= 30 * 24 * 60 * 60) {
+            $res = 0;
+        }
+
+        return $res;
     }
 }
