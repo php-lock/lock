@@ -20,16 +20,16 @@ use Malkusch\Lock\Util\LockUtil;
 class ExecutionOutsideLockException extends LockReleaseException
 {
     /**
-     * @param float $elapsedTime Total elapsed time of the synchronized code callback execution
-     * @param float $timeout     The lock timeout in seconds
+     * @param float $elapsedTime   In seconds
+     * @param float $expireTimeout In seconds
      */
-    public static function create(float $elapsedTime, float $timeout): self
+    public static function create(float $elapsedTime, float $expireTimeout): self
     {
         return new self(\sprintf(
-            'The code executed for %s seconds. But the timeout is %s seconds. The last %s seconds were executed outside of the lock.',
+            'The code executed for %s seconds. But the expire timeout is %s seconds. The last %s seconds were executed outside of the lock.',
             LockUtil::getInstance()->formatTimeout($elapsedTime),
-            LockUtil::getInstance()->formatTimeout($timeout),
-            LockUtil::getInstance()->formatTimeout(round($elapsedTime, 6) - round($timeout, 6))
+            LockUtil::getInstance()->formatTimeout($expireTimeout),
+            LockUtil::getInstance()->formatTimeout(round($elapsedTime, 6) - round($expireTimeout, 6))
         ));
     }
 }

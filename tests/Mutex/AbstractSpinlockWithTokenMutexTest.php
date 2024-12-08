@@ -77,7 +77,7 @@ class AbstractSpinlockWithTokenMutexTest extends TestCase
             ->willReturn(true);
 
         $this->expectException(ExecutionOutsideLockException::class);
-        $this->expectExceptionMessageMatches('~^The code executed for 0\.2\d+ seconds\. But the timeout is 0\.2 seconds. The last 0\.0\d+ seconds were executed outside of the lock\.$~');
+        $this->expectExceptionMessageMatches('~^The code executed for 0\.2\d+ seconds\. But the expire timeout is 0\.2 seconds. The last 0\.0\d+ seconds were executed outside of the lock\.$~');
 
         $mutex->synchronized(static function () {
             usleep(201 * 1000);
