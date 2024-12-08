@@ -46,14 +46,30 @@ class AbstractSpinlockExpireMutexTest extends TestCase
             ->getMock();
     }
 
-    /**
-     * Tests executing code which exceeds the acquire timeout fails.
-     */
+    public function testExecuteExpireTimeout(): void
+    {
+        $mutex = $this->createSpinlockExpireMutexMock(0.1, 0.2);
+        $mutex->expects(self::once())
+            ->method('acquireWithToken')
+            ->with(self::anything(), 0.2)
+            ->willReturn('xx');
+
+        $mutex->expects(self::once())
+            ->method('releaseWithToken')
+            ->with(self::anything(), 'xx')
+            ->willReturn(true);
+
+        $mutex->synchronized(static function () {
+            usleep(199 * 1000);
+        });
+    }
+
     public function testExecuteTooLong(): void
     {
-        $mutex = $this->createSpinlockExpireMutexMock(0.5);
+        $mutex = $this->createSpinlockExpireMutexMock(0.1, 0.2);
         $mutex->expects(self::any())
             ->method('acquireWithToken')
+            ->with(self::anything(), 0.2)
             ->willReturn('xx');
 
         $mutex->expects(self::any())
@@ -61,30 +77,10 @@ class AbstractSpinlockExpireMutexTest extends TestCase
             ->willReturn(true);
 
         $this->expectException(ExecutionOutsideLockException::class);
-        $this->expectExceptionMessageMatches('~^The code executed for 0\.5\d+ seconds\. But the timeout is 0\.5 seconds. The last 0\.0\d+ seconds were executed outside of the lock\.$~');
+        $this->expectExceptionMessageMatches('~^The code executed for 0\.2\d+ seconds\. But the timeout is 0\.2 seconds. The last 0\.0\d+ seconds were executed outside of the lock\.$~');
 
         $mutex->synchronized(static function () {
-            usleep(501 * 1000);
-        });
-    }
-
-    /**
-     * Tests executing exactly until the timeout will leave the key one more second.
-     */
-    public function testExecuteTimeoutLeavesOneSecondForKeyToExpire(): void
-    {
-        $mutex = $this->createSpinlockExpireMutexMock(0.2, 0.3);
-        $mutex->expects(self::once())
-            ->method('acquireWithToken')
-            ->with(self::anything(), 1.3)
-            ->willReturn('xx');
-
-        $mutex->expects(self::once())
-            ->method('releaseWithToken')
-            ->willReturn(true);
-
-        $mutex->synchronized(static function () {
-            usleep(199 * 1000);
+            usleep(201 * 1000);
         });
     }
 }
