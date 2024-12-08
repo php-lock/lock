@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
+use Malkusch\Lock\Exception\ExecutionOutsideLockException;
 use Malkusch\Lock\Mutex\AbstractSpinlockExpireMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
@@ -43,6 +44,28 @@ class AbstractSpinlockExpireMutexTest extends TestCase
             ->setConstructorArgs(['test', $acquireTimeout, $expireTimeout])
             ->onlyMethods(['acquireWithToken', 'releaseWithToken'])
             ->getMock();
+    }
+
+    /**
+     * Tests executing code which exceeds the acquire timeout fails.
+     */
+    public function testExecuteTooLong(): void
+    {
+        $mutex = $this->createSpinlockExpireMutexMock(0.5);
+        $mutex->expects(self::any())
+            ->method('acquireWithToken')
+            ->willReturn('xx');
+
+        $mutex->expects(self::any())
+            ->method('releaseWithToken')
+            ->willReturn(true);
+
+        $this->expectException(ExecutionOutsideLockException::class);
+        $this->expectExceptionMessageMatches('~^The code executed for 0\.5\d+ seconds\. But the timeout is 0\.5 seconds. The last 0\.0\d+ seconds were executed outside of the lock\.$~');
+
+        $mutex->synchronized(static function () {
+            usleep(501 * 1000);
+        });
     }
 
     /**

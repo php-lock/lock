@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Mutex;
 
-use Malkusch\Lock\Exception\ExecutionOutsideLockException;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Util\LockUtil;
@@ -21,9 +20,6 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
     /** In seconds */
     private float $acquireTimeout;
 
-    /** The timestamp when the lock was acquired */
-    private ?float $acquiredTs = null;
-
     /**
      * @param float $acquireTimeout In seconds
      */
@@ -39,8 +35,6 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
         $loop = new Loop();
 
         $loop->execute(function () use ($loop): void {
-            $this->acquiredTs = microtime(true);
-
             if ($this->acquire($this->key)) {
                 $loop->end();
             }
@@ -50,15 +44,6 @@ abstract class AbstractSpinlockMutex extends AbstractLockMutex
     #[\Override]
     protected function unlock(): void
     {
-        $elapsedTime = microtime(true) - $this->acquiredTs;
-        if ($elapsedTime > $this->acquireTimeout) {
-            throw ExecutionOutsideLockException::create($elapsedTime, $this->acquireTimeout);
-        }
-
-        /*
-         * Worst case would still be one second before the key expires.
-         * This guarantees that we don't delete a wrong key.
-         */
         if (!$this->release($this->key)) {
             throw new LockReleaseException('Failed to release the lock');
         }
