@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Mutex;
 
+use Malkusch\Lock\Util\LockUtil;
+
 /**
  * Memcached based spinlock implementation.
  */
@@ -29,7 +31,7 @@ class MemcachedMutex extends AbstractSpinlockMutex
     {
         // memcached supports only integer expire
         // https://github.com/memcached/memcached/wiki/Commands#standard-protocol
-        $expireInt = (int) ceil($expire);
+        $expireInt = LockUtil::getInstance()->castFloatToInt(ceil($expire));
 
         return $this->memcached->add($key, true, $expireInt);
     }

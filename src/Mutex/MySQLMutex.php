@@ -43,7 +43,7 @@ class MySQLMutex extends AbstractLockMutex
         // TODO MariaDB supports microseconds precision since 10.1.2 version,
         // but we need to detect the support reliably first
         // https://github.com/MariaDB/server/commit/3e792e6cbccb5d7bf5b84b38336f8a40ad232020
-        $acquireTimeoutInt = (int) ceil($this->acquireTimeout);
+        $acquireTimeoutInt = LockUtil::getInstance()->castFloatToInt(ceil($this->acquireTimeout));
 
         $statement->execute([
             $this->name,

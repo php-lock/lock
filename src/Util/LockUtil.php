@@ -54,6 +54,18 @@ class LockUtil
             . $this->makeRandomToken() . '.txt';
     }
 
+    public function castFloatToInt(float $value): int
+    {
+        \assert(!\is_nan($value));
+
+        // https://github.com/php/php-src/issues/17081
+        return ($value > \PHP_INT_MIN && $value < \PHP_INT_MAX)
+            ? (int) round($value)
+            : ($value < 0
+                ? \PHP_INT_MIN
+                : \PHP_INT_MAX);
+    }
+
     /**
      * @return non-empty-string
      */
