@@ -202,8 +202,8 @@ class AbstractRedlockMutexTest extends TestCase
      */
     public static function provideAcquireTimeoutsCases(): iterable
     {
-        yield [1, 1.2 - 1, 1.201];
-        yield [2, 1.2 - 1, 1.401];
+        yield [1, 1.2, 1.201];
+        yield [2, 20.4, 10.201];
     }
 
     /**
