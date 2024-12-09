@@ -7,6 +7,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
+use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
@@ -146,7 +147,7 @@ class RedisMutexTest extends TestCase
             $this->connections[] = $connection;
         }
 
-        $this->mutex = new RedisMutex($this->connections, 'test');
+        $this->mutex = new DistributedMutex(array_map(static fn ($v) => new RedisMutex($v, 'test'), $this->connections));
     }
 
     #[\Override]
