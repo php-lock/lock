@@ -45,7 +45,7 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->client = $this->createMock(PredisClientInterfaceWithSetAndEvalMethods::class);
 
-        $this->mutex = new RedisMutex([$this->client], 'test', 2.5);
+        $this->mutex = new RedisMutex([$this->client], 'test', 2.5, 3.5);
 
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->mutex->setLogger($this->logger);
@@ -58,7 +58,7 @@ class RedisMutexWithPredisTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3501, 'NX')
             ->willReturn(null);
 
         $this->logger->expects(self::never())
@@ -80,7 +80,7 @@ class RedisMutexWithPredisTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3501, 'NX')
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->logger->expects(self::once())
@@ -100,7 +100,7 @@ class RedisMutexWithPredisTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3501, 'NX')
             ->willReturnSelf();
 
         $this->client->expects(self::once())
@@ -117,6 +117,23 @@ class RedisMutexWithPredisTest extends TestCase
         self::assertTrue($executed);
     }
 
+    public function testAcquireExpireTimeoutLimit(): void
+    {
+        $this->mutex = new RedisMutex([$this->client], 'test');
+
+        $this->client->expects(self::once())
+            ->method('set')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 31_557_600_000_000, 'NX')
+            ->willReturnSelf();
+
+        $this->client->expects(self::once())
+            ->method('eval')
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
+            ->willReturn(true);
+
+        $this->mutex->synchronized(static function (): void {});
+    }
+
     /**
      * Tests evalScript() fails.
      */
@@ -124,7 +141,7 @@ class RedisMutexWithPredisTest extends TestCase
     {
         $this->client->expects(self::atLeastOnce())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3500, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3501, 'NX')
             ->willReturnSelf();
 
         $this->client->expects(self::once())

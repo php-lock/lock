@@ -9,6 +9,7 @@ use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
 use Malkusch\Lock\Mutex\AbstractRedlockMutex;
+use Malkusch\Lock\Util\LockUtil;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
@@ -44,7 +45,7 @@ class AbstractRedlockMutexTest extends TestCase
      *
      * @return AbstractRedlockMutex<object>&MockObject
      */
-    private function createRedlockMutexMock(int $count, float $timeout = 1): AbstractRedlockMutex
+    private function createRedlockMutexMock(int $count, float $acquireTimeout = 1, float $expireTimeout = \INF): AbstractRedlockMutex
     {
         $clients = array_map(
             static fn ($i) => new class($i) {
@@ -59,7 +60,7 @@ class AbstractRedlockMutexTest extends TestCase
         );
 
         return $this->getMockBuilder(AbstractRedlockMutex::class)
-            ->setConstructorArgs([$clients, 'test', $timeout])
+            ->setConstructorArgs([$clients, 'test', $acquireTimeout, $expireTimeout])
             ->onlyMethods(['add', 'evalScript'])
             ->getMock();
     }
@@ -178,15 +179,13 @@ class AbstractRedlockMutexTest extends TestCase
     #[DataProvider('provideAcquireTimeoutsCases')]
     public function testAcquireTimeouts(int $count, float $timeout, float $delay): void
     {
-        $timeoutStr = (string) round($timeout, 6);
-        if (strpos($timeoutStr, '.') === false) {
-            $timeoutStr .= '.0';
-        }
-
         $this->expectException(LockAcquireTimeoutException::class);
-        $this->expectExceptionMessage('Lock acquire timeout of ' . $timeoutStr . ' seconds has been exceeded');
+        $this->expectExceptionMessage('Lock acquire timeout of ' . LockUtil::getInstance()->formatTimeout($timeout) . ' seconds has been exceeded');
 
-        $mutex = $this->createRedlockMutexMock($count, $timeout);
+        $mutex = $this->createRedlockMutexMock($count, $timeout, $timeout);
+        $mutex->expects(self::exactly($count))
+            ->method('evalScript')
+            ->willReturn(true);
 
         $mutex->expects(self::exactly($count))
             ->method('add')
@@ -206,8 +205,8 @@ class AbstractRedlockMutexTest extends TestCase
      */
     public static function provideAcquireTimeoutsCases(): iterable
     {
-        yield [1, 1.2 - 1, 1.201];
-        yield [2, 1.2 - 1, 1.401];
+        yield [1, 1.2, 1.201];
+        yield [2, 20.4, 10.201];
     }
 
     /**

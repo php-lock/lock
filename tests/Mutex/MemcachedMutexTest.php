@@ -31,19 +31,16 @@ class MemcachedMutexTest extends TestCase
         parent::setUp();
 
         $this->memcached = $this->createMock(\Memcached::class);
-        $this->mutex = new MemcachedMutex('test', $this->memcached, 1);
+        $this->mutex = new MemcachedMutex('test', $this->memcached, 1, 2);
     }
 
-    /**
-     * Tests failing to acquire the lock within the timeout.
-     */
-    public function testFailAcquireLock(): void
+    public function testAcquireFail(): void
     {
         $this->expectException(LockAcquireTimeoutException::class);
 
         $this->memcached->expects(self::atLeastOnce())
             ->method('add')
-            ->with('php-malkusch-lock:test', true, 2)
+            ->with('php-malkusch-lock:test', true, 3)
             ->willReturn(false);
 
         $this->mutex->synchronized(static function (): void {
@@ -51,22 +48,36 @@ class MemcachedMutexTest extends TestCase
         });
     }
 
-    /**
-     * Tests failing to release a lock.
-     */
-    public function testFailReleasingLock(): void
+    public function testReleaseFail(): void
     {
         $this->expectException(LockReleaseException::class);
 
         $this->memcached->expects(self::once())
             ->method('add')
-            ->with('php-malkusch-lock:test', true, 2)
+            ->with('php-malkusch-lock:test', true, 3)
             ->willReturn(true);
 
         $this->memcached->expects(self::once())
             ->method('delete')
             ->with('php-malkusch-lock:test')
             ->willReturn(false);
+
+        $this->mutex->synchronized(static function (): void {});
+    }
+
+    public function testAcquireExpireTimeoutLimit(): void
+    {
+        $this->mutex = new MemcachedMutex('test', $this->memcached);
+
+        $this->memcached->expects(self::once())
+            ->method('add')
+            ->with('php-malkusch-lock:test', true, 0)
+            ->willReturn(true);
+
+        $this->memcached->expects(self::once())
+            ->method('delete')
+            ->with('php-malkusch-lock:test')
+            ->willReturn(true);
 
         $this->mutex->synchronized(static function (): void {});
     }

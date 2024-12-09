@@ -27,13 +27,11 @@ final class PcntlTimeout
     public function __construct(int $timeout)
     {
         if (!self::isSupported()) {
-            throw new \RuntimeException('PCNTL module not enabled');
+            throw new \RuntimeException('PCNTL extension is required');
         }
 
         if ($timeout <= 0) {
-            throw new \InvalidArgumentException(
-                'Timeout must be positive and non zero'
-            );
+            throw new \InvalidArgumentException('Timeout must be positive and non zero');
         }
 
         $this->timeout = $timeout;
@@ -94,8 +92,7 @@ final class PcntlTimeout
      */
     public static function isSupported(): bool
     {
-        return
-            \PHP_SAPI === 'cli'
+        return \PHP_SAPI === 'cli'
             && extension_loaded('pcntl')
             && function_exists('pcntl_alarm')
             && function_exists('pcntl_signal')

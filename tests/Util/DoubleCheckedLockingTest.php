@@ -25,7 +25,8 @@ class DoubleCheckedLockingTest extends TestCase
 
     public function testCheckFailsAcquiresNoLock(): void
     {
-        $this->mutex->expects(self::never())->method('synchronized');
+        $this->mutex->expects(self::never())
+            ->method('synchronized');
 
         $checkedLocking = new DoubleCheckedLocking($this->mutex, static function (): bool {
             return false;

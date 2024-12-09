@@ -35,18 +35,40 @@ class RedisMutex extends AbstractRedlockMutex
         return $res;
     }
 
+    private function makeRedisExpireTimeoutMillis(float $value): int
+    {
+        $res = LockUtil::getInstance()->castFloatToInt(ceil($value * 1000));
+
+        // workaround https://github.com/redis/docs/blob/377fb96c09/content/commands/expire/index.md?plain=1#L224
+        if ($res > 0 && $res < \PHP_INT_MAX) {
+            ++$res;
+        }
+
+        // workaround time + timeout math overflow
+        if ($res < 0) {
+            $res = 0;
+        } elseif (\PHP_INT_SIZE >= 6) {
+            $thousandYearsMillis = (int) (1000 * 365.25 * 24 * 60 * 60 * 1000);
+            if ($res > $thousandYearsMillis) {
+                $res = $thousandYearsMillis;
+            }
+        }
+
+        return $res;
+    }
+
     /**
      * @throws LockAcquireException
      */
     #[\Override]
     protected function add(object $client, string $key, string $value, float $expire): bool
     {
-        $expireMillis = LockUtil::getInstance()->castFloatToInt(ceil($expire * 1000));
+        $expireTimeoutMillis = $this->makeRedisExpireTimeoutMillis($expire);
 
         if ($this->isClientPHPRedis($client)) {
             try {
                 //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-                return $client->set($key, $value, ['nx', 'px' => $expireMillis]);
+                return $client->set($key, $value, ['nx', 'px' => $expireTimeoutMillis]);
             } catch (\RedisException $e) {
                 $message = sprintf(
                     'Failed to acquire lock for key \'%s\'',
@@ -57,7 +79,7 @@ class RedisMutex extends AbstractRedlockMutex
             }
         } else {
             try {
-                return $client->set($key, $value, 'PX', $expireMillis, 'NX') !== null;
+                return $client->set($key, $value, 'PX', $expireTimeoutMillis, 'NX') !== null;
             } catch (PredisException $e) {
                 $message = sprintf(
                     'Failed to acquire lock for key \'%s\'',
