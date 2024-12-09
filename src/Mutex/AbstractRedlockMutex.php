@@ -16,6 +16,8 @@ use Psr\Log\NullLogger;
  *
  * @template TClient of object
  *
+ * @internal
+ *
  * @see https://redis.io/topics/distlock#the-redlock-algorithm
  */
 abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex implements LoggerAwareInterface
