@@ -196,10 +196,9 @@ $mutex = new MemcachedMutex('balance', $memcached);
 
 #### RedisMutex
 
-The **RedisMutex** is the distributed lock implementation of
-[RedLock](https://redis.io/topics/distlock#the-redlock-algorithm) which supports the
+The **RedisMutex** is a lock implementation which supports the
 [`phpredis` extension](https://github.com/phpredis/phpredis)
-or [`Predis` API](https://github.com/nrk/predis).
+or [`Predis` API](https://github.com/nrk/predis) clients.
 
 Both Redis and Valkey servers are supported.
 
@@ -212,7 +211,7 @@ $redis = new \Redis();
 $redis->connect('localhost');
 // OR $redis = new \Predis\Client('redis://localhost');
 
-$mutex = new RedisMutex([$redis], 'balance');
+$mutex = new RedisMutex($redis, 'balance');
 ```
 
 #### SemaphoreMutex
