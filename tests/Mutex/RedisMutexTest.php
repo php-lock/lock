@@ -200,11 +200,10 @@ class RedisMutexTest extends TestCase
 
     public function testAddFails(): void
     {
-        $this->expectException(LockAcquireException::class);
-        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
-
         $this->closeMajorityConnections();
 
+        $this->expectException(LockAcquireException::class);
+        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
         $this->mutex->synchronized(static function () {
             self::fail();
         });
@@ -216,7 +215,6 @@ class RedisMutexTest extends TestCase
     public function testEvalScriptFails(): void
     {
         $this->expectException(LockReleaseException::class);
-
         $this->mutex->synchronized(function () {
             $this->closeMajorityConnections();
         });

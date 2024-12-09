@@ -44,9 +44,6 @@ class RedisMutexWithPredisTest extends TestCase
         $this->mutex = new RedisMutex($this->client, 'test', 2.5, 3.5);
     }
 
-    /**
-     * Tests add() fails.
-     */
     public function testAddFailsToSetKey(): void
     {
         $this->client->expects(self::atLeastOnce())
@@ -55,15 +52,11 @@ class RedisMutexWithPredisTest extends TestCase
             ->willReturn(null);
 
         $this->expectException(LockAcquireException::class);
-
         $this->mutex->synchronized(static function () {
             self::fail();
         });
     }
 
-    /**
-     * Tests add() errors.
-     */
     public function testAddErrors(): void
     {
         $this->client->expects(self::atLeastOnce())
@@ -72,7 +65,6 @@ class RedisMutexWithPredisTest extends TestCase
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->expectException(LockAcquireException::class);
-
         $this->mutex->synchronized(static function () {
             self::fail();
         });
@@ -98,9 +90,6 @@ class RedisMutexWithPredisTest extends TestCase
         self::assertTrue($executed);
     }
 
-    /**
-     * Tests evalScript() fails.
-     */
     public function testEvalScriptFails(): void
     {
         $this->client->expects(self::atLeastOnce())
@@ -114,12 +103,6 @@ class RedisMutexWithPredisTest extends TestCase
             ->willThrowException($this->createMock(PredisException::class));
 
         $this->expectException(LockReleaseException::class);
-
-        $executed = false;
-        $this->mutex->synchronized(static function () use (&$executed) {
-            $executed = true;
-        });
-
-        self::assertTrue($executed);
+        $this->mutex->synchronized(static function () {});
     }
 }

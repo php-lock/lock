@@ -87,9 +87,6 @@ class DistributedMutexTest extends TestCase
     #[DataProvider('provideMinorityCases')]
     public function testTooFewServerToAcquire(int $count, int $available): void
     {
-        $this->expectException(LockAcquireException::class);
-        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
-
         $mutex = $this->createDistributedMutexMock($count);
 
         $i = 0;
@@ -103,6 +100,8 @@ class DistributedMutexTest extends TestCase
                 throw new LockAcquireException();
             });
 
+        $this->expectException(LockAcquireException::class);
+        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
         $mutex->synchronized(static function () {
             self::fail();
         });
@@ -149,9 +148,6 @@ class DistributedMutexTest extends TestCase
     #[DataProvider('provideMinorityCases')]
     public function testAcquireTooFewKeys(int $count, int $available): void
     {
-        $this->expectException(LockAcquireTimeoutException::class);
-        $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
-
         $mutex = $this->createDistributedMutexMock($count);
 
         $i = 0;
@@ -161,6 +157,8 @@ class DistributedMutexTest extends TestCase
                 return ++$i <= $available;
             });
 
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
         $mutex->synchronized(static function () {
             self::fail();
         });
@@ -178,9 +176,6 @@ class DistributedMutexTest extends TestCase
     #[DataProvider('provideAcquireTimeoutsCases')]
     public function testAcquireTimeouts(int $count, float $timeout, float $delay): void
     {
-        $this->expectException(LockAcquireTimeoutException::class);
-        $this->expectExceptionMessage('Lock acquire timeout of ' . LockUtil::getInstance()->formatTimeout($timeout) . ' seconds has been exceeded');
-
         $mutex = $this->createDistributedMutexMock($count, $timeout, $timeout);
         $mutex->expects(self::exactly($count))
             ->method('releaseMutex')
@@ -194,6 +189,8 @@ class DistributedMutexTest extends TestCase
                 return true;
             });
 
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of ' . LockUtil::getInstance()->formatTimeout($timeout) . ' seconds has been exceeded');
         $mutex->synchronized(static function () {
             self::fail();
         });
@@ -262,7 +259,6 @@ class DistributedMutexTest extends TestCase
             });
 
         $this->expectException(LockReleaseException::class);
-
         $mutex->synchronized(static function () {});
     }
 
@@ -290,7 +286,6 @@ class DistributedMutexTest extends TestCase
             });
 
         $this->expectException(LockReleaseException::class);
-
         $mutex->synchronized(static function () {});
     }
 

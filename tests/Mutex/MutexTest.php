@@ -235,9 +235,9 @@ class MutexTest extends TestCase
     #[DataProvider('provideMutexFactoriesCases')]
     public function testSynchronizedPassesExceptionThrough(\Closure $mutexFactory): void
     {
-        $this->expectException(\DomainException::class);
-
         $mutex = $mutexFactory();
+
+        $this->expectException(\DomainException::class);
         $mutex->synchronized(static function () {
             throw new \DomainException();
         });

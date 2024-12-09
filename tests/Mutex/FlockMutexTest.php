@@ -64,14 +64,13 @@ class FlockMutexTest extends TestCase
     #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testAcquireTimeoutOccurs(string $strategy): void
     {
-        $this->expectException(LockAcquireTimeoutException::class);
-        $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
-
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
         $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
 
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
         try {
             $this->mutex->synchronized(static function () {
                 self::fail();
@@ -99,14 +98,14 @@ class FlockMutexTest extends TestCase
     #[RequiresPhpExtension('pcntl')]
     public function testNoTimeoutWaitsForever(): void
     {
-        $this->expectException(DeadlineException::class);
-
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
         $this->mutex->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_BLOCK, null, FlockMutex::class)(); // @phpstan-ignore property.private
 
         $timebox = new PcntlTimeout(1);
+
+        $this->expectException(DeadlineException::class);
         $timebox->timeBoxed(function () {
             $this->mutex->synchronized(static function () {
                 self::fail();

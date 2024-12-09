@@ -30,12 +30,11 @@ class AbstractLockMutexTest extends TestCase
      */
     public function testLockFails(): void
     {
-        $this->expectException(LockAcquireException::class);
-
         $this->mutex->expects(self::once())
             ->method('lock')
             ->willThrowException(new LockAcquireException());
 
+        $this->expectException(LockAcquireException::class);
         $this->mutex->synchronized(static function () {
             self::fail();
         });
@@ -71,12 +70,11 @@ class AbstractLockMutexTest extends TestCase
      */
     public function testUnlockFailsAfterCode(): void
     {
-        $this->expectException(LockReleaseException::class);
-
         $this->mutex->expects(self::once())
             ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
+        $this->expectException(LockReleaseException::class);
         $this->mutex->synchronized(static function () {});
     }
 
@@ -85,12 +83,11 @@ class AbstractLockMutexTest extends TestCase
      */
     public function testUnlockFailsAfterException(): void
     {
-        $this->expectException(LockReleaseException::class);
-
         $this->mutex->expects(self::once())
             ->method('unlock')
             ->willThrowException(new LockReleaseException());
 
+        $this->expectException(LockReleaseException::class);
         $this->mutex->synchronized(static function () {
             throw new \DomainException();
         });
