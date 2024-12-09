@@ -23,6 +23,9 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     /** @var array<int, AbstractSpinlockMutex> */
     private array $mutexes;
 
+    /** @var list<int> */
+    private ?array $lockedMutexIndexes = null;
+
     /**
      * The Redis instance needs to be connected. I.e. Redis::connect() was
      * called already.
@@ -57,7 +60,6 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
                     $acquiredIndexes[] = $index;
                 }
             } catch (LockAcquireException $exception) {
-                // todo if there is only one redis server, throw immediately.
                 $this->logger->warning('Could not set {key} = {token} at server #{index}', [
                     'key' => $key,
                     'index' => $index,
@@ -73,6 +75,8 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         $isAcquired = $this->isCountMajority(count($acquiredIndexes)) && $elapsedTime <= $expireTimeout;
 
         if ($isAcquired) {
+            $this->lockedMutexIndexes = $acquiredIndexes;
+
             // 4.
             return LockUtil::getInstance()->makeRandomToken();
         }
@@ -103,23 +107,26 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
 
         $expireTimeout = \Closure::bind(fn () => $this->expireTimeout, $this, parent::class)();
 
-        $released = 0;
-        foreach ($this->mutexes as $index => $mutex) {
-            try {
-                if ($this->releaseMutex($mutex, $key, $expireTimeout)) {
-                    ++$released;
+        try {
+            $released = 0;
+            foreach ($this->lockedMutexIndexes as $index) {
+                try {
+                    if ($this->releaseMutex($this->mutexes[$index], $key, $expireTimeout)) {
+                        ++$released;
+                    }
+                } catch (LockReleaseException $e) {
+                    $this->logger->warning('Could not unset {key} = {token} at server #{index}', [
+                        'key' => $key,
+                        'index' => $index,
+                        'exception' => $e,
+                    ]);
                 }
-            } catch (LockReleaseException $e) {
-                // todo throw if there is only one redis server
-                $this->logger->warning('Could not unset {key} = {token} at server #{index}', [
-                    'key' => $key,
-                    'index' => $index,
-                    'exception' => $e,
-                ]);
             }
-        }
 
-        return $this->isCountMajority($released);
+            return $this->isCountMajority($released);
+        } finally {
+            $this->lockedMutexIndexes = null;
+        }
     }
 
     /**
