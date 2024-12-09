@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Tests\Mutex;
 
 use Eloquent\Liberator\Liberator;
+use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
@@ -204,17 +205,22 @@ class MutexConcurrencyTest extends TestCase
         if (getenv('REDIS_URIS')) {
             $uris = explode(',', getenv('REDIS_URIS'));
 
-            yield 'RedisMutex /w Predis' => [static function ($timeout) use ($uris): Mutex {
+            yield 'DistributedMutex RedisMutex /w Predis' => [static function ($timeout) use ($uris): Mutex {
                 $clients = array_map(
                     static fn ($uri) => new PredisClient($uri),
                     $uris
                 );
 
-                return new RedisMutex($clients, 'test', $timeout);
+                $mutexes = array_map(
+                    static fn ($client) => new RedisMutex($client, 'test', $timeout),
+                    $clients
+                );
+
+                return new DistributedMutex($mutexes, $timeout);
             }];
 
             if (class_exists(\Redis::class)) {
-                yield 'RedisMutex /w PHPRedis' => [
+                yield 'DistributedMutex RedisMutex /w PHPRedis' => [
                     static function ($timeout) use ($uris): Mutex {
                         $clients = array_map(
                             static function (string $uri): \Redis {
@@ -235,7 +241,12 @@ class MutexConcurrencyTest extends TestCase
                             $uris
                         );
 
-                        return new RedisMutex($clients, 'test', $timeout);
+                        $mutexes = array_map(
+                            static fn ($client) => new RedisMutex($client, 'test', $timeout),
+                            $clients
+                        );
+
+                        return new DistributedMutex($mutexes, $timeout);
                     },
                 ];
             }

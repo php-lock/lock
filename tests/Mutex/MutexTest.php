@@ -7,6 +7,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Mutex\AbstractLockMutex;
 use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
+use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
@@ -122,17 +123,22 @@ class MutexTest extends TestCase
         if (getenv('REDIS_URIS')) {
             $uris = explode(',', getenv('REDIS_URIS'));
 
-            yield 'RedisMutex /w Predis' => [static function () use ($uris): Mutex {
+            yield 'DistributedMutex RedisMutex /w Predis' => [static function () use ($uris): Mutex {
                 $clients = array_map(
                     static fn ($uri) => new PredisClient($uri),
                     $uris
                 );
 
-                return new RedisMutex($clients, 'test', self::TIMEOUT);
+                $mutexes = array_map(
+                    static fn ($client) => new RedisMutex($client, 'test', self::TIMEOUT),
+                    $clients
+                );
+
+                return new DistributedMutex($mutexes, self::TIMEOUT);
             }];
 
             if (class_exists(\Redis::class)) {
-                yield 'RedisMutex /w PHPRedis' => [
+                yield 'DistributedMutex RedisMutex /w PHPRedis' => [
                     static function () use ($uris): Mutex {
                         $clients = array_map(
                             static function ($uri) {
@@ -153,7 +159,12 @@ class MutexTest extends TestCase
                             $uris
                         );
 
-                        return new RedisMutex($clients, 'test', self::TIMEOUT);
+                        $mutexes = array_map(
+                            static fn ($client) => new RedisMutex($client, 'test', self::TIMEOUT),
+                            $clients
+                        );
+
+                        return new DistributedMutex($mutexes, self::TIMEOUT);
                     },
                 ];
             }

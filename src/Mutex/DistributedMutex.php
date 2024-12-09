@@ -21,21 +21,21 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     use LoggerAwareTrait;
 
     /** @var array<int, AbstractSpinlockWithTokenMutex> */
-    private array $clients;
+    private array $mutexes;
 
     /**
      * The Redis instance needs to be connected. I.e. Redis::connect() was
      * called already.
      *
-     * @param array<int, AbstractSpinlockWithTokenMutex> $clients
+     * @param array<int, AbstractSpinlockWithTokenMutex> $mutexes
      * @param float                                      $acquireTimeout In seconds
      * @param float                                      $expireTimeout  In seconds
      */
-    public function __construct(array $clients, string $name, float $acquireTimeout = 3, float $expireTimeout = \INF)
+    public function __construct(array $mutexes, float $acquireTimeout = 3, float $expireTimeout = \INF)
     {
-        parent::__construct($name, $acquireTimeout, $expireTimeout);
+        parent::__construct('', $acquireTimeout, $expireTimeout);
 
-        $this->clients = $clients;
+        $this->mutexes = $mutexes;
         $this->logger = new NullLogger();
     }
 
@@ -51,9 +51,9 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         $acquired = 0;
         $errored = 0;
         $exception = null;
-        foreach ($this->clients as $index => $client) {
+        foreach ($this->mutexes as $index => $mutex) {
             try {
-                if ($client->acquireWithToken($key, $expireTimeout)) {
+                if ($mutex->acquireWithToken($key, $expireTimeout)) {
                     ++$acquired;
                 }
             } catch (LockAcquireException $exception) {
@@ -82,7 +82,7 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         $this->releaseWithToken($key, $token);
 
         // In addition to RedLock it's an exception if too many servers fail.
-        if (!$this->isMajority(count($this->clients) - $errored)) {
+        if (!$this->isMajority(count($this->mutexes) - $errored)) {
             assert($exception !== null); // The last exception for some context.
 
             throw new LockAcquireException(
@@ -99,9 +99,9 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     protected function releaseWithToken(string $key, string $token): bool
     {
         $released = 0;
-        foreach ($this->clients as $index => $client) {
+        foreach ($this->mutexes as $index => $mutex) {
             try {
-                if ($client->releaseWithToken($key, $token)) {
+                if ($mutex->releaseWithToken($key, $token)) {
                     ++$released;
                 }
             } catch (LockReleaseException $e) {
@@ -125,6 +125,6 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
      */
     private function isMajority(int $count): bool
     {
-        return $count > count($this->clients) / 2;
+        return $count > count($this->mutexes) / 2;
     }
 }

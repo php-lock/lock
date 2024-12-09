@@ -12,7 +12,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface as PredisClientInterface;
 use Predis\PredisException;
-use Psr\Log\LoggerInterface;
 
 interface PredisClientInterfaceWithSetAndEvalMethods extends PredisClientInterface
 {
@@ -35,9 +34,6 @@ class RedisMutexWithPredisTest extends TestCase
     /** @var RedisMutex */
     private $mutex;
 
-    /** @var LoggerInterface&MockObject */
-    private $logger;
-
     #[\Override]
     protected function setUp(): void
     {
@@ -45,10 +41,7 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->client = $this->createMock(PredisClientInterfaceWithSetAndEvalMethods::class);
 
-        $this->mutex = new RedisMutex([$this->client], 'test', 2.5, 3.5);
-
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->mutex->setLogger($this->logger);
+        $this->mutex = new RedisMutex($this->client, 'test', 2.5, 3.5);
     }
 
     /**
@@ -119,7 +112,7 @@ class RedisMutexWithPredisTest extends TestCase
 
     public function testAcquireExpireTimeoutLimit(): void
     {
-        $this->mutex = new RedisMutex([$this->client], 'test');
+        $this->mutex = new RedisMutex($this->client, 'test');
 
         $this->client->expects(self::once())
             ->method('set')
