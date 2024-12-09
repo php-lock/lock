@@ -19,8 +19,7 @@ class FlockMutexTest extends TestCase
     /** @var FlockMutex */
     private $mutex;
 
-    /** @var string */
-    private $file;
+    private string $file;
 
     #[\Override]
     protected function setUp(): void

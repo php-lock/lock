@@ -12,7 +12,7 @@ use Malkusch\Lock\Mutex\Mutex;
  * The double-checked locking pattern.
  *
  * You should not instantiate this class directly. Use
- * {@link \Malkusch\Lock\Mutex\Mutex::check()}.
+ * {@link Mutex::check()}.
  *
  * @internal
  */
@@ -24,9 +24,8 @@ class DoubleCheckedLocking
     private $check;
 
     /**
-     * @param Mutex            $mutex Provides methods for exclusive code execution
-     * @param callable(): bool $check Callback that decides if the lock should be acquired and if the critical code
-     *                                callback should be executed after acquiring the lock
+     * @param callable(): bool $check Callback that decides if the lock should be acquired and is rechecked
+     *                                after a lock has been acquired
      */
     public function __construct(Mutex $mutex, callable $check)
     {
@@ -35,17 +34,12 @@ class DoubleCheckedLocking
     }
 
     /**
-     * Executes a synchronized callback only after the check callback passes
-     * before and after acquiring the lock.
-     *
-     * If then returns boolean boolean false, the check did not pass before or
-     * after acquiring the lock. A boolean false can also be returned from the
-     * critical code callback to indicate that processing did not occure or has
-     * failed. It is up to the user to decide the last point.
+     * Executes a block of code only after the check callback passes
+     * before and after acquiring a lock.
      *
      * @template T
      *
-     * @param callable(): T $code The critical code callback
+     * @param callable(): T $code
      *
      * @return T|false False if check did not pass
      *

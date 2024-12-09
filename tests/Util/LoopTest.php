@@ -64,12 +64,10 @@ class LoopTest extends TestCase
     }
 
     /**
-     * Tests execution within the timeout.
-     *
      * @doesNotPerformAssertions
      */
     #[DoesNotPerformAssertions]
-    public function testExecutionWithinTimeout(): void
+    public function testExecutionWithinAcquireTimeout(): void
     {
         $loop = new Loop();
         $loop->execute(static function () use ($loop): void {
@@ -78,10 +76,7 @@ class LoopTest extends TestCase
         }, 0.5);
     }
 
-    /**
-     * Tests execution within the timeout without calling end().
-     */
-    public function testExecutionWithinAcquireTimeoutWithoutExplicitEnd(): void
+    public function testExecutionWithinAcquireTimeoutWithoutCallingEnd(): void
     {
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
@@ -93,12 +88,10 @@ class LoopTest extends TestCase
     }
 
     /**
-     * Tests exceeding the execution timeout.
-     *
      * @doesNotPerformAssertions
      */
     #[DoesNotPerformAssertions]
-    public function testExceedTimeoutIsAcceptableIfEndWasCalled(): void
+    public function testExceedAcquireTimeoutIsAcceptableIfEndWasCalled(): void
     {
         $loop = new Loop();
         $loop->execute(static function () use ($loop): void {
@@ -107,10 +100,7 @@ class LoopTest extends TestCase
         }, 0.5);
     }
 
-    /**
-     * Tests exceeding the execution timeout without calling end().
-     */
-    public function testExceedAcquireTimeoutWithoutExplicitEnd(): void
+    public function testExceedAcquireTimeoutWithoutCallingEnd(): void
     {
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
@@ -121,9 +111,6 @@ class LoopTest extends TestCase
         }, 0.5);
     }
 
-    /**
-     * Tests that an exception would stop any further iteration.
-     */
     public function testExceptionStopsIteration(): void
     {
         $this->expectException(\DomainException::class);
@@ -134,10 +121,7 @@ class LoopTest extends TestCase
         }, 1);
     }
 
-    /**
-     * Tests end() will stop the iteration and return the result.
-     */
-    public function testEnd(): void
+    public function testEndCodeExecutedOnce(): void
     {
         $i = 0;
         $loop = new Loop();
@@ -148,10 +132,7 @@ class LoopTest extends TestCase
         self::assertSame(1, $i);
     }
 
-    /**
-     * Tests that the code is executed more times.
-     */
-    public function testIteration(): void
+    public function testEndCodeExecutedTwice(): void
     {
         $i = 0;
         $loop = new Loop();

@@ -9,8 +9,9 @@ use Malkusch\Lock\Util\LockUtil;
 
 /**
  * This exception should be thrown when for example the lock is released or the
- * lock times out before the critical code has finished execution. This is a
- * serious exception. Side effects might have happened while the critical code
+ * lock times out before the critical code has finished execution.
+ *
+ * This is a serious exception. Side effects might have happened while the critical code
  * was executed outside of the lock which should not be trusted to be valid.
  *
  * Should only be used in contexts where the lock is being released.
