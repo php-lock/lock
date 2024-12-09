@@ -115,12 +115,6 @@ $newBalance = $mutex->check(static function () use ($bankAccount, $amount): bool
 
     return $balance;
 });
-
-if (!$newBalance) {
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-}
 ```
 
 ### LockReleaseException::getCode{Exception, Result}()
@@ -134,7 +128,6 @@ In order to read the code result (or an exception thrown there),
 Example:
 ```php
 try {
-    // OR $mutex->check(...)
     $result = $mutex->synchronized(static function () {
         if (someCondition()) {
             throw new \DomainException();
@@ -144,14 +137,11 @@ try {
     });
 } catch (LockReleaseException $e) {
     if ($e->getCodeException() !== null) {
-        $codeException = $e->getCodeException();
-        // do something with the code exception
+        // do something with the $e->getCodeException() exception
     } else {
-        $codeResult = $e->getCodeResult();
-        // do something with the code result
+        // do something with the $e->getCodeResult() result
     }
 
-    // deal with LockReleaseException or propagate it
     throw $e;
 }
 ```
