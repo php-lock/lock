@@ -159,13 +159,15 @@ class MutexConcurrencyTest extends TestCase
             return new FlockMutex($file, $timeout);
         }];
 
-        yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename): Mutex {
-            $file = fopen($filename, 'w');
-            $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-            $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
+        if (extension_loaded('pcntl')) {
+            yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename): Mutex {
+                $file = fopen($filename, 'w');
+                $lock = Liberator::liberate(new FlockMutex($file, $timeout));
+                $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
 
-            return $lock->popsValue();
-        }];
+                return $lock->popsValue();
+            }];
+        }
 
         yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename): Mutex {
             $file = fopen($filename, 'w');

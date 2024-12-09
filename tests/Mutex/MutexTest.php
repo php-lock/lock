@@ -56,13 +56,15 @@ class MutexTest extends TestCase
             return new FlockMutex($file);
         }];
 
-        yield 'flockWithTimoutPcntl' => [static function (): Mutex {
-            $file = fopen(vfsStream::url('test/lock'), 'w');
-            $lock = Liberator::liberate(new FlockMutex($file, 3));
-            $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
+        if (extension_loaded('pcntl')) {
+            yield 'flockWithTimoutPcntl' => [static function (): Mutex {
+                $file = fopen(vfsStream::url('test/lock'), 'w');
+                $lock = Liberator::liberate(new FlockMutex($file, 3));
+                $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
 
-            return $lock->popsValue();
-        }];
+                return $lock->popsValue();
+            }];
+        }
 
         yield 'flockWithTimoutLoop' => [static function (): Mutex {
             $file = fopen(vfsStream::url('test/lock'), 'w');
