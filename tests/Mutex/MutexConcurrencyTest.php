@@ -12,7 +12,6 @@ use Malkusch\Lock\Mutex\MySQLMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
-use Malkusch\Lock\Mutex\TransactionalMutex;
 use Malkusch\Lock\Util\LockUtil;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Constraint\IsType;
@@ -32,8 +31,6 @@ class MutexConcurrencyTest extends TestCase
 {
     /** @var list<string> */
     protected static $temporaryFiles = [];
-    /** @var \PDO|null */
-    private static $pdo;
 
     #[\Override]
     public static function tearDownAfterClass(): void
@@ -43,22 +40,7 @@ class MutexConcurrencyTest extends TestCase
         }
         self::$temporaryFiles = [];
 
-        self::$pdo = null;
-
         parent::tearDownAfterClass();
-    }
-
-    /**
-     * Gets a PDO instance.
-     */
-    private static function getPDO(string $dsn, string $user, string $password): \PDO
-    {
-        if (self::$pdo === null) {
-            self::$pdo = new \PDO($dsn, $user, $password);
-            self::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        }
-
-        return self::$pdo;
     }
 
     /**
@@ -134,63 +116,6 @@ class MutexConcurrencyTest extends TestCase
                     file_put_contents($filename, '0');
                 },
             ];
-        }
-
-        $makePDOCase = static function (string $dsn, string $user, string $password, string $vendor) {
-            $pdo = self::getPDO($dsn, $user, $password);
-
-            $options = ['mysql' => 'engine=InnoDB'];
-            $option = $options[$vendor] ?? '';
-            $pdo->exec('CREATE TABLE IF NOT EXISTS counter(id INT PRIMARY KEY, counter INT) ' . $option);
-
-            self::$pdo = null;
-
-            return [
-                static function (int $increment) use ($dsn, $user, $password) {
-                    // This prevents using a closed connection from a child.
-                    if ($increment === 0) {
-                        self::$pdo = null;
-                    }
-                    $pdo = self::getPDO($dsn, $user, $password);
-                    $id = 1;
-                    $select = $pdo->prepare('SELECT counter FROM counter WHERE id = ? FOR UPDATE');
-                    $select->execute([$id]);
-                    $counter = $select->fetchColumn();
-
-                    $counter += $increment;
-
-                    $pdo->prepare('UPDATE counter SET counter = ? WHERE id = ?')
-                        ->execute([$counter, $id]);
-
-                    return $counter;
-                },
-                static function ($timeout) use ($dsn, $user, $password) {
-                    self::$pdo = null;
-                    $pdo = self::getPDO($dsn, $user, $password);
-
-                    return new TransactionalMutex($pdo, $timeout);
-                },
-                static function () use ($pdo): void {
-                    $pdo->beginTransaction();
-                    $pdo->exec('DELETE FROM counter');
-                    $pdo->exec('INSERT INTO counter VALUES (1, 0)');
-                    $pdo->commit();
-                },
-            ];
-        };
-
-        if (getenv('MYSQL_DSN')) {
-            $dsn = getenv('MYSQL_DSN');
-            $user = getenv('MYSQL_USER');
-            $password = getenv('MYSQL_PASSWORD');
-            yield 'mysql' => $makePDOCase($dsn, $user, $password, 'mysql');
-        }
-
-        if (getenv('PGSQL_DSN')) {
-            $dsn = getenv('PGSQL_DSN');
-            $user = getenv('PGSQL_USER');
-            $password = getenv('PGSQL_PASSWORD');
-            yield 'postgres' => $makePDOCase($dsn, $user, $password, 'postgres');
         }
     }
 

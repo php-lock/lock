@@ -15,7 +15,6 @@ use Malkusch\Lock\Mutex\NoMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
-use Malkusch\Lock\Mutex\TransactionalMutex;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
@@ -49,13 +48,6 @@ class MutexTest extends TestCase
     {
         yield 'NoMutex' => [static function (): Mutex {
             return new NoMutex();
-        }];
-
-        yield 'TransactionalMutex' => [static function (): Mutex {
-            $pdo = new \PDO('sqlite::memory:');
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-            return new TransactionalMutex($pdo, self::TIMEOUT);
         }];
 
         yield 'FlockMutex' => [static function (): Mutex {

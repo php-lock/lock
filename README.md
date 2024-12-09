@@ -167,7 +167,6 @@ implementations or create/extend your own implementation.
 - [`MemcachedMutex`](#memcachedmutex)
 - [`RedisMutex`](#redismutex)
 - [`SemaphoreMutex`](#semaphoremutex)
-- [`TransactionalMutex`](#transactionalmutex)
 - [`MySQLMutex`](#mysqlmutex)
 - [`PostgreSQLMutex`](#PostgreSQLMutex)
 
@@ -258,36 +257,6 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
         throw new \DomainException('You have no credit');
     }
     $bankAccount->setBalance($balance);
-});
-```
-
-#### TransactionalMutex
-
-The **TransactionalMutex**
-delegates the serialization to the database. The exclusive code is executed within
-a transaction. It's up to you to set the correct transaction isolation level.
-However if the transaction fails (i.e. a `PDOException` was thrown), the code
-will be executed again in a new transaction. Therefore the code must not have
-any side effects besides SQL statements. Also the isolation level should be
-conserved for the repeated transaction. If the code throws an exception,
-the transaction is rolled back and not replayed again.
-
-Example:
-```php
-$mutex = new TransactionalMutex($pdo);
-$mutex->synchronized(function () use ($pdo, $accountId, $amount) {
-    $select = $pdo->prepare(
-        'SELECT balance FROM account WHERE id = ? FOR UPDATE'
-    );
-    $select->execute([$accountId]);
-    $balance = $select->fetchColumn();
-
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $pdo->prepare('UPDATE account SET balance = ? WHERE id = ?')
-        ->execute([$balance, $accountId]);
 });
 ```
 
