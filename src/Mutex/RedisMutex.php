@@ -11,28 +11,65 @@ use Predis\ClientInterface as PredisClientInterface;
 use Predis\PredisException;
 
 /**
- * Distributed mutex based on the Redlock algorithm supporting the phpredis extension and Predis API.
+ * Redis based spinlock implementation supporting the phpredis extension and Predis API.
  *
  * @phpstan-type TClient \Redis|\RedisCluster|PredisClientInterface
- *
- * @extends AbstractRedlockMutex<TClient>
- *
- * @see https://redis.io/topics/distlock#the-redlock-algorithm
  */
-class RedisMutex extends AbstractRedlockMutex
+class RedisMutex extends AbstractSpinlockWithTokenMutex
 {
+    /** @var TClient */
+    private object $client;
+
+    /**
+     * The Redis instance needs to be connected. I.e. Redis::connect() was called already.
+     *
+     * @param TClient $client
+     * @param float               $acquireTimeout In seconds
+     * @param float               $expireTimeout  In seconds
+     */
+    public function __construct(object $client, string $name, float $acquireTimeout = 3, float $expireTimeout = \INF)
+    {
+        parent::__construct($name, $acquireTimeout, $expireTimeout);
+
+        $this->client = $client;
+    }
+
     /**
      * @param TClient $client
      *
-     * @phpstan-assert-if-true \Redis|\RedisCluster $client
+     * @phpstan-assert-if-true \Redis|\RedisCluster $this->client
      */
-    private function isClientPHPRedis(object $client): bool
+    private function isClientPHPRedis(): bool
     {
-        $res = $client instanceof \Redis || $client instanceof \RedisCluster;
+        $res = $this->client instanceof \Redis || $this->client instanceof \RedisCluster;
 
-        \assert($res === !$client instanceof PredisClientInterface);
+        \assert($res === !$this->client instanceof PredisClientInterface);
 
         return $res;
+    }
+
+    #[\Override]
+    protected function acquireWithToken(string $key, float $expireTimeout)
+    {
+        $token = LockUtil::getInstance()->makeRandomToken();
+
+        return $this->add($key, $token, $expireTimeout)
+            ? $token
+            : false;
+    }
+
+    #[\Override]
+    protected function releaseWithToken(string $key, string $token): bool
+    {
+        $script = <<<'LUA'
+            if redis.call("get", KEYS[1]) == ARGV[1] then
+                return redis.call("del", KEYS[1])
+            else
+                return 0
+            end
+            LUA;
+
+        return $this->evalScript($script, [$key], [$token]);
     }
 
     private function makeRedisExpireTimeoutMillis(float $value): int
@@ -60,15 +97,14 @@ class RedisMutex extends AbstractRedlockMutex
     /**
      * @throws LockAcquireException
      */
-    #[\Override]
-    protected function add(object $client, string $key, string $value, float $expire): bool
+    protected function add(string $key, string $value, float $expire): bool
     {
         $expireTimeoutMillis = $this->makeRedisExpireTimeoutMillis($expire);
 
-        if ($this->isClientPHPRedis($client)) {
+        if ($this->isClientPHPRedis()) {
             try {
                 //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
-                return $client->set($key, $value, ['nx', 'px' => $expireTimeoutMillis]);
+                return $this->client->set($key, $value, ['nx', 'px' => $expireTimeoutMillis]);
             } catch (\RedisException $e) {
                 $message = sprintf(
                     'Failed to acquire lock for key \'%s\'',
@@ -79,7 +115,7 @@ class RedisMutex extends AbstractRedlockMutex
             }
         } else {
             try {
-                return $client->set($key, $value, 'PX', $expireTimeoutMillis, 'NX') !== null;
+                return $this->client->set($key, $value, 'PX', $expireTimeoutMillis, 'NX') !== null;
             } catch (PredisException $e) {
                 $message = sprintf(
                     'Failed to acquire lock for key \'%s\'',
@@ -91,24 +127,23 @@ class RedisMutex extends AbstractRedlockMutex
         }
     }
 
-    #[\Override]
-    protected function evalScript(object $client, string $luaScript, array $keys, array $arguments)
+    protected function evalScript(string $luaScript, array $keys, array $arguments)
     {
-        if ($this->isClientPHPRedis($client)) {
-            $arguments = array_map(function ($v) use ($client) {
+        if ($this->isClientPHPRedis()) {
+            $arguments = array_map(function ($v) {
                 /*
                  * If a serialization mode such as "php" or "igbinary" is enabled, the arguments must be
                  * serialized by us, because phpredis does not do this for the eval command.
                  *
                  * The keys must not be serialized.
                  */
-                $v = $client->_serialize($v);
+                $v = $this->client->_serialize($v);
 
                 /*
                  * If LZF compression is enabled for the redis connection and the runtime has the LZF
                  * extension installed, compress the arguments as the final step.
                  */
-                if ($this->isLzfCompressionEnabled($client)) {
+                if ($this->isLzfCompressionEnabled()) {
                     $v = lzf_compress($v);
                 }
 
@@ -116,28 +151,25 @@ class RedisMutex extends AbstractRedlockMutex
             }, $arguments);
 
             try {
-                return $client->eval($luaScript, [...$keys, ...$arguments], count($keys));
+                return $this->client->eval($luaScript, [...$keys, ...$arguments], count($keys));
             } catch (\RedisException $e) {
                 throw new LockReleaseException('Failed to release lock', 0, $e);
             }
         } else {
             try {
-                return $client->eval($luaScript, count($keys), ...$keys, ...$arguments);
+                return $this->client->eval($luaScript, count($keys), ...$keys, ...$arguments);
             } catch (PredisException $e) {
                 throw new LockReleaseException('Failed to release lock', 0, $e);
             }
         }
     }
 
-    /**
-     * @param \Redis|\RedisCluster $client
-     */
-    private function isLzfCompressionEnabled(object $client): bool
+    private function isLzfCompressionEnabled(): bool
     {
         if (!\defined('Redis::COMPRESSION_LZF')) {
             return false;
         }
 
-        return $client->getOption(\Redis::OPT_COMPRESSION) === \Redis::COMPRESSION_LZF;
+        return $this->client->getOption(\Redis::OPT_COMPRESSION) === \Redis::COMPRESSION_LZF;
     }
 }

@@ -14,13 +14,9 @@ use Psr\Log\NullLogger;
 /**
  * Distributed mutex based on the Redlock algorithm.
  *
- * @template TClient of object
- *
- * @internal
- *
- * @see https://redis.io/topics/distlock#the-redlock-algorithm
+ * @see http://redis.io/topics/distlock#the-redlock-algorithm
  */
-abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex implements LoggerAwareInterface
+class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -46,13 +42,14 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex imple
     #[\Override]
     protected function acquireWithToken(string $key, float $expireTimeout)
     {
+        $token = LockUtil::getInstance()->makeRandomToken();
+
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $startTs = microtime(true);
 
         // 2.
         $acquired = 0;
         $errored = 0;
-        $token = LockUtil::getInstance()->makeRandomToken();
         $exception = null;
         foreach ($this->clients as $index => $client) {
             try {
@@ -145,25 +142,4 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex imple
     {
         return $count > count($this->clients) / 2;
     }
-
-    /**
-     * Sets the key only if such key doesn't exist at the server yet.
-     *
-     * @param TClient $client
-     * @param float   $expire The TTL seconds
-     *
-     * @return bool True if the key was set
-     */
-    abstract protected function add(object $client, string $key, string $value, float $expire): bool;
-
-    /**
-     * @param TClient      $client
-     * @param list<string> $keys
-     * @param list<mixed>  $arguments
-     *
-     * @return mixed The script result, or false if executing failed
-     *
-     * @throws LockReleaseException An unexpected error happened
-     */
-    abstract protected function evalScript(object $client, string $luaScript, array $keys, array $arguments);
 }
