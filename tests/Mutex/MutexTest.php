@@ -11,7 +11,7 @@ use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
 use Malkusch\Lock\Mutex\MySQLMutex;
-use Malkusch\Lock\Mutex\NoMutex;
+use Malkusch\Lock\Mutex\NullMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
@@ -46,8 +46,8 @@ class MutexTest extends TestCase
      */
     public static function provideMutexFactoriesCases(): iterable
     {
-        yield 'NoMutex' => [static function (): Mutex {
-            return new NoMutex();
+        yield 'NullMutex' => [static function (): Mutex {
+            return new NullMutex();
         }];
 
         yield 'FlockMutex' => [static function (): Mutex {
