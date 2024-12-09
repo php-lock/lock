@@ -97,9 +97,7 @@ class DistributedMutexTest extends TestCase
             ->method('acquireMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
-                    if ($i < $available) {
-                        ++$i;
-
+                    if ($i++ < $available) {
                         return true;
                     }
 
@@ -124,7 +122,7 @@ class DistributedMutexTest extends TestCase
     public function testFaultTolerance(int $count, int $available): void
     {
         $mutex = $this->createDistributedMutexMock($count);
-        $mutex->expects(self::exactly($count))
+        $mutex->expects(self::exactly($available))
             ->method('releaseMutex')
             ->willReturn(true);
 
@@ -133,9 +131,7 @@ class DistributedMutexTest extends TestCase
             ->method('acquireMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
-                    if ($i < $available) {
-                        ++$i;
-
+                    if ($i++ < $available) {
                         return true;
                     }
 
@@ -167,9 +163,7 @@ class DistributedMutexTest extends TestCase
             ->method('acquireMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
-                    ++$i;
-
-                    return $i <= $available;
+                    return ++$i <= $available;
                 }
             );
 
@@ -232,7 +226,7 @@ class DistributedMutexTest extends TestCase
     public function testAcquireWithMajority(int $count, int $available): void
     {
         $mutex = $this->createDistributedMutexMock($count);
-        $mutex->expects(self::exactly($count))
+        $mutex->expects(self::exactly($available))
             ->method('releaseMutex')
             ->willReturn(true);
 
@@ -241,9 +235,7 @@ class DistributedMutexTest extends TestCase
             ->method('acquireMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
-                    ++$i;
-
-                    return $i <= $available;
+                    return ++$i <= $available;
                 }
             );
 
@@ -271,9 +263,7 @@ class DistributedMutexTest extends TestCase
             ->method('releaseMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
-                    if ($i < $available) {
-                        ++$i;
-
+                    if ($i++ < $available) {
                         return true;
                     }
 
@@ -307,9 +297,7 @@ class DistributedMutexTest extends TestCase
             ->method('releaseMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
-                    ++$i;
-
-                    return $i <= $available;
+                    return ++$i <= $available;
                 }
             );
 
