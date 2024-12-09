@@ -129,4 +129,50 @@ class DoubleCheckedLockingTest extends TestCase
         self::assertSame(1, $executedCount);
         self::assertSame('foo', $result);
     }
+
+    public function testFailCodeExecutedBeforeLock(): void
+    {
+        $this->mutex->expects(self::never())
+            ->method('synchronized');
+
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function () {
+            return false;
+        });
+
+        $executedCount = 0;
+        $result = $checkedLocking->then(static function () {
+            self::fail();
+        }, static function () use (&$executedCount) {
+            ++$executedCount;
+
+            return 'foo';
+        });
+
+        self::assertSame(1, $executedCount);
+        self::assertSame('foo', $result);
+    }
+
+    public function testFailCodeExecutedAfterLock(): void
+    {
+        $this->mutex->expects(self::once())
+            ->method('synchronized')
+            ->willReturnCallback(static fn (\Closure $block) => $block());
+
+        $i = 0;
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function () use (&$i) {
+            return $i++ === 0;
+        });
+
+        $executedCount = 0;
+        $result = $checkedLocking->then(static function () {
+            self::fail();
+        }, static function () use (&$executedCount) {
+            ++$executedCount;
+
+            return 'foo';
+        });
+
+        self::assertSame(1, $executedCount);
+        self::assertSame('foo', $result);
+    }
 }
