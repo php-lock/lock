@@ -11,7 +11,9 @@ use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
+use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
+use Predis\ClientInterface as PredisClientInterface;
 
 if (\PHP_MAJOR_VERSION >= 8) {
     trait RedisCompatibilityTrait
@@ -55,6 +57,19 @@ if (\PHP_MAJOR_VERSION >= 8) {
             return $this->_set($key, $value, $options);
         }
     }
+}
+
+interface PredisClientInterfaceWithSetAndEvalMethods extends PredisClientInterface
+{
+    /**
+     * @return mixed
+     */
+    public function eval();
+
+    /**
+     * @return mixed
+     */
+    public function set();
 }
 
 /**
@@ -205,6 +220,25 @@ class RedisMutexTest extends TestCase
         $this->mutex->synchronized(function () {
             $this->closeMajorityConnections();
         });
+    }
+
+    public function testAcquireExpireTimeoutLimit(): void
+    {
+        $client = $this->createMock(PredisClientInterfaceWithSetAndEvalMethods::class);
+
+        $this->mutex = new RedisMutex($client, 'test');
+
+        $client->expects(self::once())
+            ->method('set')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 31_557_600_000_000, 'NX')
+            ->willReturnSelf();
+
+        $client->expects(self::once())
+            ->method('eval')
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
+            ->willReturn(true);
+
+        $this->mutex->synchronized(static function () {});
     }
 
     /**
