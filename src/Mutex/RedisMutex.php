@@ -67,7 +67,7 @@ class RedisMutex extends AbstractSpinlockWithTokenMutex
             end
             LUA;
 
-        return $this->evalScript($script, [$key], [$token]);
+        return (int) $this->evalScript($script, [$key], [$token]) === 1;
     }
 
     private function makeRedisExpireTimeoutMillis(float $value): int
