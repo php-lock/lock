@@ -74,11 +74,9 @@ class FlockMutex extends AbstractLockMutex
         $timebox = new PcntlTimeout($acquireTimeoutInt);
 
         try {
-            $timebox->timeBoxed(
-                function (): void {
-                    $this->lockBlocking();
-                }
-            );
+            $timebox->timeBoxed(function (): void {
+                $this->lockBlocking();
+            });
         } catch (DeadlineException $e) {
             throw LockAcquireTimeoutException::create($acquireTimeoutInt);
         }

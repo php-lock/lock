@@ -7,10 +7,13 @@ namespace Malkusch\Lock\Tests\Mutex;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
+use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
+use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
+use Predis\ClientInterface as PredisClientInterface;
 
 if (\PHP_MAJOR_VERSION >= 8) {
     trait RedisCompatibilityTrait
@@ -56,6 +59,19 @@ if (\PHP_MAJOR_VERSION >= 8) {
     }
 }
 
+interface PredisClientInterfaceWithSetAndEvalMethods extends PredisClientInterface
+{
+    /**
+     * @return mixed
+     */
+    public function eval();
+
+    /**
+     * @return mixed
+     */
+    public function set();
+}
+
 /**
  * These tests require the environment variable:
  *
@@ -90,14 +106,13 @@ class RedisMutexTest extends TestCase
             $connection = new class extends \Redis {
                 use RedisCompatibilityTrait;
 
-                /** @var bool */
-                private $is_closed = false;
+                private bool $isClosed = false;
 
                 #[\Override]
                 public function close(): bool
                 {
                     $res = parent::close();
-                    $this->is_closed = true;
+                    $this->isClosed = true;
 
                     return $res;
                 }
@@ -110,7 +125,7 @@ class RedisMutexTest extends TestCase
                  */
                 private function _set(string $key, $value, $timeout = 0)
                 {
-                    if ($this->is_closed) {
+                    if ($this->isClosed) {
                         throw new \RedisException('Connection is closed');
                     }
 
@@ -124,7 +139,7 @@ class RedisMutexTest extends TestCase
                  */
                 private function _eval(string $script, array $args = [], int $numKeys = 0)
                 {
-                    if ($this->is_closed) {
+                    if ($this->isClosed) {
                         throw new \RedisException('Connection is closed');
                     }
 
@@ -146,7 +161,7 @@ class RedisMutexTest extends TestCase
             $this->connections[] = $connection;
         }
 
-        $this->mutex = new RedisMutex($this->connections, 'test');
+        $this->mutex = new DistributedMutex(array_map(static fn ($v) => new RedisMutex($v, 'test'), $this->connections)); // @phpstan-ignore assign.propertyType
     }
 
     #[\Override]
@@ -185,12 +200,11 @@ class RedisMutexTest extends TestCase
 
     public function testAddFails(): void
     {
-        $this->expectException(LockAcquireException::class);
-        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
-
         $this->closeMajorityConnections();
 
-        $this->mutex->synchronized(static function (): void {
+        $this->expectException(LockAcquireException::class);
+        $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
+        $this->mutex->synchronized(static function () {
             self::fail();
         });
     }
@@ -201,10 +215,28 @@ class RedisMutexTest extends TestCase
     public function testEvalScriptFails(): void
     {
         $this->expectException(LockReleaseException::class);
-
-        $this->mutex->synchronized(function (): void {
+        $this->mutex->synchronized(function () {
             $this->closeMajorityConnections();
         });
+    }
+
+    public function testAcquireExpireTimeoutLimit(): void
+    {
+        $client = $this->createMock(PredisClientInterfaceWithSetAndEvalMethods::class);
+
+        $this->mutex = new RedisMutex($client, 'test');
+
+        $client->expects(self::once())
+            ->method('set')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 31_557_600_000_000, 'NX')
+            ->willReturnSelf();
+
+        $client->expects(self::once())
+            ->method('eval')
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
+            ->willReturn(true);
+
+        $this->mutex->synchronized(static function () {});
     }
 
     /**
@@ -221,7 +253,7 @@ class RedisMutexTest extends TestCase
             $connection->setOption(\Redis::OPT_COMPRESSION, $compressor);
         }
 
-        self::assertSame('test', $this->mutex->synchronized(static function (): string {
+        self::assertSame('test', $this->mutex->synchronized(static function () {
             return 'test';
         }));
     }
@@ -230,7 +262,7 @@ class RedisMutexTest extends TestCase
     {
         $this->closeMinorityConnections();
 
-        self::assertSame('test', $this->mutex->synchronized(static function (): string {
+        self::assertSame('test', $this->mutex->synchronized(static function () {
             return 'test';
         }));
     }

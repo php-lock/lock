@@ -36,22 +36,19 @@ class MemcachedMutexTest extends TestCase
 
     public function testAcquireFail(): void
     {
-        $this->expectException(LockAcquireTimeoutException::class);
-
         $this->memcached->expects(self::atLeastOnce())
             ->method('add')
             ->with('php-malkusch-lock:test', true, 3)
             ->willReturn(false);
 
-        $this->mutex->synchronized(static function (): void {
+        $this->expectException(LockAcquireTimeoutException::class);
+        $this->mutex->synchronized(static function () {
             self::fail();
         });
     }
 
     public function testReleaseFail(): void
     {
-        $this->expectException(LockReleaseException::class);
-
         $this->memcached->expects(self::once())
             ->method('add')
             ->with('php-malkusch-lock:test', true, 3)
@@ -62,7 +59,8 @@ class MemcachedMutexTest extends TestCase
             ->with('php-malkusch-lock:test')
             ->willReturn(false);
 
-        $this->mutex->synchronized(static function (): void {});
+        $this->expectException(LockReleaseException::class);
+        $this->mutex->synchronized(static function () {});
     }
 
     public function testAcquireExpireTimeoutLimit(): void
@@ -79,6 +77,6 @@ class MemcachedMutexTest extends TestCase
             ->with('php-malkusch-lock:test')
             ->willReturn(true);
 
-        $this->mutex->synchronized(static function (): void {});
+        $this->mutex->synchronized(static function () {});
     }
 }

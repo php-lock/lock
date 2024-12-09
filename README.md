@@ -1,6 +1,7 @@
 **[Requirements](#requirements)** |
 **[Installation](#installation)** |
 **[Usage](#usage)** |
+**[Implementations](#implementations)** |
 **[Authors](#authors)** |
 **[License](#license)**
 
@@ -51,7 +52,7 @@ This library uses the namespace `Malkusch\Lock`.
 
 The [`Malkusch\Lock\Mutex\Mutex`][5] interface provides the base API for this library.
 
-#### Mutex::synchronized()
+### Mutex::synchronized()
 
 [`Malkusch\Lock\Mutex\Mutex::synchronized()`][6] executes code exclusively. This
 method guarantees that the code is only executed by one process at once. Other
@@ -65,10 +66,7 @@ return value `false` or `null` should be seen as a failed action.
 Example:
 
 ```php
-$newBalance = $mutex->synchronized(function () use (
-    $bankAccount,
-    $amount
-): int {
+$newBalance = $mutex->synchronized(static function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     if ($balance < 0) {
@@ -80,7 +78,7 @@ $newBalance = $mutex->synchronized(function () use (
 });
 ```
 
-#### Mutex::check()
+### Mutex::check()
 
 [`Malkusch\Lock\Mutex\Mutex::check()`][7] sets a callable, which will be
 executed when [`Malkusch\Lock\Util\DoubleCheckedLocking::then()`][8] is called,
@@ -108,9 +106,9 @@ this return value will not be checked by the library.
 Example:
 
 ```php
-$newBalance = $mutex->check(function () use ($bankAccount, $amount): bool {
+$newBalance = $mutex->check(static function () use ($bankAccount, $amount): bool {
     return $bankAccount->getBalance() >= $amount;
-})->then(function () use ($bankAccount, $amount): int {
+})->then(static function () use ($bankAccount, $amount) {
     $balance = $bankAccount->getBalance();
     $balance -= $amount;
     $bankAccount->setBalance($balance);
@@ -118,14 +116,14 @@ $newBalance = $mutex->check(function () use ($bankAccount, $amount): bool {
     return $balance;
 });
 
-if ($newBalance === false) {
+if (!$newBalance) {
     if ($balance < 0) {
         throw new \DomainException('You have no credit');
     }
 }
 ```
 
-#### Extracting code result after lock release exception
+### Extracting code result after lock release exception
 
 Mutex implementations based on [`Malkush\Lock\Mutex\AbstractLockMutex`][10] will throw
 [`Malkusch\Lock\Exception\LockReleaseException`][11] in case of lock release
@@ -136,8 +134,8 @@ In order to read the code result (or an exception thrown there),
 Example:
 ```php
 try {
-    // or $mutex->check(...)
-    $result = $mutex->synchronized(function () {
+    // OR $mutex->check(...)
+    $result = $mutex->synchronized(static function () {
         if (someCondition()) {
             throw new \DomainException();
         }
@@ -149,7 +147,7 @@ try {
         $codeException = $unlockException->getCodeException();
         // do something with the code exception
     } else {
-        $code_result = $unlockException->getCodeResult();
+        $codeResult = $unlockException->getCodeResult();
         // do something with the code result
     }
 
@@ -158,7 +156,7 @@ try {
 }
 ```
 
-### Implementations
+## Implementations
 
 You can choose from one of the provided [`Malkusch\Lock\Mutex\Mutex`](#mutex) interface
 implementations or create/extend your own implementation.
@@ -168,9 +166,10 @@ implementations or create/extend your own implementation.
 - [`RedisMutex`](#redismutex)
 - [`SemaphoreMutex`](#semaphoremutex)
 - [`MySQLMutex`](#mysqlmutex)
-- [`PostgreSQLMutex`](#PostgreSQLMutex)
+- [`PostgreSQLMutex`](#postgresqlmutex)
+- [`DistributedMutex`](#distributedmutex)
 
-#### FlockMutex
+### FlockMutex
 
 The **FlockMutex** is a lock implementation based on
 [`flock()`](https://php.net/manual/en/function.flock.php).
@@ -178,20 +177,12 @@ The **FlockMutex** is a lock implementation based on
 Example:
 ```php
 $mutex = new FlockMutex(fopen(__FILE__, 'r'));
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $bankAccount->setBalance($balance);
-});
 ```
 
 Timeouts are supported as an optional second argument. This uses the `ext-pcntl`
 extension if possible or busy waiting if not.
 
-#### MemcachedMutex
+### MemcachedMutex
 
 The **MemcachedMutex** is a spinlock implementation which uses the
 [`Memcached` extension](https://php.net/manual/en/book.memcached.php).
@@ -202,22 +193,13 @@ $memcached = new \Memcached();
 $memcached->addServer('localhost', 11211);
 
 $mutex = new MemcachedMutex('balance', $memcached);
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $bankAccount->setBalance($balance);
-});
 ```
 
-#### RedisMutex
+### RedisMutex
 
-The **RedisMutex** is the distributed lock implementation of
-[RedLock](https://redis.io/topics/distlock#the-redlock-algorithm) which supports the
+The **RedisMutex** is a lock implementation which supports the
 [`phpredis` extension](https://github.com/phpredis/phpredis)
-or [`Predis` API](https://github.com/nrk/predis).
+or [`Predis` API](https://github.com/nrk/predis) clients.
 
 Both Redis and Valkey servers are supported.
 
@@ -230,18 +212,10 @@ $redis = new \Redis();
 $redis->connect('localhost');
 // OR $redis = new \Predis\Client('redis://localhost');
 
-$mutex = new RedisMutex([$redis], 'balance');
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $bankAccount->setBalance($balance);
-});
+$mutex = new RedisMutex($redis, 'balance');
 ```
 
-#### SemaphoreMutex
+### SemaphoreMutex
 
 The **SemaphoreMutex** is a lock implementation based on
 [Semaphore](https://php.net/manual/en/ref.sem.php).
@@ -250,17 +224,9 @@ Example:
 ```php
 $semaphore = sem_get(ftok(__FILE__, 'a'));
 $mutex = new SemaphoreMutex($semaphore);
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $bankAccount->setBalance($balance);
-});
 ```
 
-#### MySQLMutex
+### MySQLMutex
 
 The **MySQLMutex** uses MySQL's
 [`GET_LOCK`](https://dev.mysql.com/doc/refman/9.0/en/locking-functions.html#function_get-lock)
@@ -280,19 +246,10 @@ you to namespace your locks like `dbname.lockname`.
 
 ```php
 $pdo = new \PDO('mysql:host=localhost;dbname=test', 'username');
-
 $mutex = new MySQLMutex($pdo, 'balance', 15);
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $bankAccount->setBalance($balance);
-});
 ```
 
-#### PostgreSQLMutex
+### PostgreSQLMutex
 
 The **PostgreSQLMutex** uses PostgreSQL's
 [advisory locking](https://www.postgresql.org/docs/9.4/static/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS)
@@ -306,16 +263,21 @@ interrupted, the lock is automatically released.
 
 ```php
 $pdo = new \PDO('pgsql:host=localhost;dbname=test', 'username');
-
 $mutex = new PostgreSQLMutex($pdo, 'balance');
-$mutex->synchronized(function () use ($bankAccount, $amount) {
-    $balance = $bankAccount->getBalance();
-    $balance -= $amount;
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-    $bankAccount->setBalance($balance);
-});
+```
+
+### DistributedMutex
+
+The **DistributedMutex** is the distributed lock implementation of
+[RedLock](https://redis.io/topics/distlock#the-redlock-algorithm) which supports
+one or more [`Malkush\Lock\Mutex\AbstractSpinlockMutex`][10] instances.
+
+Example:
+```php
+$mutex = new DistributedMutex([
+    new \Predis\Client('redis://10.0.0.1'),
+    new \Predis\Client('redis://10.0.0.2'),
+], 'balance');
 ```
 
 ## Authors
@@ -341,3 +303,4 @@ This project is free and is licensed under the MIT.
 [9]: https://en.wikipedia.org/wiki/Double-checked_locking
 [10]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/AbstractLockMutex.php
 [11]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Exception/LockReleaseException.php
+[12]: https://github.com/php-lock/lock/blob/41509dda0a/src/Mutex/AbstractSpinlockMutex.php#L15

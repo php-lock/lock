@@ -46,7 +46,7 @@ class PostgreSQLMutexTest extends TestCase
             ->with(self::logicalAnd(
                 new IsType(IsType::TYPE_ARRAY),
                 self::countOf(2),
-                self::callback(function (...$arguments): bool {
+                self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
                         $arguments = $arguments[0];
                     }
@@ -79,7 +79,7 @@ class PostgreSQLMutexTest extends TestCase
             ->with(self::logicalAnd(
                 new IsType(IsType::TYPE_ARRAY),
                 self::countOf(2),
-                self::callback(function (...$arguments): bool {
+                self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
                         $arguments = $arguments[0];
                     }
