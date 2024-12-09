@@ -93,11 +93,15 @@ class RedisMutex extends AbstractSpinlockWithTokenMutex
     }
 
     /**
+     * Sets the key only if such key doesn't exist at the server yet.
+     *
+     * @return bool True if the key was set
+     *
      * @throws LockAcquireException
      */
-    protected function add(string $key, string $value, float $expire): bool
+    protected function add(string $key, string $value, float $expireTimeout): bool
     {
-        $expireTimeoutMillis = $this->makeRedisExpireTimeoutMillis($expire);
+        $expireTimeoutMillis = $this->makeRedisExpireTimeoutMillis($expireTimeout);
 
         if ($this->isClientPHPRedis()) {
             try {
@@ -125,6 +129,14 @@ class RedisMutex extends AbstractSpinlockWithTokenMutex
         }
     }
 
+    /**
+     * @param list<string> $keys
+     * @param list<mixed>  $arguments
+     *
+     * @return mixed The script result, or false if executing failed
+     *
+     * @throws LockReleaseException An unexpected error happened
+     */
     protected function evalScript(string $luaScript, array $keys, array $arguments)
     {
         if ($this->isClientPHPRedis()) {

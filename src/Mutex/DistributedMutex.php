@@ -20,16 +20,16 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
 {
     use LoggerAwareTrait;
 
-    /** @var array<int, TClient> */
+    /** @var array<int, AbstractSpinlockWithTokenMutex> */
     private array $clients;
 
     /**
      * The Redis instance needs to be connected. I.e. Redis::connect() was
      * called already.
      *
-     * @param array<int, TClient> $clients
-     * @param float               $acquireTimeout In seconds
-     * @param float               $expireTimeout  In seconds
+     * @param array<int, AbstractSpinlockWithTokenMutex> $clients
+     * @param float                                      $acquireTimeout In seconds
+     * @param float                                      $expireTimeout  In seconds
      */
     public function __construct(array $clients, string $name, float $acquireTimeout = 3, float $expireTimeout = \INF)
     {
@@ -53,18 +53,17 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         $exception = null;
         foreach ($this->clients as $index => $client) {
             try {
-                if ($this->add($client, $key, $token, $expireTimeout)) {
+                if ($client->acquireWithToken($key, $expireTimeout)) {
                     ++$acquired;
                 }
             } catch (LockAcquireException $exception) {
                 // todo if there is only one redis server, throw immediately.
-                $context = [
+                $this->logger->warning('Could not set {key} = {token} at server #{index}', [
                     'key' => $key,
                     'index' => $index,
                     'token' => $token,
                     'exception' => $exception,
-                ];
-                $this->logger->warning('Could not set {key} = {token} at server #{index}', $context);
+                ]);
 
                 ++$errored;
             }
@@ -99,34 +98,20 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     #[\Override]
     protected function releaseWithToken(string $key, string $token): bool
     {
-        /*
-         * All Redis commands must be analyzed before execution to determine which keys the command will operate on. In
-         * order for this to be true for EVAL, keys must be passed explicitly.
-         *
-         * @link https://redis.io/commands/set
-         */
-        $script = <<<'EOD'
-            if redis.call("get", KEYS[1]) == ARGV[1] then
-                return redis.call("del", KEYS[1])
-            else
-                return 0
-            end
-            EOD;
         $released = 0;
         foreach ($this->clients as $index => $client) {
             try {
-                if ($this->evalScript($client, $script, [$key], [$token])) {
+                if ($client->releaseWithToken($key, $token)) {
                     ++$released;
                 }
             } catch (LockReleaseException $e) {
                 // todo throw if there is only one redis server
-                $context = [
+                $this->logger->warning('Could not unset {key} = {token} at server #{index}', [
                     'key' => $key,
                     'index' => $index,
                     'token' => $token,
                     'exception' => $e,
-                ];
-                $this->logger->warning('Could not unset {key} = {token} at server #{index}', $context);
+                ]);
             }
         }
 
