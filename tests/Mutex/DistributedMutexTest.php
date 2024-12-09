@@ -8,6 +8,7 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
+use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use Malkusch\Lock\Mutex\AbstractSpinlockWithTokenMutex;
 use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Util\LockUtil;
@@ -17,6 +18,8 @@ use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Predis\PredisException;
+use Psr\Log\LoggerInterface;
 
 class DistributedMutexTest extends TestCase
 {
@@ -318,5 +321,50 @@ class DistributedMutexTest extends TestCase
         yield [3, 2];
         yield [3, 3];
         yield [4, 3];
+    }
+
+    public function testAcquireMutexLogger(): void
+    {
+        $mutex = $this->createDistributedMutexMock(3);
+        $logger = $this->createMock(LoggerInterface::class);
+        $mutex->setLogger($logger);
+
+        $mutex->expects(self::exactly(3))
+            ->method('acquireMutex')
+            ->with(self::isInstanceOf(AbstractSpinlockMutex::class), 'php-malkusch-lock:', 1.0, \INF)
+            ->willThrowException($this->createMock(/* PredisException::class */ LockAcquireException::class));
+
+        $logger->expects(self::exactly(3))
+            ->method('warning')
+            ->with('Could not set {key} = {token} at server #{index}', self::anything());
+
+        $this->expectException(LockAcquireException::class);
+        $this->expectExceptionMessage('It is not possible to acquire a lock because at least half of the servers are not available');
+        $mutex->synchronized(static function () {
+            self::fail();
+        });
+    }
+
+    public function testReleaseMutexLogger(): void
+    {
+        $mutex = $this->createDistributedMutexMock(3);
+        $logger = $this->createMock(LoggerInterface::class);
+        $mutex->setLogger($logger);
+
+        $mutex->expects(self::exactly(3))
+            ->method('acquireMutex')
+            ->willReturn(true);
+
+        $mutex->expects(self::exactly(3))
+            ->method('releaseMutex')
+            ->with(self::isInstanceOf(AbstractSpinlockMutex::class), 'php-malkusch-lock:', \INF)
+            ->willThrowException($this->createMock(/* PredisException::class */ LockReleaseException::class));
+
+        $logger->expects(self::exactly(3))
+            ->method('warning')
+            ->with('Could not unset {key} = {token} at server #{index}', self::anything());
+
+        $this->expectException(LockReleaseException::class);
+        $mutex->synchronized(static function () {});
     }
 }

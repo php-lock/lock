@@ -27,9 +27,6 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     private ?array $lockedMutexIndexes = null;
 
     /**
-     * The Redis instance needs to be connected. I.e. Redis::connect() was
-     * called already.
-     *
      * @param array<int, AbstractSpinlockMutex> $mutexes
      * @param float                             $acquireTimeout In seconds
      * @param float                             $expireTimeout  In seconds
@@ -91,7 +88,7 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
             assert($exception !== null); // The last exception for some context.
 
             throw new LockAcquireException(
-                'It\'s not possible to acquire a lock because at least half of the Redis server are not available',
+                'It is not possible to acquire a lock because at least half of the servers are not available',
                 LockAcquireException::CODE_REDLOCK_NOT_ENOUGH_SERVERS,
                 $exception
             );
