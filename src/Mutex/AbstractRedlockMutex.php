@@ -16,7 +16,7 @@ use Psr\Log\NullLogger;
  *
  * @template TClient of object
  *
- * @see http://redis.io/topics/distlock
+ * @see http://redis.io/topics/distlock#the-redlock-algorithm
  */
 abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex implements LoggerAwareInterface
 {
@@ -44,13 +44,14 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex imple
     #[\Override]
     protected function acquireWithToken(string $key, float $expireTimeout)
     {
+        $token = LockUtil::getInstance()->makeRandomToken();
+
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $startTs = microtime(true);
 
         // 2.
         $acquired = 0;
         $errored = 0;
-        $token = LockUtil::getInstance()->makeRandomToken();
         $exception = null;
         foreach ($this->clients as $index => $client) {
             try {
