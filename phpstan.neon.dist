@@ -12,7 +12,7 @@ parameters:
     ignoreErrors:
         # TODO
         -
-            path: 'src/Mutex/AbstractRedlockMutex.php'
+            path: 'src/Mutex/DistributedMutex.php'
             identifier: if.condNotBoolean
             message: '~^Only booleans are allowed in an if condition, mixed given\.$~'
             count: 1
