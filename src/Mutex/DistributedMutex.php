@@ -14,13 +14,9 @@ use Psr\Log\NullLogger;
 /**
  * Distributed mutex based on the Redlock algorithm.
  *
- * @template TClient of object
- *
- * @internal
- *
  * @see http://redis.io/topics/distlock#the-redlock-algorithm
  */
-abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex implements LoggerAwareInterface
+class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -146,25 +142,4 @@ abstract class AbstractRedlockMutex extends AbstractSpinlockWithTokenMutex imple
     {
         return $count > count($this->clients) / 2;
     }
-
-    /**
-     * Sets the key only if such key doesn't exist at the server yet.
-     *
-     * @param TClient $client
-     * @param float   $expire The TTL seconds
-     *
-     * @return bool True if the key was set
-     */
-    abstract protected function add(object $client, string $key, string $value, float $expire): bool;
-
-    /**
-     * @param TClient      $client
-     * @param list<string> $keys
-     * @param list<mixed>  $arguments
-     *
-     * @return mixed The script result, or false if executing failed
-     *
-     * @throws LockReleaseException An unexpected error happened
-     */
-    abstract protected function evalScript(object $client, string $luaScript, array $keys, array $arguments);
 }

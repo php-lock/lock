@@ -8,7 +8,7 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
-use Malkusch\Lock\Mutex\AbstractRedlockMutex;
+use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Util\LockUtil;
 use phpmock\environment\SleepEnvironmentBuilder;
 use phpmock\MockEnabledException;
@@ -17,7 +17,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class AbstractRedlockMutexTest extends TestCase
+class DistributedMutexTest extends TestCase
 {
     use PHPMock;
 
@@ -43,9 +43,9 @@ class AbstractRedlockMutexTest extends TestCase
     /**
      * @param int $count The amount of redis APIs
      *
-     * @return AbstractRedlockMutex<object>&MockObject
+     * @return DistributedMutex&MockObject
      */
-    private function createRedlockMutexMock(int $count, float $acquireTimeout = 1, float $expireTimeout = \INF): AbstractRedlockMutex
+    private function createDistributedMutexMock(int $count, float $acquireTimeout = 1, float $expireTimeout = \INF): DistributedMutex
     {
         $clients = array_map(
             static fn ($i) => new class($i) {
@@ -59,7 +59,7 @@ class AbstractRedlockMutexTest extends TestCase
             range(0, $count - 1)
         );
 
-        return $this->getMockBuilder(AbstractRedlockMutex::class)
+        return $this->getMockBuilder(DistributedMutex::class)
             ->setConstructorArgs([$clients, 'test', $acquireTimeout, $expireTimeout])
             ->onlyMethods(['add', 'evalScript'])
             ->getMock();
@@ -79,7 +79,7 @@ class AbstractRedlockMutexTest extends TestCase
         $this->expectException(LockAcquireException::class);
         $this->expectExceptionCode(MutexException::CODE_REDLOCK_NOT_ENOUGH_SERVERS);
 
-        $mutex = $this->createRedlockMutexMock($count);
+        $mutex = $this->createDistributedMutexMock($count);
 
         $i = 0;
         $mutex->expects(self::exactly($count))
@@ -112,7 +112,7 @@ class AbstractRedlockMutexTest extends TestCase
     #[DataProvider('provideMajorityCases')]
     public function testFaultTolerance(int $count, int $available): void
     {
-        $mutex = $this->createRedlockMutexMock($count);
+        $mutex = $this->createDistributedMutexMock($count);
         $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturn(true);
@@ -149,7 +149,7 @@ class AbstractRedlockMutexTest extends TestCase
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
 
-        $mutex = $this->createRedlockMutexMock($count);
+        $mutex = $this->createDistributedMutexMock($count);
 
         $i = 0;
         $mutex->expects(self::any())
@@ -182,7 +182,7 @@ class AbstractRedlockMutexTest extends TestCase
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of ' . LockUtil::getInstance()->formatTimeout($timeout) . ' seconds has been exceeded');
 
-        $mutex = $this->createRedlockMutexMock($count, $timeout, $timeout);
+        $mutex = $this->createDistributedMutexMock($count, $timeout, $timeout);
         $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturn(true);
@@ -220,7 +220,7 @@ class AbstractRedlockMutexTest extends TestCase
     #[DataProvider('provideMajorityCases')]
     public function testAcquireWithMajority(int $count, int $available): void
     {
-        $mutex = $this->createRedlockMutexMock($count);
+        $mutex = $this->createDistributedMutexMock($count);
         $mutex->expects(self::exactly($count))
             ->method('evalScript')
             ->willReturn(true);
@@ -250,7 +250,7 @@ class AbstractRedlockMutexTest extends TestCase
     #[DataProvider('provideMinorityCases')]
     public function testTooFewServersToRelease(int $count, int $available): void
     {
-        $mutex = $this->createRedlockMutexMock($count);
+        $mutex = $this->createDistributedMutexMock($count);
         $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturn(true);
@@ -286,7 +286,7 @@ class AbstractRedlockMutexTest extends TestCase
     #[DataProvider('provideMinorityCases')]
     public function testReleaseTooFewKeys(int $count, int $available): void
     {
-        $mutex = $this->createRedlockMutexMock($count);
+        $mutex = $this->createDistributedMutexMock($count);
         $mutex->expects(self::exactly($count))
             ->method('add')
             ->willReturn(true);
