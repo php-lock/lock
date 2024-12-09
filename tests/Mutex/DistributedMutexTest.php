@@ -8,6 +8,7 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
+use Malkusch\Lock\Mutex\AbstractSpinlockWithTokenMutex;
 use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Util\LockUtil;
 use phpmock\environment\SleepEnvironmentBuilder;
@@ -47,21 +48,31 @@ class DistributedMutexTest extends TestCase
      */
     private function createDistributedMutexMock(int $count, float $acquireTimeout = 1, float $expireTimeout = \INF): DistributedMutex
     {
-        $clients = array_map(
-            static fn ($i) => new class($i) {
-                public int $i;
+        $mutexes = array_map(
+            function (int $i) {
+                $mutex = $this->getMockBuilder(AbstractSpinlockWithTokenMutex::class)
+                    ->setConstructorArgs(['test', \INF])
+                    ->onlyMethods(['acquireWithToken', 'releaseWithToken'])
+                    ->getMock();
 
-                public function __construct(int $i)
-                {
-                    $this->i = $i;
-                }
+                $mutex
+                    ->method('acquireWithToken')
+                    ->with(self::anything(), \INF)
+                    ->willReturn('x' . $i);
+
+                $mutex
+                    ->method('releaseWithToken')
+                    ->with(self::anything(), 'x' . $i)
+                    ->willReturn(true);
+
+                return $mutex;
             },
             range(0, $count - 1)
         );
 
         return $this->getMockBuilder(DistributedMutex::class)
-            ->setConstructorArgs([$clients, 'test', $acquireTimeout, $expireTimeout])
-            ->onlyMethods(['add', 'evalScript'])
+            ->setConstructorArgs([$mutexes, $acquireTimeout, $expireTimeout])
+            ->onlyMethods(['acquireMutex', 'releaseMutex'])
             ->getMock();
     }
 
@@ -83,7 +94,7 @@ class DistributedMutexTest extends TestCase
 
         $i = 0;
         $mutex->expects(self::exactly($count))
-            ->method('add')
+            ->method('acquireMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
                     if ($i < $available) {
@@ -114,12 +125,12 @@ class DistributedMutexTest extends TestCase
     {
         $mutex = $this->createDistributedMutexMock($count);
         $mutex->expects(self::exactly($count))
-            ->method('evalScript')
+            ->method('releaseMutex')
             ->willReturn(true);
 
         $i = 0;
         $mutex->expects(self::exactly($count))
-            ->method('add')
+            ->method('acquireMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
                     if ($i < $available) {
@@ -153,7 +164,7 @@ class DistributedMutexTest extends TestCase
 
         $i = 0;
         $mutex->expects(self::any())
-            ->method('add')
+            ->method('acquireMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
                     ++$i;
@@ -184,11 +195,11 @@ class DistributedMutexTest extends TestCase
 
         $mutex = $this->createDistributedMutexMock($count, $timeout, $timeout);
         $mutex->expects(self::exactly($count))
-            ->method('evalScript')
+            ->method('releaseMutex')
             ->willReturn(true);
 
         $mutex->expects(self::exactly($count))
-            ->method('add')
+            ->method('acquireMutex')
             ->willReturnCallback(static function () use ($delay): bool {
                 usleep((int) ($delay * 1e6));
 
@@ -222,12 +233,12 @@ class DistributedMutexTest extends TestCase
     {
         $mutex = $this->createDistributedMutexMock($count);
         $mutex->expects(self::exactly($count))
-            ->method('evalScript')
+            ->method('releaseMutex')
             ->willReturn(true);
 
         $i = 0;
         $mutex->expects(self::exactly($count))
-            ->method('add')
+            ->method('acquireMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
                     ++$i;
@@ -252,12 +263,12 @@ class DistributedMutexTest extends TestCase
     {
         $mutex = $this->createDistributedMutexMock($count);
         $mutex->expects(self::exactly($count))
-            ->method('add')
+            ->method('acquireMutex')
             ->willReturn(true);
 
         $i = 0;
         $mutex->expects(self::exactly($count))
-            ->method('evalScript')
+            ->method('releaseMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
                     if ($i < $available) {
@@ -288,12 +299,12 @@ class DistributedMutexTest extends TestCase
     {
         $mutex = $this->createDistributedMutexMock($count);
         $mutex->expects(self::exactly($count))
-            ->method('add')
+            ->method('acquireMutex')
             ->willReturn(true);
 
         $i = 0;
         $mutex->expects(self::exactly($count))
-            ->method('evalScript')
+            ->method('releaseMutex')
             ->willReturnCallback(
                 static function () use (&$i, $available): bool {
                     ++$i;

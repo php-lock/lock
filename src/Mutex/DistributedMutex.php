@@ -42,26 +42,25 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     #[\Override]
     protected function acquireWithToken(string $key, float $expireTimeout)
     {
-        $token = LockUtil::getInstance()->makeRandomToken();
+        $acquireTimeout = \Closure::bind(fn () => $this->acquireTimeout, $this, AbstractSpinlockMutex::class)();
 
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $startTs = microtime(true);
 
         // 2.
-        $acquired = 0;
+        $acquiredIndexes = [];
         $errored = 0;
         $exception = null;
         foreach ($this->mutexes as $index => $mutex) {
             try {
-                if ($mutex->acquireWithToken($key, $expireTimeout)) {
-                    ++$acquired;
+                if ($this->acquireMutex($mutex, $key, $acquireTimeout, $expireTimeout)) {
+                    $acquiredIndexes[] = $index;
                 }
             } catch (LockAcquireException $exception) {
                 // todo if there is only one redis server, throw immediately.
                 $this->logger->warning('Could not set {key} = {token} at server #{index}', [
                     'key' => $key,
                     'index' => $index,
-                    'token' => $token,
                     'exception' => $exception,
                 ]);
 
@@ -71,18 +70,20 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
 
         // 3.
         $elapsedTime = microtime(true) - $startTs;
-        $isAcquired = $this->isMajority($acquired) && $elapsedTime <= $expireTimeout;
+        $isAcquired = $this->isCountMajority(count($acquiredIndexes)) && $elapsedTime <= $expireTimeout;
 
         if ($isAcquired) {
             // 4.
-            return $token;
+            return LockUtil::getInstance()->makeRandomToken();
         }
 
         // 5.
-        $this->releaseWithToken($key, $token);
+        foreach ($acquiredIndexes as $index) {
+            $this->releaseMutex($this->mutexes[$index], $key, $acquireTimeout);
+        }
 
         // In addition to RedLock it's an exception if too many servers fail.
-        if (!$this->isMajority(count($this->mutexes) - $errored)) {
+        if (!$this->isCountMajority(count($this->mutexes) - $errored)) {
             assert($exception !== null); // The last exception for some context.
 
             throw new LockAcquireException(
@@ -98,10 +99,14 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     #[\Override]
     protected function releaseWithToken(string $key, string $token): bool
     {
+        unset($token);
+
+        $acquireTimeout = \Closure::bind(fn () => $this->acquireTimeout, $this, AbstractSpinlockMutex::class)();
+
         $released = 0;
         foreach ($this->mutexes as $index => $mutex) {
             try {
-                if ($mutex->releaseWithToken($key, $token)) {
+                if ($this->releaseMutex($mutex, $key, $acquireTimeout)) {
                     ++$released;
                 }
             } catch (LockReleaseException $e) {
@@ -109,22 +114,51 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
                 $this->logger->warning('Could not unset {key} = {token} at server #{index}', [
                     'key' => $key,
                     'index' => $index,
-                    'token' => $token,
                     'exception' => $e,
                 ]);
             }
         }
 
-        return $this->isMajority($released);
+        return $this->isCountMajority($released);
     }
 
     /**
-     * Returns if a count is the majority of all servers.
-     *
      * @return bool True if the count is the majority
      */
-    private function isMajority(int $count): bool
+    private function isCountMajority(int $count): bool
     {
         return $count > count($this->mutexes) / 2;
+    }
+
+    /**
+     * @template T
+     *
+     * @param \Closure(): T $fx
+     *
+     * @return T
+     */
+    private function executeMutexWithAcquireTimeout(AbstractSpinlockWithTokenMutex $mutex, \Closure $fx, $acquireTimeout)
+    {
+        return \Closure::bind(static function () use ($mutex, $fx, $acquireTimeout) {
+            $origAcquireTimeout = $mutex->acquireTimeout;
+            if ($acquireTimeout < $mutex->acquireTimeout) {
+                $mutex->acquireTimeout = $acquireTimeout;
+            }
+            try {
+                return $fx();
+            } finally {
+                $mutex->acquireTimeout = $origAcquireTimeout;
+            }
+        }, null, AbstractSpinlockMutex::class)();
+    }
+
+    protected function acquireMutex(AbstractSpinlockWithTokenMutex $mutex, string $key, float $acquireTimeout, float $expireTimeout): bool
+    {
+        return $this->executeMutexWithAcquireTimeout($mutex, static fn () => $mutex->acquireWithToken($key, $expireTimeout), $acquireTimeout);
+    }
+
+    protected function releaseMutex(AbstractSpinlockWithTokenMutex $mutex, string $key, float $acquireTimeout): bool
+    {
+        return $this->executeMutexWithAcquireTimeout($mutex, static fn () => $mutex->release($key), $acquireTimeout);
     }
 }
