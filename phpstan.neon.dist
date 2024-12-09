@@ -12,11 +12,6 @@ parameters:
     ignoreErrors:
         # TODO
         -
-            path: 'src/Mutex/DistributedMutex.php'
-            identifier: if.condNotBoolean
-            message: '~^Only booleans are allowed in an if condition, mixed given\.$~'
-            count: 1
-        -
             path: 'tests/Mutex/*Test.php'
             identifier: empty.notAllowed
             message: '~^Construct empty\(\) is not allowed\. Use more strict comparison\.$~'
