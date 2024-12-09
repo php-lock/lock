@@ -122,7 +122,7 @@ class RedisMutex extends AbstractRedlockMutex
             }
         } else {
             try {
-                return $client->eval($luaScript, count($keys), ...[...$keys, ...$arguments]);
+                return $client->eval($luaScript, count($keys), ...$keys, ...$arguments);
             } catch (PredisException $e) {
                 throw new LockReleaseException('Failed to release lock', 0, $e);
             }

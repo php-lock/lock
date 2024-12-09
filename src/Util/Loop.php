@@ -23,7 +23,7 @@ class Loop
     private bool $looping = false;
 
     /**
-     * Notifies that this was the last iteration.
+     * Notify that this was the last iteration.
      */
     public function end(): void
     {
@@ -35,7 +35,7 @@ class Loop
      *
      * The code has to be designed in a way that it can be repeated without any
      * side effects. When execution was successful it should notify that event
-     * by calling {@link \Malkusch\Lock\Util\Loop::end()}. I.e. the only side
+     * by calling {@link Loop::end()}. I.e. the only side
      * effects of the code may happen after a successful execution.
      *
      * If the code throws an exception it will stop repeating the execution.

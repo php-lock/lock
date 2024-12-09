@@ -12,11 +12,11 @@ use Malkusch\Lock\Exception\LockReleaseException;
  */
 class SemaphoreMutex extends AbstractLockMutex
 {
-    /** @var \SysvSemaphore|resource The semaphore id */
+    /** @var \SysvSemaphore|resource */
     private $semaphore;
 
     /**
-     * Use {@link sem_get()} to create the semaphore id.
+     * Use {@link sem_get()} to create the semaphore.
      *
      * Example:
      * <code>
@@ -24,7 +24,7 @@ class SemaphoreMutex extends AbstractLockMutex
      * $mutex = new SemaphoreMutex($semaphore);
      * </code>
      *
-     * @param \SysvSemaphore|resource $semaphore The semaphore id
+     * @param \SysvSemaphore|resource $semaphore
      */
     public function __construct($semaphore)
     {

@@ -127,7 +127,7 @@ class TransactionalMutex extends AbstractMutex
     }
 
     /**
-     * Rolls back a transaction.
+     * Rolls back the transaction.
      *
      * @throws LockAcquireException
      */

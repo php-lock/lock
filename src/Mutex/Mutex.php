@@ -38,8 +38,7 @@ interface Mutex
     /**
      * Performs a double-checked locking pattern.
      *
-     * Call {@link \Malkusch\Lock\Util\DoubleCheckedLocking::then()} on the
-     * returned object.
+     * Call {@link DoubleCheckedLocking::then()} on the returned object.
      *
      * Example:
      * <code>

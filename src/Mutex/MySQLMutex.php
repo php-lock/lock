@@ -27,7 +27,7 @@ class MySQLMutex extends AbstractLockMutex
         $namePrefix = LockUtil::getInstance()->getKeyPrefix() . ':';
 
         if (\strlen($name) > 64 - \strlen($namePrefix)) {
-            throw new \InvalidArgumentException('The maximum length of the lock name is ' . (64 - \strlen($namePrefix)) . ' characters');
+            throw new \InvalidArgumentException('The maximum length of the database lock name is ' . (64 - \strlen($namePrefix)) . ' characters');
         }
 
         $this->name = $namePrefix . $name;
