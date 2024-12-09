@@ -24,8 +24,8 @@ class RedisMutex extends AbstractSpinlockWithTokenMutex
      * The Redis instance needs to be connected. I.e. Redis::connect() was called already.
      *
      * @param TClient $client
-     * @param float               $acquireTimeout In seconds
-     * @param float               $expireTimeout  In seconds
+     * @param float   $acquireTimeout In seconds
+     * @param float   $expireTimeout  In seconds
      */
     public function __construct(object $client, string $name, float $acquireTimeout = 3, float $expireTimeout = \INF)
     {
@@ -35,8 +35,6 @@ class RedisMutex extends AbstractSpinlockWithTokenMutex
     }
 
     /**
-     * @param TClient $client
-     *
      * @phpstan-assert-if-true \Redis|\RedisCluster $this->client
      */
     private function isClientPHPRedis(): bool
