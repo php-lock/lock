@@ -147,7 +147,7 @@ class RedisMutexTest extends TestCase
             $this->connections[] = $connection;
         }
 
-        $this->mutex = new DistributedMutex(array_map(static fn ($v) => new RedisMutex($v, 'test'), $this->connections));
+        $this->mutex = new DistributedMutex(array_map(static fn ($v) => new RedisMutex($v, 'test'), $this->connections)); // @phpstan-ignore assign.propertyType
     }
 
     #[\Override]

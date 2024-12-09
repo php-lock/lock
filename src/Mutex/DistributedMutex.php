@@ -137,7 +137,7 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
      *
      * @return T
      */
-    private function executeMutexWithAcquireTimeout(AbstractSpinlockWithTokenMutex $mutex, \Closure $fx, $acquireTimeout)
+    private function executeMutexWithAcquireTimeout(AbstractSpinlockWithTokenMutex $mutex, \Closure $fx, float $acquireTimeout)
     {
         return \Closure::bind(static function () use ($mutex, $fx, $acquireTimeout) {
             $origAcquireTimeout = $mutex->acquireTimeout;
