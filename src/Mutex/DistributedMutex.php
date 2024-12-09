@@ -20,16 +20,16 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
 {
     use LoggerAwareTrait;
 
-    /** @var array<int, AbstractSpinlockWithTokenMutex> */
+    /** @var array<int, AbstractSpinlockMutex> */
     private array $mutexes;
 
     /**
      * The Redis instance needs to be connected. I.e. Redis::connect() was
      * called already.
      *
-     * @param array<int, AbstractSpinlockWithTokenMutex> $mutexes
-     * @param float                                      $acquireTimeout In seconds
-     * @param float                                      $expireTimeout  In seconds
+     * @param array<int, AbstractSpinlockMutex> $mutexes
+     * @param float                             $acquireTimeout In seconds
+     * @param float                             $expireTimeout  In seconds
      */
     public function __construct(array $mutexes, float $acquireTimeout = 3, float $expireTimeout = \INF)
     {
@@ -79,7 +79,7 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
 
         // 5.
         foreach ($acquiredIndexes as $index) {
-            $this->releaseMutex($this->mutexes[$index], $key, $acquireTimeout);
+            $this->releaseMutex($this->mutexes[$index], $key, $expireTimeout);
         }
 
         // In addition to RedLock it's an exception if too many servers fail.
@@ -101,12 +101,12 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     {
         unset($token);
 
-        $acquireTimeout = \Closure::bind(fn () => $this->acquireTimeout, $this, AbstractSpinlockMutex::class)();
+        $expireTimeout = \Closure::bind(fn () => $this->expireTimeout, $this, parent::class)();
 
         $released = 0;
         foreach ($this->mutexes as $index => $mutex) {
             try {
-                if ($this->releaseMutex($mutex, $key, $acquireTimeout)) {
+                if ($this->releaseMutex($mutex, $key, $expireTimeout)) {
                     ++$released;
                 }
             } catch (LockReleaseException $e) {
@@ -137,8 +137,22 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
      *
      * @return T
      */
-    private function executeMutexWithAcquireTimeout(AbstractSpinlockWithTokenMutex $mutex, \Closure $fx, float $acquireTimeout)
+    private function executeMutexWithMinTimeouts(AbstractSpinlockMutex $mutex, \Closure $fx, float $acquireTimeout, float $expireTimeout)
     {
+        if ($mutex instanceof AbstractSpinlockWithTokenMutex) {
+            return \Closure::bind(static function () use ($mutex, $fx, $expireTimeout) {
+                $origExpireTimeout = $mutex->expireTimeout;
+                if ($expireTimeout < $mutex->expireTimeout) {
+                    $mutex->expireTimeout = $expireTimeout;
+                }
+                try {
+                    return $fx();
+                } finally {
+                    $mutex->expireTimeout = $origExpireTimeout;
+                }
+            }, null, parent::class)();
+        }
+
         return \Closure::bind(static function () use ($mutex, $fx, $acquireTimeout) {
             $origAcquireTimeout = $mutex->acquireTimeout;
             if ($acquireTimeout < $mutex->acquireTimeout) {
@@ -152,13 +166,13 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         }, null, AbstractSpinlockMutex::class)();
     }
 
-    protected function acquireMutex(AbstractSpinlockWithTokenMutex $mutex, string $key, float $acquireTimeout, float $expireTimeout): bool
+    protected function acquireMutex(AbstractSpinlockMutex $mutex, string $key, float $acquireTimeout, float $expireTimeout): bool
     {
-        return $this->executeMutexWithAcquireTimeout($mutex, static fn () => $mutex->acquireWithToken($key, $expireTimeout), $acquireTimeout);
+        return $this->executeMutexWithMinTimeouts($mutex, static fn () => $mutex->acquire($key), $acquireTimeout, $expireTimeout);
     }
 
-    protected function releaseMutex(AbstractSpinlockWithTokenMutex $mutex, string $key, float $acquireTimeout): bool
+    protected function releaseMutex(AbstractSpinlockMutex $mutex, string $key, float $expireTimeout): bool
     {
-        return $this->executeMutexWithAcquireTimeout($mutex, static fn () => $mutex->release($key), $acquireTimeout);
+        return $this->executeMutexWithMinTimeouts($mutex, static fn () => $mutex->release($key), \INF, $expireTimeout);
     }
 }
