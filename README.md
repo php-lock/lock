@@ -1,6 +1,7 @@
 **[Requirements](#requirements)** |
 **[Installation](#installation)** |
 **[Usage](#usage)** |
+**[Implementations](#implementations)** |
 **[Authors](#authors)** |
 **[License](#license)**
 
@@ -51,7 +52,7 @@ This library uses the namespace `Malkusch\Lock`.
 
 The [`Malkusch\Lock\Mutex\Mutex`][5] interface provides the base API for this library.
 
-#### Mutex::synchronized()
+### Mutex::synchronized()
 
 [`Malkusch\Lock\Mutex\Mutex::synchronized()`][6] executes code exclusively. This
 method guarantees that the code is only executed by one process at once. Other
@@ -77,7 +78,7 @@ $newBalance = $mutex->synchronized(static function () use ($bankAccount, $amount
 });
 ```
 
-#### Mutex::check()
+### Mutex::check()
 
 [`Malkusch\Lock\Mutex\Mutex::check()`][7] sets a callable, which will be
 executed when [`Malkusch\Lock\Util\DoubleCheckedLocking::then()`][8] is called,
@@ -122,7 +123,7 @@ if (!$newBalance) {
 }
 ```
 
-#### Extracting code result after lock release exception
+### Extracting code result after lock release exception
 
 Mutex implementations based on [`Malkush\Lock\Mutex\AbstractLockMutex`][10] will throw
 [`Malkusch\Lock\Exception\LockReleaseException`][11] in case of lock release
@@ -155,7 +156,7 @@ try {
 }
 ```
 
-### Implementations
+## Implementations
 
 You can choose from one of the provided [`Malkusch\Lock\Mutex\Mutex`](#mutex) interface
 implementations or create/extend your own implementation.
@@ -168,7 +169,7 @@ implementations or create/extend your own implementation.
 - [`PostgreSQLMutex`](#postgresqlmutex)
 - [`DistributedMutex`](#distributedmutex)
 
-#### FlockMutex
+### FlockMutex
 
 The **FlockMutex** is a lock implementation based on
 [`flock()`](https://php.net/manual/en/function.flock.php).
@@ -181,7 +182,7 @@ $mutex = new FlockMutex(fopen(__FILE__, 'r'));
 Timeouts are supported as an optional second argument. This uses the `ext-pcntl`
 extension if possible or busy waiting if not.
 
-#### MemcachedMutex
+### MemcachedMutex
 
 The **MemcachedMutex** is a spinlock implementation which uses the
 [`Memcached` extension](https://php.net/manual/en/book.memcached.php).
@@ -194,7 +195,7 @@ $memcached->addServer('localhost', 11211);
 $mutex = new MemcachedMutex('balance', $memcached);
 ```
 
-#### RedisMutex
+### RedisMutex
 
 The **RedisMutex** is a lock implementation which supports the
 [`phpredis` extension](https://github.com/phpredis/phpredis)
@@ -214,7 +215,7 @@ $redis->connect('localhost');
 $mutex = new RedisMutex($redis, 'balance');
 ```
 
-#### SemaphoreMutex
+### SemaphoreMutex
 
 The **SemaphoreMutex** is a lock implementation based on
 [Semaphore](https://php.net/manual/en/ref.sem.php).
@@ -225,7 +226,7 @@ $semaphore = sem_get(ftok(__FILE__, 'a'));
 $mutex = new SemaphoreMutex($semaphore);
 ```
 
-#### MySQLMutex
+### MySQLMutex
 
 The **MySQLMutex** uses MySQL's
 [`GET_LOCK`](https://dev.mysql.com/doc/refman/9.0/en/locking-functions.html#function_get-lock)
@@ -248,7 +249,7 @@ $pdo = new \PDO('mysql:host=localhost;dbname=test', 'username');
 $mutex = new MySQLMutex($pdo, 'balance', 15);
 ```
 
-#### PostgreSQLMutex
+### PostgreSQLMutex
 
 The **PostgreSQLMutex** uses PostgreSQL's
 [advisory locking](https://www.postgresql.org/docs/9.4/static/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS)
@@ -265,7 +266,7 @@ $pdo = new \PDO('pgsql:host=localhost;dbname=test', 'username');
 $mutex = new PostgreSQLMutex($pdo, 'balance');
 ```
 
-#### DistributedMutex
+### DistributedMutex
 
 The **DistributedMutex** is the distributed lock implementation of
 [RedLock](https://redis.io/topics/distlock#the-redlock-algorithm) which supports
