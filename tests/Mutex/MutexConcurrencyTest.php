@@ -31,8 +31,6 @@ class MutexConcurrencyTest extends TestCase
 {
     /** @var list<string> */
     protected static $temporaryFiles = [];
-    /** @var \PDO|null */
-    private static $pdo;
 
     #[\Override]
     public static function tearDownAfterClass(): void
@@ -42,22 +40,7 @@ class MutexConcurrencyTest extends TestCase
         }
         self::$temporaryFiles = [];
 
-        self::$pdo = null;
-
         parent::tearDownAfterClass();
-    }
-
-    /**
-     * Gets a PDO instance.
-     */
-    private static function getPDO(string $dsn, string $user, string $password): \PDO
-    {
-        if (self::$pdo === null) {
-            self::$pdo = new \PDO($dsn, $user, $password);
-            self::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        }
-
-        return self::$pdo;
     }
 
     /**
