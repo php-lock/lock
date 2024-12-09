@@ -123,7 +123,7 @@ if (!$newBalance) {
 }
 ```
 
-### Extracting code result after lock release exception
+### LockReleaseException::getCode{Exception, Result}()
 
 Mutex implementations based on [`Malkush\Lock\Mutex\AbstractLockMutex`][10] will throw
 [`Malkusch\Lock\Exception\LockReleaseException`][11] in case of lock release
@@ -142,17 +142,17 @@ try {
 
         return 'result';
     });
-} catch (LockReleaseException $unlockException) {
-    if ($unlockException->getCodeException() !== null) {
-        $codeException = $unlockException->getCodeException();
+} catch (LockReleaseException $e) {
+    if ($e->getCodeException() !== null) {
+        $codeException = $e->getCodeException();
         // do something with the code exception
     } else {
-        $codeResult = $unlockException->getCodeResult();
+        $codeResult = $e->getCodeResult();
         // do something with the code result
     }
 
     // deal with LockReleaseException or propagate it
-    throw $unlockException;
+    throw $e;
 }
 ```
 
