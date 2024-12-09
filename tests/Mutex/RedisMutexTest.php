@@ -190,7 +190,7 @@ class RedisMutexTest extends TestCase
 
         $this->closeMajorityConnections();
 
-        $this->mutex->synchronized(static function (): void {
+        $this->mutex->synchronized(static function () {
             self::fail();
         });
     }
@@ -202,7 +202,7 @@ class RedisMutexTest extends TestCase
     {
         $this->expectException(LockReleaseException::class);
 
-        $this->mutex->synchronized(function (): void {
+        $this->mutex->synchronized(function () {
             $this->closeMajorityConnections();
         });
     }
@@ -221,7 +221,7 @@ class RedisMutexTest extends TestCase
             $connection->setOption(\Redis::OPT_COMPRESSION, $compressor);
         }
 
-        self::assertSame('test', $this->mutex->synchronized(static function (): string {
+        self::assertSame('test', $this->mutex->synchronized(static function () {
             return 'test';
         }));
     }
@@ -230,7 +230,7 @@ class RedisMutexTest extends TestCase
     {
         $this->closeMinorityConnections();
 
-        self::assertSame('test', $this->mutex->synchronized(static function (): string {
+        self::assertSame('test', $this->mutex->synchronized(static function () {
             return 'test';
         }));
     }

@@ -28,11 +28,11 @@ class DoubleCheckedLockingTest extends TestCase
         $this->mutex->expects(self::never())
             ->method('synchronized');
 
-        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function (): bool {
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function () {
             return false;
         });
 
-        $result = $checkedLocking->then(static function (): void {
+        $result = $checkedLocking->then(static function () {
             self::fail();
         });
 
@@ -54,7 +54,7 @@ class DoubleCheckedLockingTest extends TestCase
                 return $result;
             });
 
-        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function () use (&$lock, &$check): bool {
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function () use (&$lock, &$check) {
             if ($check === 1) {
                 self::assertSame(1, $lock);
             }
@@ -84,12 +84,10 @@ class DoubleCheckedLockingTest extends TestCase
     {
         $this->mutex->expects(self::any())
             ->method('synchronized')
-            ->willReturnCallback(static function (\Closure $block) {
-                return $block();
-            });
+            ->willReturnCallback(static fn (\Closure $block) => $block());
 
         $checkedLocking = new DoubleCheckedLocking($this->mutex, $check);
-        $result = $checkedLocking->then(static function (): void {
+        $result = $checkedLocking->then(static function () {
             self::fail();
         });
 
@@ -101,12 +99,12 @@ class DoubleCheckedLockingTest extends TestCase
      */
     public static function provideCodeNotExecutedCases(): iterable
     {
-        yield 'failFirstCheck' => [static function (): bool {
+        yield 'failFirstCheck' => [static function () {
             return false;
         }];
 
         $checkCounter = 0;
-        yield 'failSecondCheck' => [static function () use (&$checkCounter): bool {
+        yield 'failSecondCheck' => [static function () use (&$checkCounter) {
             return $checkCounter++ === 0;
         }];
     }
@@ -115,11 +113,9 @@ class DoubleCheckedLockingTest extends TestCase
     {
         $this->mutex->expects(self::once())
             ->method('synchronized')
-            ->willReturnCallback(static function (\Closure $block) {
-                return $block();
-            });
+            ->willReturnCallback(static fn (\Closure $block) => $block());
 
-        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function (): bool {
+        $checkedLocking = new DoubleCheckedLocking($this->mutex, static function () {
             return true;
         });
 

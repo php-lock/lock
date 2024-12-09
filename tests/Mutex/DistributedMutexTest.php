@@ -95,7 +95,7 @@ class DistributedMutexTest extends TestCase
         $i = 0;
         $mutex->expects(self::exactly($count))
             ->method('acquireMutex')
-            ->willReturnCallback(static function () use (&$i, $available): bool {
+            ->willReturnCallback(static function () use (&$i, $available) {
                 if ($i++ < $available) {
                     return true;
                 }
@@ -103,7 +103,7 @@ class DistributedMutexTest extends TestCase
                 throw new LockAcquireException();
             });
 
-        $mutex->synchronized(static function (): void {
+        $mutex->synchronized(static function () {
             self::fail();
         });
     }
@@ -127,7 +127,7 @@ class DistributedMutexTest extends TestCase
         $i = 0;
         $mutex->expects(self::exactly($count))
             ->method('acquireMutex')
-            ->willReturnCallback(static function () use (&$i, $available): bool {
+            ->willReturnCallback(static function () use (&$i, $available) {
                 if ($i++ < $available) {
                     return true;
                 }
@@ -157,11 +157,11 @@ class DistributedMutexTest extends TestCase
         $i = 0;
         $mutex->expects(self::any())
             ->method('acquireMutex')
-            ->willReturnCallback(static function () use (&$i, $available): bool {
+            ->willReturnCallback(static function () use (&$i, $available) {
                 return ++$i <= $available;
             });
 
-        $mutex->synchronized(static function (): void {
+        $mutex->synchronized(static function () {
             self::fail();
         });
     }
@@ -188,13 +188,13 @@ class DistributedMutexTest extends TestCase
 
         $mutex->expects(self::exactly($count))
             ->method('acquireMutex')
-            ->willReturnCallback(static function () use ($delay): bool {
+            ->willReturnCallback(static function () use ($delay) {
                 usleep((int) ($delay * 1e6));
 
                 return true;
             });
 
-        $mutex->synchronized(static function (): void {
+        $mutex->synchronized(static function () {
             self::fail();
         });
     }
@@ -227,11 +227,11 @@ class DistributedMutexTest extends TestCase
         $i = 0;
         $mutex->expects(self::exactly($count))
             ->method('acquireMutex')
-            ->willReturnCallback(static function () use (&$i, $available): bool {
+            ->willReturnCallback(static function () use (&$i, $available) {
                 return ++$i <= $available;
             });
 
-        $mutex->synchronized(static function (): void {});
+        $mutex->synchronized(static function () {});
     }
 
     /**
@@ -253,7 +253,7 @@ class DistributedMutexTest extends TestCase
         $i = 0;
         $mutex->expects(self::exactly($count))
             ->method('releaseMutex')
-            ->willReturnCallback(static function () use (&$i, $available): bool {
+            ->willReturnCallback(static function () use (&$i, $available) {
                 if ($i++ < $available) {
                     return true;
                 }
@@ -263,7 +263,7 @@ class DistributedMutexTest extends TestCase
 
         $this->expectException(LockReleaseException::class);
 
-        $mutex->synchronized(static function (): void {});
+        $mutex->synchronized(static function () {});
     }
 
     /**
@@ -285,13 +285,13 @@ class DistributedMutexTest extends TestCase
         $i = 0;
         $mutex->expects(self::exactly($count))
             ->method('releaseMutex')
-            ->willReturnCallback(static function () use (&$i, $available): bool {
+            ->willReturnCallback(static function () use (&$i, $available) {
                 return ++$i <= $available;
             });
 
         $this->expectException(LockReleaseException::class);
 
-        $mutex->synchronized(static function (): void {});
+        $mutex->synchronized(static function () {});
     }
 
     /**

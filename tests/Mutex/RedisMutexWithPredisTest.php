@@ -56,7 +56,7 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->expectException(LockAcquireException::class);
 
-        $this->mutex->synchronized(static function (): void {
+        $this->mutex->synchronized(static function () {
             self::fail();
         });
     }
@@ -91,7 +91,7 @@ class RedisMutexWithPredisTest extends TestCase
             ->willReturn(true);
 
         $executed = false;
-        $this->mutex->synchronized(static function () use (&$executed): void {
+        $this->mutex->synchronized(static function () use (&$executed) {
             $executed = true;
         });
 
@@ -112,7 +112,7 @@ class RedisMutexWithPredisTest extends TestCase
             ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
             ->willReturn(true);
 
-        $this->mutex->synchronized(static function (): void {});
+        $this->mutex->synchronized(static function () {});
     }
 
     /**
@@ -133,7 +133,7 @@ class RedisMutexWithPredisTest extends TestCase
         $this->expectException(LockReleaseException::class);
 
         $executed = false;
-        $this->mutex->synchronized(static function () use (&$executed): void {
+        $this->mutex->synchronized(static function () use (&$executed) {
             $executed = true;
         });
 

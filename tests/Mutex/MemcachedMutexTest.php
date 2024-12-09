@@ -43,7 +43,7 @@ class MemcachedMutexTest extends TestCase
             ->with('php-malkusch-lock:test', true, 3)
             ->willReturn(false);
 
-        $this->mutex->synchronized(static function (): void {
+        $this->mutex->synchronized(static function () {
             self::fail();
         });
     }
@@ -62,7 +62,7 @@ class MemcachedMutexTest extends TestCase
             ->with('php-malkusch-lock:test')
             ->willReturn(false);
 
-        $this->mutex->synchronized(static function (): void {});
+        $this->mutex->synchronized(static function () {});
     }
 
     public function testAcquireExpireTimeoutLimit(): void
@@ -79,6 +79,6 @@ class MemcachedMutexTest extends TestCase
             ->with('php-malkusch-lock:test')
             ->willReturn(true);
 
-        $this->mutex->synchronized(static function (): void {});
+        $this->mutex->synchronized(static function () {});
     }
 }

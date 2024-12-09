@@ -47,7 +47,7 @@ class LoopTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('The lock acquire timeout must be greater than or equal to 0.0 (' . LockUtil::getInstance()->formatTimeout($acquireTimeout) . ' was given)');
 
-        $loop->execute(static function (): void {
+        $loop->execute(static function () {
             self::fail();
         }, $acquireTimeout);
     }
@@ -70,7 +70,7 @@ class LoopTest extends TestCase
     public function testExecutionWithinAcquireTimeout(): void
     {
         $loop = new Loop();
-        $loop->execute(static function () use ($loop): void {
+        $loop->execute(static function () use ($loop) {
             usleep(499 * 1000);
             $loop->end();
         }, 0.5);
@@ -82,7 +82,7 @@ class LoopTest extends TestCase
         $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
 
         $loop = new Loop();
-        $loop->execute(static function (): void {
+        $loop->execute(static function () {
             usleep(10 * 1000);
         }, 0.5);
     }
@@ -94,7 +94,7 @@ class LoopTest extends TestCase
     public function testExceedAcquireTimeoutIsAcceptableIfEndWasCalled(): void
     {
         $loop = new Loop();
-        $loop->execute(static function () use ($loop): void {
+        $loop->execute(static function () use ($loop) {
             usleep(501 * 1000);
             $loop->end();
         }, 0.5);
@@ -106,7 +106,7 @@ class LoopTest extends TestCase
         $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
 
         $loop = new Loop();
-        $loop->execute(static function (): void {
+        $loop->execute(static function () {
             usleep(501 * 1000);
         }, 0.5);
     }
@@ -136,7 +136,7 @@ class LoopTest extends TestCase
     {
         $i = 0;
         $loop = new Loop();
-        $loop->execute(static function () use ($loop, &$i): void {
+        $loop->execute(static function () use ($loop, &$i) {
             ++$i;
             if ($i > 1) {
                 $loop->end();

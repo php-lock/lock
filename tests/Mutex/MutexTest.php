@@ -47,18 +47,18 @@ class MutexTest extends TestCase
      */
     public static function provideMutexFactoriesCases(): iterable
     {
-        yield 'NullMutex' => [static function (): Mutex {
+        yield 'NullMutex' => [static function () {
             return new NullMutex();
         }];
 
-        yield 'FlockMutex' => [static function (): Mutex {
+        yield 'FlockMutex' => [static function () {
             $file = fopen(vfsStream::url('test/lock'), 'w');
 
             return new FlockMutex($file);
         }];
 
         if (extension_loaded('pcntl')) {
-            yield 'flockWithTimoutPcntl' => [static function (): Mutex {
+            yield 'flockWithTimoutPcntl' => [static function () {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, 3));
                 $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
@@ -67,7 +67,7 @@ class MutexTest extends TestCase
             }];
         }
 
-        yield 'flockWithTimoutLoop' => [static function (): Mutex {
+        yield 'flockWithTimoutLoop' => [static function () {
             $file = fopen(vfsStream::url('test/lock'), 'w');
             $lock = Liberator::liberate(new FlockMutex($file, 3));
             $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
@@ -76,12 +76,12 @@ class MutexTest extends TestCase
         }];
 
         if (extension_loaded('sysvsem')) {
-            yield 'SemaphoreMutex' => [static function (): Mutex {
+            yield 'SemaphoreMutex' => [static function () {
                 return new SemaphoreMutex(sem_get(ftok(__FILE__, 'a')));
             }];
         }
 
-        yield 'AbstractLockMutex' => [static function (): Mutex {
+        yield 'AbstractLockMutex' => [static function () {
             $lock = new class extends AbstractLockMutex {
                 #[\Override]
                 protected function lock(): void {}
@@ -93,7 +93,7 @@ class MutexTest extends TestCase
             return $lock;
         }];
 
-        yield 'AbstractSpinlockMutex' => [static function (): Mutex {
+        yield 'AbstractSpinlockMutex' => [static function () {
             $lock = new class('test') extends AbstractSpinlockMutex {
                 #[\Override]
                 protected function acquire(string $key): bool
@@ -112,7 +112,7 @@ class MutexTest extends TestCase
         }];
 
         if (getenv('MEMCACHE_HOST')) {
-            yield 'MemcachedMutex' => [static function (): Mutex {
+            yield 'MemcachedMutex' => [static function () {
                 $memcached = new \Memcached();
                 $memcached->addServer(getenv('MEMCACHE_HOST'), 11211);
 
@@ -123,7 +123,7 @@ class MutexTest extends TestCase
         if (getenv('REDIS_URIS')) {
             $uris = explode(',', getenv('REDIS_URIS'));
 
-            yield 'DistributedMutex RedisMutex /w Predis' => [static function () use ($uris): Mutex {
+            yield 'DistributedMutex RedisMutex /w Predis' => [static function () use ($uris) {
                 $clients = array_map(
                     static fn ($uri) => new PredisClient($uri),
                     $uris
@@ -139,7 +139,7 @@ class MutexTest extends TestCase
 
             if (class_exists(\Redis::class)) {
                 yield 'DistributedMutex RedisMutex /w PHPRedis' => [
-                    static function () use ($uris): Mutex {
+                    static function () use ($uris) {
                         $clients = array_map(
                             static function ($uri) {
                                 $redis = new \Redis();
@@ -171,7 +171,7 @@ class MutexTest extends TestCase
         }
 
         if (getenv('MYSQL_DSN')) {
-            yield 'MySQLMutex' => [static function (): Mutex {
+            yield 'MySQLMutex' => [static function () {
                 $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -180,7 +180,7 @@ class MutexTest extends TestCase
         }
 
         if (getenv('PGSQL_DSN')) {
-            yield 'PostgreSQLMutex' => [static function (): Mutex {
+            yield 'PostgreSQLMutex' => [static function () {
                 $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -200,7 +200,7 @@ class MutexTest extends TestCase
     public function testSynchronizedDelegates(\Closure $mutexFactory): void
     {
         $mutex = $mutexFactory();
-        $result = $mutex->synchronized(static function (): string {
+        $result = $mutex->synchronized(static function () {
             return 'test';
         });
         self::assertSame('test', $result);

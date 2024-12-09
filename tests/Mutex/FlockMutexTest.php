@@ -49,7 +49,7 @@ class FlockMutexTest extends TestCase
     {
         $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
 
-        self::assertTrue($this->mutex->synchronized(static function (): bool { // @phpstan-ignore staticMethod.alreadyNarrowedType
+        self::assertTrue($this->mutex->synchronized(static function () { // @phpstan-ignore staticMethod.alreadyNarrowedType
             usleep(1100 * 1000);
 
             return true;
@@ -108,7 +108,7 @@ class FlockMutexTest extends TestCase
 
         $timebox = new PcntlTimeout(1);
         $timebox->timeBoxed(function () {
-            $this->mutex->synchronized(static function (): void {
+            $this->mutex->synchronized(static function () {
                 self::fail();
             });
         });

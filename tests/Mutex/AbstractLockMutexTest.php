@@ -36,7 +36,7 @@ class AbstractLockMutexTest extends TestCase
             ->method('lock')
             ->willThrowException(new LockAcquireException());
 
-        $this->mutex->synchronized(static function (): void {
+        $this->mutex->synchronized(static function () {
             self::fail();
         });
     }
@@ -49,7 +49,7 @@ class AbstractLockMutexTest extends TestCase
         $this->mutex->expects(self::once())
             ->method('unlock');
 
-        $this->mutex->synchronized(static function (): void {});
+        $this->mutex->synchronized(static function () {});
     }
 
     /**

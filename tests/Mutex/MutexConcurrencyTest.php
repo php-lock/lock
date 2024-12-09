@@ -80,10 +80,10 @@ class MutexConcurrencyTest extends TestCase
         $iterations = 1000 / $concurrency;
         $timeout = $concurrency * 20;
 
-        $this->fork($concurrency, static function () use ($mutexFactory, $timeout, $iterations, $code): void {
+        $this->fork($concurrency, static function () use ($mutexFactory, $timeout, $iterations, $code) {
             $mutex = $mutexFactory($timeout);
             for ($i = 0; $i < $iterations; ++$i) {
-                $mutex->synchronized(static function () use ($code): void {
+                $mutex->synchronized(static function () use ($code) {
                     $code(1);
                 });
             }
@@ -104,7 +104,7 @@ class MutexConcurrencyTest extends TestCase
             static::$temporaryFiles[] = $filename;
 
             yield $name => [
-                static function (int $increment) use ($filename): int {
+                static function (int $increment) use ($filename) {
                     $counter = file_get_contents($filename);
                     $counter += $increment;
 
@@ -113,7 +113,7 @@ class MutexConcurrencyTest extends TestCase
                     return $counter;
                 },
                 $mutexFactory,
-                static function () use ($filename): void {
+                static function () use ($filename) {
                     file_put_contents($filename, '0');
                 },
             ];
@@ -132,9 +132,9 @@ class MutexConcurrencyTest extends TestCase
     {
         $time = \microtime(true);
 
-        $this->fork(6, static function () use ($mutexFactory): void {
+        $this->fork(6, static function () use ($mutexFactory) {
             $mutex = $mutexFactory(3);
-            $mutex->synchronized(static function (): void {
+            $mutex->synchronized(static function () {
                 \usleep(200 * 1000);
             });
         });
@@ -154,14 +154,14 @@ class MutexConcurrencyTest extends TestCase
 
         self::$temporaryFiles[] = $filename;
 
-        yield 'flock' => [static function ($timeout) use ($filename): Mutex {
+        yield 'flock' => [static function ($timeout) use ($filename) {
             $file = fopen($filename, 'w');
 
             return new FlockMutex($file, $timeout);
         }];
 
         if (extension_loaded('pcntl')) {
-            yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename): Mutex {
+            yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename) {
                 $file = fopen($filename, 'w');
                 $lock = Liberator::liberate(new FlockMutex($file, $timeout));
                 $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
@@ -170,7 +170,7 @@ class MutexConcurrencyTest extends TestCase
             }];
         }
 
-        yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename): Mutex {
+        yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename) {
             $file = fopen($filename, 'w');
             $lock = Liberator::liberate(new FlockMutex($file, $timeout));
             $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
@@ -179,7 +179,7 @@ class MutexConcurrencyTest extends TestCase
         }];
 
         if (extension_loaded('sysvsem')) {
-            yield 'semaphore' => [static function () use ($filename): Mutex {
+            yield 'semaphore' => [static function () use ($filename) {
                 $semaphore = sem_get(ftok($filename, 'b'));
                 self::assertThat(
                     $semaphore,
@@ -194,7 +194,7 @@ class MutexConcurrencyTest extends TestCase
         }
 
         if (getenv('MEMCACHE_HOST')) {
-            yield 'memcached' => [static function ($timeout): Mutex {
+            yield 'memcached' => [static function ($timeout) {
                 $memcached = new \Memcached();
                 $memcached->addServer(getenv('MEMCACHE_HOST'), 11211);
 
@@ -205,7 +205,7 @@ class MutexConcurrencyTest extends TestCase
         if (getenv('REDIS_URIS')) {
             $uris = explode(',', getenv('REDIS_URIS'));
 
-            yield 'DistributedMutex RedisMutex /w Predis' => [static function ($timeout) use ($uris): Mutex {
+            yield 'DistributedMutex RedisMutex /w Predis' => [static function ($timeout) use ($uris) {
                 $clients = array_map(
                     static fn ($uri) => new PredisClient($uri),
                     $uris
@@ -221,7 +221,7 @@ class MutexConcurrencyTest extends TestCase
 
             if (class_exists(\Redis::class)) {
                 yield 'DistributedMutex RedisMutex /w PHPRedis' => [
-                    static function ($timeout) use ($uris): Mutex {
+                    static function ($timeout) use ($uris) {
                         $clients = array_map(
                             static function (string $uri): \Redis {
                                 $redis = new \Redis();
@@ -253,7 +253,7 @@ class MutexConcurrencyTest extends TestCase
         }
 
         if (getenv('MYSQL_DSN')) {
-            yield 'MySQLMutex' => [static function ($timeout): Mutex {
+            yield 'MySQLMutex' => [static function ($timeout) {
                 $pdo = new \PDO(getenv('MYSQL_DSN'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -262,7 +262,7 @@ class MutexConcurrencyTest extends TestCase
         }
 
         if (getenv('PGSQL_DSN')) {
-            yield 'PostgreSQLMutex' => [static function (): Mutex {
+            yield 'PostgreSQLMutex' => [static function () {
                 $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
