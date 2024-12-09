@@ -91,14 +91,13 @@ class RedisMutexTest extends TestCase
             $connection = new class extends \Redis {
                 use RedisCompatibilityTrait;
 
-                /** @var bool */
-                private $is_closed = false;
+                private bool $isClosed = false;
 
                 #[\Override]
                 public function close(): bool
                 {
                     $res = parent::close();
-                    $this->is_closed = true;
+                    $this->isClosed = true;
 
                     return $res;
                 }
@@ -111,7 +110,7 @@ class RedisMutexTest extends TestCase
                  */
                 private function _set(string $key, $value, $timeout = 0)
                 {
-                    if ($this->is_closed) {
+                    if ($this->isClosed) {
                         throw new \RedisException('Connection is closed');
                     }
 
@@ -125,7 +124,7 @@ class RedisMutexTest extends TestCase
                  */
                 private function _eval(string $script, array $args = [], int $numKeys = 0)
                 {
-                    if ($this->is_closed) {
+                    if ($this->isClosed) {
                         throw new \RedisException('Connection is closed');
                     }
 

@@ -56,11 +56,9 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->expectException(LockAcquireException::class);
 
-        $this->mutex->synchronized(
-            static function (): void {
-                self::fail();
-            }
-        );
+        $this->mutex->synchronized(static function (): void {
+            self::fail();
+        });
     }
 
     /**
@@ -75,11 +73,9 @@ class RedisMutexWithPredisTest extends TestCase
 
         $this->expectException(LockAcquireException::class);
 
-        $this->mutex->synchronized(
-            static function () {
-                self::fail();
-            }
-        );
+        $this->mutex->synchronized(static function () {
+            self::fail();
+        });
     }
 
     public function testWorksNormally(): void
