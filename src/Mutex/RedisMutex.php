@@ -17,7 +17,7 @@ use Predis\PredisException;
  *
  * @extends AbstractRedlockMutex<TClient>
  *
- * @see http://redis.io/topics/distlock
+ * @see https://redis.io/topics/distlock#the-redlock-algorithm
  */
 class RedisMutex extends AbstractRedlockMutex
 {
@@ -122,7 +122,7 @@ class RedisMutex extends AbstractRedlockMutex
             }
         } else {
             try {
-                return $client->eval($luaScript, count($keys), ...[...$keys, ...$arguments]);
+                return $client->eval($luaScript, count($keys), ...$keys, ...$arguments);
             } catch (PredisException $e) {
                 throw new LockReleaseException('Failed to release lock', 0, $e);
             }

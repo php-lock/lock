@@ -11,7 +11,7 @@ use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
 use Malkusch\Lock\Mutex\Mutex;
 use Malkusch\Lock\Mutex\MySQLMutex;
-use Malkusch\Lock\Mutex\NoMutex;
+use Malkusch\Lock\Mutex\NullMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
@@ -46,8 +46,8 @@ class MutexTest extends TestCase
      */
     public static function provideMutexFactoriesCases(): iterable
     {
-        yield 'NoMutex' => [static function (): Mutex {
-            return new NoMutex();
+        yield 'NullMutex' => [static function (): Mutex {
+            return new NullMutex();
         }];
 
         yield 'FlockMutex' => [static function (): Mutex {
@@ -56,13 +56,15 @@ class MutexTest extends TestCase
             return new FlockMutex($file);
         }];
 
-        yield 'flockWithTimoutPcntl' => [static function (): Mutex {
-            $file = fopen(vfsStream::url('test/lock'), 'w');
-            $lock = Liberator::liberate(new FlockMutex($file, 3));
-            $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
+        if (extension_loaded('pcntl')) {
+            yield 'flockWithTimoutPcntl' => [static function (): Mutex {
+                $file = fopen(vfsStream::url('test/lock'), 'w');
+                $lock = Liberator::liberate(new FlockMutex($file, 3));
+                $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
 
-            return $lock->popsValue();
-        }];
+                return $lock->popsValue();
+            }];
+        }
 
         yield 'flockWithTimoutLoop' => [static function (): Mutex {
             $file = fopen(vfsStream::url('test/lock'), 'w');

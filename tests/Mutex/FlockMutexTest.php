@@ -11,6 +11,7 @@ use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Util\LockUtil;
 use Malkusch\Lock\Util\PcntlTimeout;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 
 class FlockMutexTest extends TestCase
@@ -18,8 +19,7 @@ class FlockMutexTest extends TestCase
     /** @var FlockMutex */
     private $mutex;
 
-    /** @var string */
-    private $file;
+    private string $file;
 
     #[\Override]
     protected function setUp(): void
@@ -88,10 +88,17 @@ class FlockMutexTest extends TestCase
      */
     public static function provideTimeoutableStrategiesCases(): iterable
     {
-        yield [\Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)()];
+        if (extension_loaded('pcntl')) {
+            yield [\Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)()];
+        }
+
         yield [\Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)()];
     }
 
+    /**
+     * @requires extension pcntl
+     */
+    #[RequiresPhpExtension('pcntl')]
     public function testNoTimeoutWaitsForever(): void
     {
         $this->expectException(DeadlineException::class);
