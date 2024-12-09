@@ -173,7 +173,7 @@ implementations or create/extend your own implementation.
 #### FlockMutex
 
 The **FlockMutex** is a lock implementation based on
-[`flock()`](http://php.net/manual/en/function.flock.php).
+[`flock()`](https://php.net/manual/en/function.flock.php).
 
 Example:
 ```php
@@ -194,7 +194,7 @@ extension if possible or busy waiting if not.
 #### MemcachedMutex
 
 The **MemcachedMutex** is a spinlock implementation which uses the
-[`Memcached` extension](http://php.net/manual/en/book.memcached.php).
+[`Memcached` extension](https://php.net/manual/en/book.memcached.php).
 
 Example:
 ```php
@@ -215,7 +215,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 #### RedisMutex
 
 The **RedisMutex** is the distributed lock implementation of
-[RedLock](http://redis.io/topics/distlock) which supports the
+[RedLock](https://redis.io/topics/distlock#the-redlock-algorithm) which supports the
 [`phpredis` extension](https://github.com/phpredis/phpredis)
 or [`Predis` API](https://github.com/nrk/predis).
 
@@ -244,7 +244,7 @@ $mutex->synchronized(function () use ($bankAccount, $amount) {
 #### SemaphoreMutex
 
 The **SemaphoreMutex** is a lock implementation based on
-[Semaphore](http://php.net/manual/en/ref.sem.php).
+[Semaphore](https://php.net/manual/en/ref.sem.php).
 
 Example:
 ```php
@@ -330,9 +330,9 @@ Commercial support is available.
 
 This project is free and is licensed under the MIT.
 
-[1]: http://semver.org/
+[1]: https://semver.org/
 [2]: https://github.com/nrk/predis
-[3]: http://php.net/manual/en/book.pcntl.php
+[3]: https://php.net/manual/en/book.pcntl.php
 [4]: https://getcomposer.org/
 [5]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/Mutex.php#L15
 [6]: https://github.com/php-lock/lock/blob/3ca295ccda/src/Mutex/Mutex.php#L38

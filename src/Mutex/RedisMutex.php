@@ -17,7 +17,7 @@ use Predis\PredisException;
  *
  * @extends AbstractRedlockMutex<TClient>
  *
- * @see http://redis.io/topics/distlock
+ * @see https://redis.io/topics/distlock#the-redlock-algorithm
  */
 class RedisMutex extends AbstractRedlockMutex
 {
