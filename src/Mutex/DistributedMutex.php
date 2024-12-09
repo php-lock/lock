@@ -34,6 +34,9 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
     public function __construct(array $mutexes, float $acquireTimeout = 3, float $expireTimeout = \INF)
     {
         parent::__construct('', $acquireTimeout, $expireTimeout);
+        \Closure::bind(function () {
+            $this->key = 'distributed';
+        }, $this, AbstractSpinlockMutex::class)();
 
         $this->mutexes = $mutexes;
         $this->logger = new NullLogger();
