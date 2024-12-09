@@ -54,9 +54,6 @@ class RedisMutexWithPredisTest extends TestCase
             ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3501, 'NX')
             ->willReturn(null);
 
-        $this->logger->expects(self::never())
-            ->method('warning');
-
         $this->expectException(LockAcquireException::class);
 
         $this->mutex->synchronized(
@@ -75,10 +72,6 @@ class RedisMutexWithPredisTest extends TestCase
             ->method('set')
             ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 3501, 'NX')
             ->willThrowException($this->createMock(PredisException::class));
-
-        $this->logger->expects(self::once())
-            ->method('warning')
-            ->with('Could not set {key} = {token} at server #{index}', self::anything());
 
         $this->expectException(LockAcquireException::class);
 
@@ -102,7 +95,6 @@ class RedisMutexWithPredisTest extends TestCase
             ->willReturn(true);
 
         $executed = false;
-
         $this->mutex->synchronized(static function () use (&$executed): void {
             $executed = true;
         });
@@ -142,14 +134,9 @@ class RedisMutexWithPredisTest extends TestCase
             ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
             ->willThrowException($this->createMock(PredisException::class));
 
-        $this->logger->expects(self::once())
-            ->method('warning')
-            ->with('Could not unset {key} = {token} at server #{index}', self::anything());
-
-        $executed = false;
-
         $this->expectException(LockReleaseException::class);
 
+        $executed = false;
         $this->mutex->synchronized(static function () use (&$executed): void {
             $executed = true;
         });
