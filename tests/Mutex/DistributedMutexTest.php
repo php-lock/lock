@@ -93,7 +93,7 @@ class DistributedMutexTest extends TestCase
         $mutex = $this->createDistributedMutexMock($count);
 
         $i = 0;
-        $mutex->expects(self::exactly($count))
+        $mutex->expects(self::atMost((int) floor($count / 2) +  $count - $available))
             ->method('acquireMutex')
             ->willReturnCallback(static function () use (&$i, $available) {
                 if ($i++ < $available) {
@@ -307,6 +307,9 @@ class DistributedMutexTest extends TestCase
         yield [4, 0];
         yield [4, 1];
         yield [4, 2];
+        yield [5, 2];
+        yield [6, 2];
+        yield [6, 3];
     }
 
     /**
@@ -321,6 +324,7 @@ class DistributedMutexTest extends TestCase
         yield [3, 2];
         yield [3, 3];
         yield [4, 3];
+        yield [5, 3];
     }
 
     public function testAcquireMutexLogger(): void
@@ -329,12 +333,12 @@ class DistributedMutexTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $mutex->setLogger($logger);
 
-        $mutex->expects(self::exactly(3))
+        $mutex->expects(self::exactly(2))
             ->method('acquireMutex')
             ->with(self::isInstanceOf(AbstractSpinlockMutex::class), 'distributed', 1.0, \INF)
             ->willThrowException($this->createMock(/* PredisException::class */ LockAcquireException::class));
 
-        $logger->expects(self::exactly(3))
+        $logger->expects(self::exactly(2))
             ->method('warning')
             ->with('Could not set {key} = {token} at server #{index}', self::anything());
 

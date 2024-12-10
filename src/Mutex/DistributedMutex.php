@@ -52,6 +52,7 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
 
         // 2.
         $acquiredIndexes = [];
+        $notAcquired = 0;
         $errored = 0;
         $exception = null;
         foreach ($this->mutexes as $index => $mutex) {
@@ -67,6 +68,14 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
                 ]);
 
                 ++$errored;
+            }
+
+            if (end($acquiredIndexes) !== $index) {
+                ++$notAcquired;
+            }
+
+            if (!$this->isCountMajority(count($this->mutexes) - $notAcquired)) {
+                break;
             }
         }
 
