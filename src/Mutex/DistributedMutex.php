@@ -55,7 +55,7 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         $notAcquired = 0;
         $errored = 0;
         $exception = null;
-        foreach ($this->mutexes as $index => $mutex) {
+        foreach ($this->getMutexesInRandomOrder() as $index => $mutex) {
             try {
                 if ($this->acquireMutex($mutex, $key, $acquireTimeout - (microtime(true) - $startTs), $expireTimeout)) {
                     $acquiredIndexes[] = $index;
@@ -136,6 +136,22 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         } finally {
             $this->lockedMutexIndexes = null;
         }
+    }
+
+    /**
+     * @return array<int, AbstractSpinlockMutex>
+     */
+    private function getMutexesInRandomOrder(): array
+    {
+        $indexes = array_keys($this->mutexes);
+        shuffle($indexes);
+
+        $res = [];
+        foreach ($indexes as $index) {
+            $res[$index] = $this->mutexes[$index];
+        }
+
+        return $res;
     }
 
     /**

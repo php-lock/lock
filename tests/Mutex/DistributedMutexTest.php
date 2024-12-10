@@ -93,7 +93,7 @@ class DistributedMutexTest extends TestCase
         $mutex = $this->createDistributedMutexMock($count);
 
         $i = 0;
-        $mutex->expects(self::atMost((int) floor($count / 2) +  $count - $available))
+        $mutex->expects(self::atMost((int) floor($count / 2) + $count - $available))
             ->method('acquireMutex')
             ->willReturnCallback(static function () use (&$i, $available) {
                 if ($i++ < $available) {
