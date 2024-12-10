@@ -21,15 +21,20 @@ class DoubleCheckedLocking
     private Mutex $mutex;
 
     /** @var callable(): bool */
-    private $check;
+    private $checkFx;
 
     /**
-     * @param callable(): bool $check Decides if a lock should be acquired and is rechecked after the lock has been acquired
+     * @param callable(): bool $checkFx Decides if a lock should be acquired and is rechecked after the lock has been acquired
      */
-    public function __construct(Mutex $mutex, callable $check)
+    public function __construct(Mutex $mutex, callable $checkFx)
     {
         $this->mutex = $mutex;
-        $this->check = $check;
+        $this->checkFx = $checkFx;
+    }
+
+    private function invokeCheckFx(): bool
+    {
+        return ($this->checkFx)();
     }
 
     /**
@@ -41,7 +46,7 @@ class DoubleCheckedLocking
      * @param callable(): TSuccess $successFx
      * @param callable(): TFail    $failFx
      *
-     * @return TSuccess|TFail|false False if check did not pass
+     * @return TSuccess|($failFx is null ? false : TFail)
      *
      * @throws \Throwable
      * @throws LockAcquireException
@@ -49,14 +54,14 @@ class DoubleCheckedLocking
      */
     public function then(callable $successFx, ?callable $failFx = null)
     {
-        if (!($this->check)()) {
+        if (!$this->invokeCheckFx()) {
             return $failFx !== null
                 ? $failFx()
                 : false;
         }
 
         return $this->mutex->synchronized(function () use ($successFx, $failFx) {
-            if (!($this->check)()) {
+            if (!$this->invokeCheckFx()) {
                 return $failFx !== null
                     ? $failFx()
                     : false;
