@@ -21,44 +21,53 @@ class DoubleCheckedLocking
     private Mutex $mutex;
 
     /** @var callable(): bool */
-    private $check;
+    private $checkFx;
 
     /**
-     * @param callable(): bool $check Callback that decides if the lock should be acquired and is rechecked
-     *                                after a lock has been acquired
+     * @param callable(): bool $checkFx Decides if a lock should be acquired and is rechecked after the lock has been acquired
      */
-    public function __construct(Mutex $mutex, callable $check)
+    public function __construct(Mutex $mutex, callable $checkFx)
     {
         $this->mutex = $mutex;
-        $this->check = $check;
+        $this->checkFx = $checkFx;
+    }
+
+    private function invokeCheckFx(): bool
+    {
+        return ($this->checkFx)();
     }
 
     /**
-     * Executes a block of code only after the check callback passes
-     * before and after acquiring a lock.
+     * Execute a block of code only after the check callback passes before and after acquiring a lock.
      *
-     * @template T
+     * @template TSuccess
+     * @template TFail = never
      *
-     * @param callable(): T $code
+     * @param callable(): TSuccess $successFx
+     * @param callable(): TFail    $failFx
      *
-     * @return T|false False if check did not pass
+     * @return TSuccess|($failFx is null ? false : TFail)
      *
      * @throws \Throwable
      * @throws LockAcquireException
      * @throws LockReleaseException
      */
-    public function then(callable $code)
+    public function then(callable $successFx, ?callable $failFx = null)
     {
-        if (!($this->check)()) {
-            return false;
+        if (!$this->invokeCheckFx()) {
+            return $failFx !== null
+                ? $failFx()
+                : false;
         }
 
-        return $this->mutex->synchronized(function () use ($code) {
-            if (!($this->check)()) {
-                return false;
+        return $this->mutex->synchronized(function () use ($successFx, $failFx) {
+            if (!$this->invokeCheckFx()) {
+                return $failFx !== null
+                    ? $failFx()
+                    : false;
             }
 
-            return $code();
+            return $successFx();
         });
     }
 }

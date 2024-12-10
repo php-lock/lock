@@ -331,7 +331,7 @@ class DistributedMutexTest extends TestCase
 
         $mutex->expects(self::exactly(3))
             ->method('acquireMutex')
-            ->with(self::isInstanceOf(AbstractSpinlockMutex::class), 'php-malkusch-lock:', 1.0, \INF)
+            ->with(self::isInstanceOf(AbstractSpinlockMutex::class), 'distributed', 1.0, \INF)
             ->willThrowException($this->createMock(/* PredisException::class */ LockAcquireException::class));
 
         $logger->expects(self::exactly(3))
@@ -357,7 +357,7 @@ class DistributedMutexTest extends TestCase
 
         $mutex->expects(self::exactly(3))
             ->method('releaseMutex')
-            ->with(self::isInstanceOf(AbstractSpinlockMutex::class), 'php-malkusch-lock:', \INF)
+            ->with(self::isInstanceOf(AbstractSpinlockMutex::class), 'distributed', \INF)
             ->willThrowException($this->createMock(/* PredisException::class */ LockReleaseException::class));
 
         $logger->expects(self::exactly(3))

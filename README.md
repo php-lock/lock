@@ -115,15 +115,9 @@ $newBalance = $mutex->check(static function () use ($bankAccount, $amount): bool
 
     return $balance;
 });
-
-if (!$newBalance) {
-    if ($balance < 0) {
-        throw new \DomainException('You have no credit');
-    }
-}
 ```
 
-### Extracting code result after lock release exception
+### LockReleaseException::getCode{Exception, Result}()
 
 Mutex implementations based on [`Malkush\Lock\Mutex\AbstractLockMutex`][10] will throw
 [`Malkusch\Lock\Exception\LockReleaseException`][11] in case of lock release
@@ -134,7 +128,6 @@ In order to read the code result (or an exception thrown there),
 Example:
 ```php
 try {
-    // OR $mutex->check(...)
     $result = $mutex->synchronized(static function () {
         if (someCondition()) {
             throw new \DomainException();
@@ -142,17 +135,14 @@ try {
 
         return 'result';
     });
-} catch (LockReleaseException $unlockException) {
-    if ($unlockException->getCodeException() !== null) {
-        $codeException = $unlockException->getCodeException();
-        // do something with the code exception
+} catch (LockReleaseException $e) {
+    if ($e->getCodeException() !== null) {
+        // do something with the $e->getCodeException() exception
     } else {
-        $codeResult = $unlockException->getCodeResult();
-        // do something with the code result
+        // do something with the $e->getCodeResult() result
     }
 
-    // deal with LockReleaseException or propagate it
-    throw $unlockException;
+    throw $e;
 }
 ```
 
