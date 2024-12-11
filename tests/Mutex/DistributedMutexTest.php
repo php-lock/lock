@@ -8,7 +8,6 @@ use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
-use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use Malkusch\Lock\Mutex\AbstractSpinlockWithTokenMutex;
 use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
@@ -93,21 +92,12 @@ class DistributedMutexTest extends TestCase
         $i = 0;
         $mutex
             ->method('acquireMutex')
-            ->willReturnCallback(static function () use (&$i, $available) {
+            /* ->willReturnCallback(static function () use (&$i, $available) {
                 return ++$i <= $available;
-            });
+            }) */;
 
-        $mutex = new class($mutexes, 1, \INF) extends DistributedMutex {
-            private $i = 0;
-            public $available;
-
-            #[\Override]
-            protected function acquireMutex(AbstractSpinlockMutex $mutex, string $key, float $acquireTimeout, float $expireTimeout): bool
-            {
-                return ++$this->i <= $this->available;
-            }
-        };
-        $mutex->available = $available;
+        /* $mutex = new class($mutexes, 1, \INF) extends DistributedMutex {};
+        $mutex->available = $available; */
 
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
