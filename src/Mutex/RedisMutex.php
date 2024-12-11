@@ -47,6 +47,9 @@ class RedisMutex extends AbstractSpinlockWithTokenMutex
     }
 
     #[\Override]
+    protected function acquireWithToken2(string $key, float $expireTimeout) {}
+
+    #[\Override]
     protected function acquireWithToken(string $key, float $expireTimeout)
     {
         $token = LockUtil::getInstance()->makeRandomToken();

@@ -75,7 +75,17 @@ abstract class AbstractSpinlockWithTokenMutex extends AbstractSpinlockMutex
      *
      * @return non-falsy-string|false
      */
-    abstract protected function acquireWithToken(string $key, float $expireTimeout);
+    protected function acquireWithToken(string $key, float $expireTimeout) {}
+
+    /**
+     * Same as self::acquire() but with expire timeout and token.
+     *
+     * @param non-falsy-string $key
+     * @param float            $expireTimeout In seconds
+     *
+     * @return non-falsy-string|false
+     */
+    abstract protected function acquireWithToken2(string $key, float $expireTimeout);
 
     /**
      * Same as self::release() but with expire timeout and token.
@@ -83,5 +93,8 @@ abstract class AbstractSpinlockWithTokenMutex extends AbstractSpinlockMutex
      * @param non-falsy-string $key
      * @param non-falsy-string $token
      */
-    abstract protected function releaseWithToken(string $key, string $token): bool;
+    protected function releaseWithToken(string $key, string $token): bool
+    {
+        return true;
+    }
 }

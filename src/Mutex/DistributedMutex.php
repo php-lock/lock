@@ -7,19 +7,14 @@ namespace Malkusch\Lock\Mutex;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Util\LockUtil;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\NullLogger;
 
 /**
  * Distributed mutex based on the Redlock algorithm.
  *
  * @see http://redis.io/topics/distlock#the-redlock-algorithm
  */
-class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerAwareInterface
+class DistributedMutex extends AbstractSpinlockWithTokenMutex
 {
-    use LoggerAwareTrait;
-
     /** @var array<int, AbstractSpinlockMutex> */
     private array $mutexes;
 
@@ -39,8 +34,10 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         }, $this, AbstractSpinlockMutex::class)();
 
         $this->mutexes = $mutexes;
-        $this->logger = new NullLogger();
     }
+
+    #[\Override]
+    protected function acquireWithToken2(string $key, float $expireTimeout) {}
 
     #[\Override]
     protected function acquireWithToken(string $key, float $expireTimeout)
@@ -49,6 +46,15 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
 
         // 1. This differs from the specification to avoid an overflow on 32-Bit systems.
         $startTs = microtime(true);
+
+        global $cc;
+        ++$cc;
+        if ($cc > 100 && 0 === ($cc % 10_000)) {
+            @ob_end_flush();
+            gc_collect_cycles();
+            var_dump($cc++ . ' ' . (memory_get_usage() / (1024 * 1024)));
+            var_dump($startTs);
+        }
 
         // 2.
         $acquiredIndexes = [];
@@ -61,12 +67,6 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
                     $acquiredIndexes[] = $index;
                 }
             } catch (LockAcquireException $exception) {
-                $this->logger->warning('Could not set {key} = {token} at server #{index}', [
-                    'key' => $key,
-                    'index' => $index,
-                    'exception' => $exception,
-                ]);
-
                 ++$errored;
             }
 
@@ -124,11 +124,6 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
                         ++$released;
                     }
                 } catch (LockReleaseException $e) {
-                    $this->logger->warning('Could not unset {key} = {token} at server #{index}', [
-                        'key' => $key,
-                        'index' => $index,
-                        'exception' => $e,
-                    ]);
                 }
             }
 

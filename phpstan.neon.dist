@@ -15,4 +15,4 @@ parameters:
             path: 'tests/Mutex/*Test.php'
             identifier: empty.notAllowed
             message: '~^Construct empty\(\) is not allowed\. Use more strict comparison\.$~'
-            count: 6
+            count: 2
