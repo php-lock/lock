@@ -21,6 +21,9 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex
     /** @var list<int> */
     private ?array $lockedMutexIndexes = null;
 
+    private $i = 0;
+    public $available;
+
     /**
      * @param array<int, AbstractSpinlockMutex> $mutexes
      * @param float                             $acquireTimeout In seconds
@@ -195,6 +198,10 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex
 
     protected function acquireMutex(AbstractSpinlockMutex $mutex, string $key, float $acquireTimeout, float $expireTimeout): bool
     {
+        if ($this->available !== null) {
+            return ++$this->i <= $this->available;
+        }
+
         return $this->executeMutexWithMinTimeouts($mutex, static fn () => $mutex->acquire($key), $acquireTimeout, $expireTimeout);
     }
 
