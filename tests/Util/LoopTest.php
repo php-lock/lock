@@ -46,7 +46,6 @@ class LoopTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('The lock acquire timeout must be greater than or equal to 0.0 (' . LockUtil::getInstance()->formatTimeout($acquireTimeout) . ' was given)');
-
         $loop->execute(static function () {
             self::fail();
         }, $acquireTimeout);
@@ -78,10 +77,10 @@ class LoopTest extends TestCase
 
     public function testExecutionWithinAcquireTimeoutWithoutCallingEnd(): void
     {
+        $loop = new Loop();
+
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
-
-        $loop = new Loop();
         $loop->execute(static function () {
             usleep(10 * 1000);
         }, 0.5);
@@ -102,10 +101,10 @@ class LoopTest extends TestCase
 
     public function testExceedAcquireTimeoutWithoutCallingEnd(): void
     {
+        $loop = new Loop();
+
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 0.5 seconds has been exceeded');
-
-        $loop = new Loop();
         $loop->execute(static function () {
             usleep(501 * 1000);
         }, 0.5);
@@ -113,9 +112,9 @@ class LoopTest extends TestCase
 
     public function testExceptionStopsIteration(): void
     {
-        $this->expectException(\DomainException::class);
-
         $loop = new Loop();
+
+        $this->expectException(\DomainException::class);
         $loop->execute(static function () {
             throw new \DomainException();
         }, 1);

@@ -53,34 +53,39 @@ final class PcntlTimeout
      *
      * @return T
      *
+     * @throws \Throwable
      * @throws DeadlineException    Running the code hit the deadline
      * @throws LockAcquireException Installing the timeout failed
      */
     public function timeBoxed(callable $code)
     {
-        $existingHandler = pcntl_signal_get_handler(\SIGALRM);
-
-        $signal = pcntl_signal(\SIGALRM, function (): void {
-            throw new DeadlineException(sprintf(
-                'Timebox hit deadline of %d seconds',
-                $this->timeout
-            ));
-        });
-        if (!$signal) {
-            throw new LockAcquireException('Could not install signal');
+        if (pcntl_alarm($this->timeout) !== 0) {
+            throw new LockAcquireException('Existing process alarm is not supported');
         }
 
-        $oldAlarm = pcntl_alarm($this->timeout);
-        if ($oldAlarm !== 0) {
-            throw new LockAcquireException('Existing alarm was not expected');
+        $origSignalHandler = pcntl_signal_get_handler(\SIGALRM);
+
+        $timeout = $this->timeout;
+        $signalHandlerFx = static function () use ($timeout): void {
+            throw new DeadlineException(sprintf(
+                'Timebox hit deadline of %d seconds',
+                $timeout
+            ));
+        };
+
+        if (!pcntl_signal(\SIGALRM, $signalHandlerFx)) {
+            throw new LockAcquireException('Failed to install signal handler');
         }
 
         try {
             return $code();
         } finally {
             pcntl_alarm(0);
-            pcntl_signal_dispatch();
-            pcntl_signal(\SIGALRM, $existingHandler);
+            try {
+                pcntl_signal_dispatch();
+            } finally {
+                pcntl_signal(\SIGALRM, $origSignalHandler);
+            }
         }
     }
 

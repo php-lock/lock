@@ -21,10 +21,9 @@ class PcntlTimeoutTest extends TestCase
      */
     public function testShouldTimeout(): void
     {
-        $this->expectException(DeadlineException::class);
-
         $timeout = new PcntlTimeout(1);
 
+        $this->expectException(DeadlineException::class);
         $timeout->timeBoxed(static function () {
             sleep(2);
         });
@@ -45,21 +44,36 @@ class PcntlTimeoutTest extends TestCase
     }
 
     /**
+     * Thrown exceptions from the subject code should be rethrown.
+     */
+    public function testShouldThrowException(): void
+    {
+        $timeout = new PcntlTimeout(1);
+
+        $this->expectException(\DomainException::class);
+        $timeout->timeBoxed(static function () {
+            throw new \DomainException();
+        });
+    }
+
+    /**
      * When a previous scheduled alarm exists, it should fail.
      */
     public function testShouldFailOnExistingAlarm(): void
     {
-        $this->expectException(LockAcquireException::class);
-
+        $origSignalHandler = pcntl_signal_get_handler(\SIGALRM);
         try {
             pcntl_alarm(1);
             $timeout = new PcntlTimeout(1);
 
+            $this->expectException(LockAcquireException::class);
+            $this->expectExceptionMessage('Existing process alarm is not supported');
             $timeout->timeBoxed(static function () {
                 sleep(1);
             });
         } finally {
             pcntl_alarm(0);
+            self::assertSame($origSignalHandler, pcntl_signal_get_handler(\SIGALRM));
         }
     }
 
@@ -73,5 +87,22 @@ class PcntlTimeoutTest extends TestCase
         $timeout->timeBoxed(static function () {});
 
         self::assertSame(0, pcntl_alarm(0));
+    }
+
+    /**
+     * After not timing out and throwing an exception, there should be no alarm scheduled.
+     */
+    public function testShouldResetAlarmWhenNotTimeoutAndException(): void
+    {
+        $timeout = new PcntlTimeout(3);
+
+        $this->expectException(\DomainException::class);
+        try {
+            $timeout->timeBoxed(static function () {
+                throw new \DomainException();
+            });
+        } finally {
+            self::assertSame(0, pcntl_alarm(0));
+        }
     }
 }
