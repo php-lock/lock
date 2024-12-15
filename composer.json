@@ -79,10 +79,7 @@
     "autoload-dev": {
         "psr-4": {
             "Malkusch\\Lock\\Tests\\": "tests/"
-        },
-        "files": [
-            "bootstrap-dev-sleep.php"
-        ]
+        }
     },
     "config": {
         "allow-plugins": {
