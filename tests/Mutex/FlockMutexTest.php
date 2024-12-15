@@ -112,4 +112,31 @@ class FlockMutexTest extends TestCase
             });
         });
     }
+
+    public function testThreadLock(): void
+    {
+        $syncFunction = function ($i) {
+            try {
+                // require_once __DIR__ . '/../../../bootstrap/app.php';
+                echo $i . ' Running ' . \PHP_EOL;
+
+                return $this->mutex->synchronized(static function () use ($i): string {
+                    sleep(1);
+
+                    return $i . ' Finished.' . \PHP_EOL;
+                });
+            } catch (\Exception $e) {
+                return $e->getMessage() . \PHP_EOL;
+            }
+        };
+
+        $results = [];
+        for ($i = 1; $i < 6; ++$i) {
+            $results[] = \parallel\run($syncFunction, [$i]);
+        }
+
+        foreach ($results as $item) {
+            echo $item->value();
+        }
+    }
 }
