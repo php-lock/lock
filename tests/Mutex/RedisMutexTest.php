@@ -258,24 +258,6 @@ class RedisMutexTest extends TestCase
         }));
     }
 
-    public function testResistantToPartialClusterFailuresForAcquiringLock(): void
-    {
-        $this->closeMinorityConnections();
-
-        self::assertSame('test', $this->mutex->synchronized(static function () {
-            return 'test';
-        }));
-    }
-
-    public function testResistantToPartialClusterFailuresForReleasingLock(): void
-    {
-        self::assertNull($this->mutex->synchronized(function () { // @phpstan-ignore staticMethod.alreadyNarrowedType
-            $this->closeMinorityConnections();
-
-            return null;
-        }));
-    }
-
     /**
      * @return iterable<list<mixed>>
      */
@@ -312,5 +294,23 @@ class RedisMutexTest extends TestCase
                 ];
             }
         }
+    }
+
+    public function testResistantToPartialClusterFailuresForAcquiringLock(): void
+    {
+        $this->closeMinorityConnections();
+
+        self::assertSame('test', $this->mutex->synchronized(static function () {
+            return 'test';
+        }));
+    }
+
+    public function testResistantToPartialClusterFailuresForReleasingLock(): void
+    {
+        self::assertNull($this->mutex->synchronized(function () { // @phpstan-ignore staticMethod.alreadyNarrowedType
+            $this->closeMinorityConnections();
+
+            return null;
+        }));
     }
 }

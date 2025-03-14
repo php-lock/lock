@@ -229,6 +229,21 @@ class DistributedMutexTest extends TestCase
     }
 
     /**
+     * Provides test cases with enough.
+     *
+     * @return iterable<list<mixed>>
+     */
+    public static function provideMajorityCases(): iterable
+    {
+        yield [1, 1];
+        yield [2, 2];
+        yield [3, 2];
+        yield [3, 3];
+        yield [4, 3];
+        yield [5, 3];
+    }
+
+    /**
      * Tests releasing fails because too few servers are available.
      *
      * @param int $count     The total count of servers
@@ -304,21 +319,6 @@ class DistributedMutexTest extends TestCase
         yield [5, 2];
         yield [6, 2];
         yield [6, 3];
-    }
-
-    /**
-     * Provides test cases with enough.
-     *
-     * @return iterable<list<mixed>>
-     */
-    public static function provideMajorityCases(): iterable
-    {
-        yield [1, 1];
-        yield [2, 2];
-        yield [3, 2];
-        yield [3, 3];
-        yield [4, 3];
-        yield [5, 3];
     }
 
     public function testAcquireMutexLogger(): void

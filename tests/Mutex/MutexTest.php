@@ -41,6 +41,60 @@ class MutexTest extends TestCase
     }
 
     /**
+     * Tests synchronized() executes the code and returns its result.
+     *
+     * @param \Closure(): Mutex $mutexFactory
+     *
+     * @dataProvider provideMutexFactoriesCases
+     */
+    #[DataProvider('provideMutexFactoriesCases')]
+    public function testSynchronizedDelegates(\Closure $mutexFactory): void
+    {
+        $mutex = $mutexFactory();
+        $result = $mutex->synchronized(static function () {
+            return 'test';
+        });
+        self::assertSame('test', $result);
+    }
+
+    /**
+     * Tests that synchronized() released the lock.
+     *
+     * @param \Closure(): Mutex $mutexFactory
+     *
+     * @doesNotPerformAssertions
+     *
+     * @dataProvider provideMutexFactoriesCases
+     */
+    #[DoesNotPerformAssertions]
+    #[DataProvider('provideMutexFactoriesCases')]
+    public function testRelease(\Closure $mutexFactory): void
+    {
+        $mutex = $mutexFactory();
+        $mutex->synchronized(static function () {});
+
+        $mutex->synchronized(static function () {});
+    }
+
+    /**
+     * Tests synchronized() rethrows the exception of the code.
+     *
+     * @param \Closure(): Mutex $mutexFactory
+     *
+     * @dataProvider provideMutexFactoriesCases
+     */
+    #[DataProvider('provideMutexFactoriesCases')]
+    public function testSynchronizedPassesExceptionThrough(\Closure $mutexFactory): void
+    {
+        $mutex = $mutexFactory();
+
+        $this->expectException(\DomainException::class);
+        $mutex->synchronized(static function () {
+            throw new \DomainException();
+        });
+    }
+
+    /**
      * Provides Mutex factories.
      *
      * @return iterable<list<mixed>>
@@ -187,59 +241,5 @@ class MutexTest extends TestCase
                 return new PostgreSQLMutex($pdo, 'test');
             }];
         }
-    }
-
-    /**
-     * Tests synchronized() executes the code and returns its result.
-     *
-     * @param \Closure(): Mutex $mutexFactory
-     *
-     * @dataProvider provideMutexFactoriesCases
-     */
-    #[DataProvider('provideMutexFactoriesCases')]
-    public function testSynchronizedDelegates(\Closure $mutexFactory): void
-    {
-        $mutex = $mutexFactory();
-        $result = $mutex->synchronized(static function () {
-            return 'test';
-        });
-        self::assertSame('test', $result);
-    }
-
-    /**
-     * Tests that synchronized() released the lock.
-     *
-     * @param \Closure(): Mutex $mutexFactory
-     *
-     * @doesNotPerformAssertions
-     *
-     * @dataProvider provideMutexFactoriesCases
-     */
-    #[DoesNotPerformAssertions]
-    #[DataProvider('provideMutexFactoriesCases')]
-    public function testRelease(\Closure $mutexFactory): void
-    {
-        $mutex = $mutexFactory();
-        $mutex->synchronized(static function () {});
-
-        $mutex->synchronized(static function () {});
-    }
-
-    /**
-     * Tests synchronized() rethrows the exception of the code.
-     *
-     * @param \Closure(): Mutex $mutexFactory
-     *
-     * @dataProvider provideMutexFactoriesCases
-     */
-    #[DataProvider('provideMutexFactoriesCases')]
-    public function testSynchronizedPassesExceptionThrough(\Closure $mutexFactory): void
-    {
-        $mutex = $mutexFactory();
-
-        $this->expectException(\DomainException::class);
-        $mutex->synchronized(static function () {
-            throw new \DomainException();
-        });
     }
 }
