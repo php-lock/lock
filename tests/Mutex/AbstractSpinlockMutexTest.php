@@ -9,7 +9,6 @@ use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use phpmock\environment\SleepEnvironmentBuilder;
-use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -28,13 +27,8 @@ class AbstractSpinlockMutexTest extends TestCase
         $sleepBuilder->addNamespace('Malkusch\Lock\Mutex');
         $sleepBuilder->addNamespace('Malkusch\Lock\Util');
         $sleep = $sleepBuilder->build();
-        try {
-            $sleep->enable();
-            $this->registerForTearDown($sleep);
-        } catch (MockEnabledException $e) {
-            // workaround for burn testing
-            \assert($e->getMessage() === 'microtime is already enabled. Call disable() on the existing mock.');
-        }
+        $sleep->enable();
+        $this->registerForTearDown($sleep);
     }
 
     /**
