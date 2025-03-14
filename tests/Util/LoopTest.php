@@ -8,6 +8,7 @@ use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Util\LockUtil;
 use Malkusch\Lock\Util\Loop;
 use phpmock\environment\SleepEnvironmentBuilder;
+use phpmock\MockEnabledException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
@@ -26,8 +27,13 @@ class LoopTest extends TestCase
         $sleepBuilder->addNamespace(__NAMESPACE__);
         $sleepBuilder->addNamespace('Malkusch\Lock\Util');
         $sleep = $sleepBuilder->build();
-        $sleep->enable();
-        $this->registerForTearDown($sleep);
+        try {
+            $sleep->enable();
+            $this->registerForTearDown($sleep);
+        } catch (MockEnabledException $e) {
+            // workaround for burn testing
+            \assert($e->getMessage() === 'microtime is already enabled. Call disable() on the existing mock.');
+        }
     }
 
     /**
