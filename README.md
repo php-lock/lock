@@ -274,7 +274,7 @@ $mutex = new DistributedMutex([
 
 Since year 2015 the development was led by Markus Malkusch, Willem Stuursma-Ruwen and many GitHub contributors.
 
-Currently this library is maintained by Michael Voříšek - [GitHub](https://github.com/mvorisek) | [LinkedIn](https://www.linkedin.com/mvorisek).
+Currently this library is maintained by Michael Voříšek - [GitHub](https://github.com/mvorisek) | [LinkedIn](https://www.linkedin.com/in/mvorisek/).
 
 Commercial support is available.
 
