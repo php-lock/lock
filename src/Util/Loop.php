@@ -8,8 +8,6 @@ use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 
 /**
  * Repeats executing a code until it was successful.
- *
- * @internal
  */
 class Loop
 {
