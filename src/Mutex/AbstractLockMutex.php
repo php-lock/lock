@@ -7,9 +7,6 @@ namespace Malkusch\Lock\Mutex;
 use Malkusch\Lock\Exception\LockAcquireException;
 use Malkusch\Lock\Exception\LockReleaseException;
 
-/**
- * @internal
- */
 abstract class AbstractLockMutex extends AbstractMutex
 {
     /**
