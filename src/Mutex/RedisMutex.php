@@ -107,7 +107,7 @@ class RedisMutex extends AbstractSpinlockWithTokenMutex
             try {
                 //  Will set the key, if it doesn't exist, with a ttl of $expire seconds
                 return $this->client->set($key, $value, ['nx', 'px' => $expireTimeoutMillis]);
-            } catch (\RedisException $e) {
+            } catch (\RedisException $e) { // @phpstan-ignore catch.neverThrown
                 $message = sprintf(
                     'Failed to acquire lock for key \'%s\'',
                     $key
