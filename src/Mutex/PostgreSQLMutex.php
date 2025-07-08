@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Malkusch\Lock\Mutex;
 
 use Malkusch\Lock\Util\LockUtil;
+use Malkusch\Lock\Util\Loop;
 
 class PostgreSQLMutex extends AbstractLockMutex
 {
@@ -13,9 +14,12 @@ class PostgreSQLMutex extends AbstractLockMutex
     /** @var array{int, int} */
     private array $key;
 
-    public function __construct(\PDO $PDO, string $name)
+    private ?float $timeout;
+
+    public function __construct(\PDO $PDO, string $name, ?float $timeout = null)
     {
         $this->pdo = $PDO;
+        $this->timeout = $timeout;
 
         [$keyBytes1, $keyBytes2] = str_split(md5(LockUtil::getInstance()->getKeyPrefix() . ':' . $name, true), 4);
 
@@ -35,8 +39,13 @@ class PostgreSQLMutex extends AbstractLockMutex
     #[\Override]
     protected function lock(): void
     {
-        $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?, ?)');
+        if (isset($this->timeout)) {
+            $this->tryLock();
 
+            return;
+        }
+
+        $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?, ?)');
         $statement->execute($this->key);
     }
 
@@ -45,5 +54,19 @@ class PostgreSQLMutex extends AbstractLockMutex
     {
         $statement = $this->pdo->prepare('SELECT pg_advisory_unlock(?, ?)');
         $statement->execute($this->key);
+    }
+
+    protected function tryLock(): void
+    {
+        $loop = new Loop();
+
+        $loop->execute(function () use ($loop): void {
+            $statement = $this->pdo->prepare('SELECT pg_try_advisory_lock(?, ?)');
+            $statement->execute($this->key);
+
+            if ($statement->fetchColumn()) {
+                $loop->end();
+            }
+        }, $this->timeout);
     }
 }
