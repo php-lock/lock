@@ -14,12 +14,12 @@ class PostgreSQLMutex extends AbstractLockMutex
     /** @var array{int, int} */
     private array $key;
 
-    private ?float $timeout;
+    private float $acquireTimeout;
 
-    public function __construct(\PDO $PDO, string $name, ?float $timeout = null)
+    public function __construct(\PDO $PDO, string $name, float $acquireTimeout = \INF)
     {
         $this->pdo = $PDO;
-        $this->timeout = $timeout;
+        $this->acquireTimeout = $acquireTimeout;
 
         [$keyBytes1, $keyBytes2] = str_split(md5(LockUtil::getInstance()->getKeyPrefix() . ':' . $name, true), 4);
 
@@ -39,7 +39,7 @@ class PostgreSQLMutex extends AbstractLockMutex
     #[\Override]
     protected function lock(): void
     {
-        if (isset($this->timeout)) {
+        if ($this->acquireTimeout !== \INF) {
             $this->tryLock();
 
             return;
@@ -67,6 +67,6 @@ class PostgreSQLMutex extends AbstractLockMutex
             if ($statement->fetchColumn()) {
                 $loop->end();
             }
-        }, $this->timeout);
+        }, $this->acquireTimeout);
     }
 }

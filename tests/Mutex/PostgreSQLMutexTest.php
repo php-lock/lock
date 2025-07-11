@@ -134,7 +134,7 @@ class PostgreSQLMutexTest extends TestCase
             ->method('fetchColumn')
             ->willReturn(false);
 
-        $this->mutex->timeout = 1.0; // @phpstan-ignore property.private
+        $this->mutex->acquireTimeout = 1.0; // @phpstan-ignore property.private
 
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
