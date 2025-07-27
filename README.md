@@ -248,9 +248,8 @@ functions.
 Named locks are offered. PostgreSQL locking functions require integers but the
 conversion is handled automatically.
 
-Timeouts are optional, if not provided, it will block indefinitely. If the
-connection to the database server is lost or interrupted, the lock is
-automatically released.
+It supports timeouts. If the connection to the database server is lost or
+interrupted, the lock is automatically released.
 
 ```php
 $pdo = new \PDO('pgsql:host=localhost;dbname=test', 'username');
