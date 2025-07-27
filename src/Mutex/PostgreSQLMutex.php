@@ -40,6 +40,12 @@ class PostgreSQLMutex extends AbstractLockMutex
         ];
     }
 
+    private function lockBlocking(): void
+    {
+        $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?, ?)');
+        $statement->execute($this->key);
+    }
+
     private function lockBusy(): void
     {
         $loop = new Loop();
@@ -58,8 +64,7 @@ class PostgreSQLMutex extends AbstractLockMutex
     protected function lock(): void
     {
         if ($this->acquireTimeout === \INF) {
-            $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?, ?)');
-            $statement->execute($this->key);
+            $this->lockBlocking();
         } else {
             $this->lockBusy();
         }
