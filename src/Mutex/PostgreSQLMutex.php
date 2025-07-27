@@ -16,9 +16,9 @@ class PostgreSQLMutex extends AbstractLockMutex
 
     private float $acquireTimeout;
 
-    public function __construct(\PDO $PDO, string $name, float $acquireTimeout = \INF)
+    public function __construct(\PDO $pdo, string $name, float $acquireTimeout = \INF)
     {
-        $this->pdo = $PDO;
+        $this->pdo = $pdo;
         $this->acquireTimeout = $acquireTimeout;
 
         [$keyBytes1, $keyBytes2] = str_split(md5(LockUtil::getInstance()->getKeyPrefix() . ':' . $name, true), 4);
