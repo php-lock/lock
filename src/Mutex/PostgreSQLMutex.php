@@ -14,8 +14,12 @@ class PostgreSQLMutex extends AbstractLockMutex
     /** @var array{int, int} */
     private array $key;
 
+    /** In seconds */
     private float $acquireTimeout;
 
+    /**
+     * @param float $acquireTimeout In seconds
+     */
     public function __construct(\PDO $pdo, string $name, float $acquireTimeout = \INF)
     {
         $this->pdo = $pdo;

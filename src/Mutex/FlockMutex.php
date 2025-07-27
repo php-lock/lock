@@ -24,6 +24,7 @@ class FlockMutex extends AbstractLockMutex
     /** @var resource */
     private $fileHandle;
 
+    /** In seconds */
     private float $acquireTimeout;
 
     /** @var self::STRATEGY_* */
