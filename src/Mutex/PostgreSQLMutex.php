@@ -36,27 +36,7 @@ class PostgreSQLMutex extends AbstractLockMutex
         ];
     }
 
-    #[\Override]
-    protected function lock(): void
-    {
-        if ($this->acquireTimeout !== \INF) {
-            $this->tryLock();
-
-            return;
-        }
-
-        $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?, ?)');
-        $statement->execute($this->key);
-    }
-
-    #[\Override]
-    protected function unlock(): void
-    {
-        $statement = $this->pdo->prepare('SELECT pg_advisory_unlock(?, ?)');
-        $statement->execute($this->key);
-    }
-
-    protected function tryLock(): void
+    private function lockBusy(): void
     {
         $loop = new Loop();
 
@@ -68,5 +48,23 @@ class PostgreSQLMutex extends AbstractLockMutex
                 $loop->end();
             }
         }, $this->acquireTimeout);
+    }
+
+    #[\Override]
+    protected function lock(): void
+    {
+        if ($this->acquireTimeout === \INF) {
+            $statement = $this->pdo->prepare('SELECT pg_advisory_lock(?, ?)');
+            $statement->execute($this->key);
+        } else {
+            $this->lockBusy();
+        }
+    }
+
+    #[\Override]
+    protected function unlock(): void
+    {
+        $statement = $this->pdo->prepare('SELECT pg_advisory_unlock(?, ?)');
+        $statement->execute($this->key);
     }
 }
