@@ -20,9 +20,9 @@ class MySQLMutex extends AbstractLockMutex
     /**
      * @param float $acquireTimeout In seconds
      */
-    public function __construct(\PDO $PDO, string $name, float $acquireTimeout = 0)
+    public function __construct(\PDO $pdo, string $name, float $acquireTimeout = 0)
     {
-        $this->pdo = $PDO;
+        $this->pdo = $pdo;
 
         $namePrefix = LockUtil::getInstance()->getKeyPrefix() . ':';
 

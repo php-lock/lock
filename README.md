@@ -248,7 +248,7 @@ functions.
 Named locks are offered. PostgreSQL locking functions require integers but the
 conversion is handled automatically.
 
-No timeouts are supported. If the connection to the database server is lost or
+It supports timeouts. If the connection to the database server is lost or
 interrupted, the lock is automatically released.
 
 ```php
