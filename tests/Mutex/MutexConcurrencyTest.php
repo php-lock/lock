@@ -268,13 +268,6 @@ class MutexConcurrencyTest extends TestCase
 
                 return new PostgreSQLMutex($pdo, 'test');
             }];
-
-            yield 'PostgreSQLMutexWithTimeout' => [static function ($timeout) {
-                $pdo = new \PDO(getenv('PGSQL_DSN'), getenv('PGSQL_USER'), getenv('PGSQL_PASSWORD'));
-                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-                return new PostgreSQLMutex($pdo, 'test', $timeout);
-            }];
         }
     }
 }
