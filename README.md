@@ -10,6 +10,7 @@
 [![Latest Stable Version](https://poser.pugx.org/malkusch/lock/version)](https://packagist.org/packages/malkusch/lock)
 [![Total Downloads](https://poser.pugx.org/malkusch/lock/downloads)](https://packagist.org/packages/malkusch/lock/stats)
 [![Build Status](https://github.com/php-lock/lock/actions/workflows/test-unit.yml/badge.svg?branch=master)](https://github.com/php-lock/lock/actions?query=branch:master)
+[![Coverage](https://codecov.io/gh/php-lock/lock/branch/master/graph/badge.svg)](https://codecov.io/gh/php-lock/lock)
 [![License](https://poser.pugx.org/malkusch/lock/license)](https://packagist.org/packages/malkusch/lock)
 
 This library helps executing critical code in concurrent situations in serialized fashion.
