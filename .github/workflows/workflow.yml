@@ -1,0 +1,168 @@
+name: Unit
+
+on:
+  pull_request:
+  push:
+  schedule:
+    - cron: '0 0/2 * * *'
+
+jobs:
+  smoke-test:
+    name: Smoke
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['latest']
+        type: ['Phpunit']
+        include:
+          - php: 'latest'
+            type: 'CodingStyle'
+          - php: 'latest'
+            type: 'StaticAnalysis'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure PHP
+        run: |
+          rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+          php --version
+
+      - name: Install PHP dependencies
+        run: |
+          if [ "${{ matrix.type }}" != "Phpunit" ] && [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpunit/phpunit ergebnis/phpunit-slow-test-detector --dev; fi
+          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer ergebnis/composer-normalize --dev; fi
+          if [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpstan/\* --dev; fi
+          composer remove --no-interaction --no-update ext-lzf ext-memcached ext-sysvsem --dev
+          composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: "Run tests (only for Phpunit)"
+        if: startsWith(matrix.type, 'Phpunit')
+        run: |
+          vendor/bin/phpunit --exclude-group none --no-coverage --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-phpunit-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+
+      - name: Check Coding Style (only for CodingStyle)
+        if: matrix.type == 'CodingStyle'
+        run: |
+          vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --verbose
+          composer validate --strict --no-check-lock && composer normalize --dry-run --no-check-lock
+
+      - name: Run Static Analysis (only for StaticAnalysis)
+        if: matrix.type == 'StaticAnalysis'
+        run: |
+          echo "memory_limit = 2G" > /usr/local/etc/php/conf.d/custom-memory-limit.ini
+          vendor/bin/phpstan analyse -v
+
+  unit-test:
+    name: Unit
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+        type: ['Phpunit', 'Phpunit Lowest']
+        include:
+          - php: 'latest'
+            type: 'Phpunit Burn'
+    env:
+      LOG_COVERAGE: "${{ fromJSON('{true: \"1\", false: \"\"}')[matrix.php >= '8.4' && matrix.type == 'Phpunit' && (github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')))] }}"
+    services:
+      mysql:
+        image: mysql
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=test_pass_root -e MYSQL_USER=test_user -e MYSQL_PASSWORD=test_pass -e MYSQL_DATABASE=test_db
+      mariadb:
+        image: mariadb
+        options: --health-cmd="mariadb-admin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=test_pass_root -e MYSQL_USER=test_user -e MYSQL_PASSWORD=test_pass -e MYSQL_DATABASE=test_db
+      postgres:
+        image: postgres:12-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis1:
+        image: redis:alpine
+      redis2:
+        image: redis:alpine
+      redis3:
+        image: redis:alpine
+      valkey1:
+        image: valkey/valkey:alpine
+      valkey2:
+        image: valkey/valkey:alpine
+      valkey3:
+        image: valkey/valkey:alpine
+      memcached:
+        image: memcached:alpine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure PHP
+        run: |
+          install-php-extensions lzf memcached sysvsem
+          if [ -n "$LOG_COVERAGE" ]; then echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; else rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; fi
+          php --version
+
+      - name: Install PHP dependencies
+        run: |
+          if [ "${{ matrix.type }}" != "Phpunit" ] && [ "${{ matrix.type }}" != "Phpunit Lowest" ] && [ "${{ matrix.type }}" != "Phpunit Burn" ]; then composer remove --no-interaction --no-update phpunit/phpunit ergebnis/phpunit-slow-test-detector --dev; fi
+          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer ergebnis/composer-normalize --dev; fi
+          if [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpstan/\* --dev; fi
+          if [ -n "$LOG_COVERAGE" ]; then composer require --no-interaction --no-install phpunit/phpcov; fi
+          composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+          if [ "${{ matrix.type }}" = "Phpunit Lowest" ]; then composer update --ansi --prefer-dist --prefer-lowest --prefer-stable --no-interaction --no-progress --optimize-autoloader; fi
+          if [ "${{ matrix.type }}" = "Phpunit Burn" ]; then sed -i 's~public function runBare(): void~public function runBare(): void { gc_collect_cycles(); $memDiffs = array_fill(0, '"$(if [ \"$GITHUB_EVENT_NAME\" == \"schedule\" ]; then echo 64; else echo 16; fi)"', 0); $emitter = Event\\Facade::emitter(); for ($i = -1; $i < count($memDiffs); ++$i) { $this->_runBare(); if ($this->inIsolation) { $dispatcher = \\Closure::bind(static fn () => $emitter->dispatcher, null, Event\\DispatchingEmitter::class)(); if ($i === -1) { $dispatcherEvents = $dispatcher->flush()->asArray(); } else { $dispatcher->flush(); } foreach ($dispatcherEvents as $event) { $dispatcher->dispatch($event); } } gc_collect_cycles(); $mem = memory_get_usage(); if ($i !== -1) { $memDiffs[$i] = $mem - $memPrev; } $memPrev = $mem; rsort($memDiffs); if (array_sum($memDiffs) >= 4096 * 1024 || $memDiffs[2] > 0) { $e = new AssertionFailedError("Memory leak detected! (" . implode(" + ", array_map(static fn ($v) => number_format($v / 1024, 3, ".", " "), array_filter($memDiffs))) . " KB, " . ($i + 2) . " iterations)"); $this->status = TestStatus::failure($e->getMessage()); $emitter->testFailed($this->valueObjectForEvents(), Event\\Code\\ThrowableBuilder::from($e), Event\\Code\\ComparisonFailureBuilder::from($e)); $this->onNotSuccessfulTest($e); } } } private function _runBare(): void~' vendor/phpunit/phpunit/src/Framework/TestCase.php && cat vendor/phpunit/phpunit/src/Framework/TestCase.php | grep '_runBare('; fi
+
+      - name: Init
+        run: |
+          php -r '(new PDO("mysql:host=mysql", "root", "test_pass_root"))->exec("ALTER USER '"'"'test_user'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 15");'
+          php -r '(new PDO("mysql:host=mariadb", "root", "test_pass_root"))->exec("ALTER USER '"'"'test_user'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 15");'
+          php -r '(new PDO("pgsql:host=postgres;dbname=test_db", "test_user", "test_pass"))->exec("ALTER ROLE test_user CONNECTION LIMIT 1");'
+          if [ -n "$LOG_COVERAGE" ]; then mkdir coverage; fi
+
+      - name: "Run tests"
+        env:
+          MYSQL_DSN: "mysql:host=mysql;dbname=test_db"
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_pass
+          PGSQL_DSN: "pgsql:host=postgres;dbname=test_db"
+          PGSQL_USER: test_user
+          PGSQL_PASSWORD: test_pass
+          REDIS_URIS: "redis://redis1,redis://redis2,redis://redis3"
+          MEMCACHE_HOST: memcached
+        run: |
+          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-phpunit-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+
+      - name: "Run tests /w MariaDB and Valkey (only for cron)"
+        if: (success() || failure()) && github.event_name == 'schedule'
+        env:
+          MYSQL_DSN: "mysql:host=mariadb;dbname=test_db"
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_pass
+          PGSQL_DSN: "pgsql:host=postgres;dbname=test_db"
+          PGSQL_USER: test_user
+          PGSQL_PASSWORD: test_pass
+          REDIS_URIS: "redis://valkey1,redis://valkey2,redis://valkey3"
+          MEMCACHE_HOST: memcached
+        run: |
+          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-phpunit-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+
+      - name: Upload coverage logs 1/2 (only for coverage)
+        if: env.LOG_COVERAGE
+        run: |
+          ls -l coverage | wc -l
+          php -d memory_limit=2G vendor/bin/phpcov merge coverage/ --clover coverage/merged.xml
+
+      - name: Upload coverage logs 2/2 (only for coverage)
+        if: env.LOG_COVERAGE
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          files: coverage/merged.xml
