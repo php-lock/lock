@@ -47,7 +47,7 @@
         "ext-pdo_sqlite": "*",
         "ext-redis": "*",
         "ext-sysvsem": "*",
-        "eloquent/liberator": "^2.0 || ^3.0",
+        "eloquent/liberator": "^3.0 || ^2.0",
         "ergebnis/composer-normalize": "^2.13",
         "ergebnis/phpunit-slow-test-detector": "^2.9",
         "friendsofphp/php-cs-fixer": "^3.0",
