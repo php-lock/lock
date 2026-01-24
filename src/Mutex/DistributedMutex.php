@@ -57,7 +57,14 @@ class DistributedMutex extends AbstractSpinlockWithTokenMutex implements LoggerA
         $exception = null;
         foreach ($this->getMutexesInRandomOrder() as $index => $mutex) {
             try {
-                if ($this->acquireMutex($mutex, $key, $acquireTimeout - (microtime(true) - $startTs), $expireTimeout)) {
+                $remainingTimeout = $acquireTimeout - (microtime(true) - $startTs);
+                
+                // Prevent INF/NAN from being passed to acquireMutex
+                if (is_infinite($remainingTimeout) || is_nan($remainingTimeout) || $remainingTimeout < 0) {
+                    $remainingTimeout = 0.0;
+                }
+
+                if ($this->acquireMutex($mutex, $key, $remainingTimeout, $expireTimeout)) {
                     $acquiredIndexes[] = $index;
                 }
             } catch (LockAcquireException $exception) {
