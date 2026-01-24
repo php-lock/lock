@@ -71,11 +71,13 @@ class LockUtil
      */
     public function formatTimeout(float $value): string
     {
+        if (!is_finite($value) || is_nan($value)) {
+            return '0.0';
+        }
         $res = (string) round($value, 6);
-        if (\is_finite($value) && strpos($res, '.') === false) {
+        if (strpos($res, '.') === false) {
             $res .= '.0';
         }
-
         return $res;
     }
 }
