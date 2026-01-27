@@ -56,7 +56,7 @@
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0",
+        "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
         "predis/predis": "^1.1.8 || ^2.0",
         "spatie/async": "^1.5"
     },
