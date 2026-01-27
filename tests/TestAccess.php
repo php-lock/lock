@@ -1,6 +1,4 @@
 <?php
-
-<?php
 /**
  * TestAccess - Helper for accessing private/protected properties and methods in tests.
  */
@@ -33,37 +31,5 @@ class TestAccess {
             $ref->setAccessible(true);
         }
         return $ref->invokeArgs($this->object, $args);
-    }
-}
-/**
- * Helper for accessing private/protected properties and methods in tests.
- */
-class TestAccess
-{
-    public static function getProperty($object, $property)
-    {
-        $ref = new \ReflectionProperty($object, $property);
-        if (PHP_VERSION_ID < 80100) {
-            $ref->setAccessible(true);
-        }
-        return $ref->getValue($object);
-    }
-
-    public static function setProperty($object, $property, $value)
-    {
-        $ref = new \ReflectionProperty($object, $property);
-        if (PHP_VERSION_ID < 80100) {
-            $ref->setAccessible(true);
-        }
-        $ref->setValue($object, $value);
-    }
-
-    public static function callMethod($object, $method, ...$args)
-    {
-        $ref = new \ReflectionMethod($object, $method);
-        if (PHP_VERSION_ID < 80100) {
-            $ref->setAccessible(true);
-        }
-        return $ref->invokeArgs($object, $args);
     }
 }
