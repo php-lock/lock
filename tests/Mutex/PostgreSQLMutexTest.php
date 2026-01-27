@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-use Eloquent\Liberator\Liberator;
+use Malkusch\Lock\Tests\TestAccess;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use PHPUnit\Framework\Constraint\IsType;
@@ -26,7 +26,8 @@ class PostgreSQLMutexTest extends TestCase
 
         $this->pdo = $this->createMock(\PDO::class);
 
-        $this->mutex = Liberator::liberate(new PostgreSQLMutex($this->pdo, 'test-one-negative-key')); // @phpstan-ignore assign.propertyType
+        $this->mutex = new PostgreSQLMutex($this->pdo, 'test-one-negative-key');
+        $this->mutex = new TestAccess($this->mutex); // @phpstan-ignore assign.propertyType
     }
 
     private function isPhpunit9x(): bool
