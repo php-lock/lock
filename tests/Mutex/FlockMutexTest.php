@@ -47,7 +47,7 @@ class FlockMutexTest extends TestCase
     #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testCodeExecutedOutsideLockIsNotThrown(string $strategy): void
     {
-        TestAccess::setProperty($this->mutex, 'strategy', $strategy);
+        (new \Malkusch\Lock\Tests\TestAccess($this->mutex))->setProperty('strategy', $strategy);
 
         self::assertTrue($this->mutex->synchronized(static function () { // @phpstan-ignore staticMethod.alreadyNarrowedType
             usleep(1100 * 1000);

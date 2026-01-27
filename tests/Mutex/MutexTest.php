@@ -115,7 +115,7 @@ class MutexTest extends TestCase
             yield 'flockWithTimoutPcntl' => [static function () {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = new FlockMutex($file, 3);
-                TestAccess::setProperty($lock, 'strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
+                (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
                 return $lock->popsValue();
             }];
@@ -124,7 +124,7 @@ class MutexTest extends TestCase
         yield 'flockWithTimoutLoop' => [static function () {
             $file = fopen(vfsStream::url('test/lock'), 'w');
             $lock = new FlockMutex($file, 3);
-            TestAccess::setProperty($lock, 'strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
+            (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
             return $lock->popsValue();
         }];

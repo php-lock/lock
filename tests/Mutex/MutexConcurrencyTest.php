@@ -164,7 +164,7 @@ class MutexConcurrencyTest extends TestCase
             yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename) {
                 $file = fopen($filename, 'w');
                 $lock = new FlockMutex($file, $timeout);
-                TestAccess::setProperty($lock, 'strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
+                (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
                 return $lock->popsValue();
             }];
@@ -173,7 +173,7 @@ class MutexConcurrencyTest extends TestCase
         yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename) {
             $file = fopen($filename, 'w');
             $lock = new FlockMutex($file, $timeout);
-            TestAccess::setProperty($lock, 'strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
+            (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
             return $lock->popsValue();
         }];
