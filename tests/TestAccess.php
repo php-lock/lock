@@ -1,4 +1,7 @@
 <?php
+
+namespace Malkusch\Lock\Tests;
+
 /**
  * TestAccess - Helper for accessing private/protected properties and methods in tests.
  */
