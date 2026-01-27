@@ -8,6 +8,7 @@ require_once __DIR__ . '/../TestAccess.php';
 use Malkusch\Lock\Exception\DeadlineException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\FlockMutex;
+use Malkusch\Lock\Tests\TestAccess;
 use Malkusch\Lock\Util\LockUtil;
 use Malkusch\Lock\Util\PcntlTimeout;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -47,7 +48,7 @@ class FlockMutexTest extends TestCase
     #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testCodeExecutedOutsideLockIsNotThrown(string $strategy): void
     {
-        (new \Malkusch\Lock\Tests\TestAccess($this->mutex))->setProperty('strategy', $strategy);
+        (new TestAccess($this->mutex))->setProperty('strategy', $strategy);
 
         self::assertTrue($this->mutex->synchronized(static function () { // @phpstan-ignore staticMethod.alreadyNarrowedType
             usleep(1100 * 1000);
