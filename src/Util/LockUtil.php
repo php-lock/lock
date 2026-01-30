@@ -71,13 +71,21 @@ class LockUtil
      */
     public function formatTimeout(float $value): string
     {
-        if (!is_finite($value) || is_nan($value)) {
+       // Handle NaN explicitly (normalize to a safe numeric string)
+        if (\is_nan($value)) {
             return '0.0';
         }
+
+        // Handle infinities explicitly
+        if (!\is_finite($value)) {
+            return $value > 0 ? 'INF' : '-INF';
+        }
+
         $res = (string) round($value, 6);
         if (strpos($res, '.') === false) {
             $res .= '.0';
         }
+        
         return $res;
     }
 }
