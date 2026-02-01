@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests;
 
+use Closure;
+
 /**
  * Helper to access private/protected members for tests.
  *
@@ -56,7 +58,7 @@ final class TestAccess
 
     /**
      * @param string $method
-     * @param array<int, mixed> $args
+     * @param array $args
      * @return mixed
      */
     public function callMethod(string $method, array $args = []): mixed
@@ -71,5 +73,15 @@ final class TestAccess
         );
 
         return $caller($method, $args);
+    }
+
+    /**
+     * Proxy calls to inaccessible methods on the wrapped object.
+     *
+     * @param array<int, mixed> $args
+     */
+    public function __call(string $method, array $args): mixed
+    {
+        return $this->callMethod($method, $args);
     }
 }
