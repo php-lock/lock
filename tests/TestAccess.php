@@ -14,6 +14,7 @@ use Closure;
 final class TestAccess
 {
     private object $object;
+    private ?float $acquireTimeout = null;
 
     public function __construct(object $object)
     {
@@ -21,6 +22,8 @@ final class TestAccess
     }
 
     /**
+     * Gets a private/protected property on the wrapped object.
+     * 
      * @param string $property
      * @return mixed
      */
@@ -39,6 +42,8 @@ final class TestAccess
     }
 
     /**
+     * Sets a private/protected property on the wrapped object.
+     * 
      * @param string $property
      * @param mixed $value
      */
@@ -57,6 +62,8 @@ final class TestAccess
     }
 
     /**
+     * Proxy calls to inaccessible methods on the wrapped object.
+     * 
      * @param string $method
      * @param array $args
      * @return mixed
@@ -83,5 +90,26 @@ final class TestAccess
     public function __call(string $method, array $args): mixed
     {
         return $this->callMethod($method, $args);
+    }
+
+    /**
+     * Proxy access to inaccessible properties on the wrapped object.
+     * 
+     * @param string $property
+     */
+    public function __get(string $property): mixed
+    {
+        return $this->getProperty($property);
+    }
+
+    /**
+     * Proxy setting of inaccessible properties on the wrapped object.
+     * 
+     * @param string $property
+     * @param mixed $value 
+     */
+    public function __set(string $property, mixed $value): void
+    {
+        $this->setProperty($property, $value);
     }
 }
