@@ -166,7 +166,8 @@ class MutexConcurrencyTest extends TestCase
                 $lock = new FlockMutex($file, $timeout);
                 (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
-                return $lock->popsValue();
+                return (new \Malkusch\Lock\Tests\TestAccess($lock))->popsValue();
+
             }];
         }
 
@@ -175,7 +176,7 @@ class MutexConcurrencyTest extends TestCase
             $lock = new FlockMutex($file, $timeout);
             (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
-            return $lock->popsValue();
+            return (new \Malkusch\Lock\Tests\TestAccess($lock))->popsValue();
         }];
 
         if (extension_loaded('sysvsem')) {

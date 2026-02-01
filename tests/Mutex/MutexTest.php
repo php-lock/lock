@@ -117,7 +117,7 @@ class MutexTest extends TestCase
                 $lock = new FlockMutex($file, 3);
                 (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
-                return $lock->popsValue();
+                return (new \Malkusch\Lock\Tests\TestAccess($lock))->popsValue();
             }];
         }
 
@@ -126,7 +126,7 @@ class MutexTest extends TestCase
             $lock = new FlockMutex($file, 3);
             (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
-            return $lock->popsValue();
+            return (new \Malkusch\Lock\Tests\TestAccess($lock))->popsValue();
         }];
 
         if (extension_loaded('sysvsem')) {

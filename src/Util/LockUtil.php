@@ -73,7 +73,7 @@ class LockUtil
     {
        // Handle NaN explicitly (normalize to a safe numeric string)
         if (\is_nan($value)) {
-            return '0.0';
+            return 'NAN';
         }
 
         // Handle infinities explicitly
