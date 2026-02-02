@@ -228,12 +228,12 @@ class RedisMutexTest extends TestCase
 
         $client->expects(self::once())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 31_557_600_000_000, 'NX')
+            ->with('php-malkusch-lock:test', new IsType('string'), 'PX', 31_557_600_000_000, 'NX')
             ->willReturnSelf();
 
         $client->expects(self::once())
             ->method('eval')
-            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType('string'))
             ->willReturn(true);
 
         $this->mutex->synchronized(static function () {});
@@ -242,8 +242,6 @@ class RedisMutexTest extends TestCase
     /**
      * @param \Redis::SERIALIZER_*  $serializer
      * @param \Redis::COMPRESSION_* $compressor
-     *
-     * @dataProvider provideSerializersAndCompressorsCases
      */
     #[DataProvider('provideSerializersAndCompressorsCases')]
     public function testSerializersAndCompressors(int $serializer, int $compressor): void

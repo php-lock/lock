@@ -67,7 +67,6 @@ class MutexConcurrencyTest extends TestCase
      * @param \Closure(float): Mutex $mutexFactory
      * @param \Closure(): void       $setUp
      *
-     * @dataProvider provideHighContentionCases
      */
     #[DataProvider('provideHighContentionCases')]
     public function testHighContention(\Closure $code, \Closure $mutexFactory, ?\Closure $setUp = null): void
@@ -124,8 +123,6 @@ class MutexConcurrencyTest extends TestCase
      * Tests that five processes run sequentially.
      *
      * @param \Closure(float): Mutex $mutexFactory
-     *
-     * @dataProvider provideExecutionIsSerializedWhenLockedCases
      */
     #[DataProvider('provideExecutionIsSerializedWhenLockedCases')]
     public function testExecutionIsSerializedWhenLocked(\Closure $mutexFactory): void
@@ -186,7 +183,7 @@ class MutexConcurrencyTest extends TestCase
                     $semaphore,
                     self::logicalOr(
                         self::isInstanceOf(\SysvSemaphore::class),
-                        new IsType(IsType::TYPE_RESOURCE)
+                        new IsType('resource')
                     )
                 );
 

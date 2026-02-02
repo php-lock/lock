@@ -47,7 +47,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::once())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType(IsType::TYPE_ARRAY),
+                new IsType('array'),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -80,7 +80,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::once())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType(IsType::TYPE_ARRAY),
+                new IsType('array'),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -113,7 +113,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::atLeastOnce())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType(IsType::TYPE_ARRAY),
+                new IsType('array'),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
