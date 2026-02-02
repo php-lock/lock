@@ -43,7 +43,6 @@ class FlockMutexTest extends TestCase
     /**
      * @param FlockMutex::STRATEGY_* $strategy
      *
-     * @dataProvider provideTimeoutableStrategiesCases
      */
     #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testCodeExecutedOutsideLockIsNotThrown(string $strategy): void
@@ -58,9 +57,8 @@ class FlockMutexTest extends TestCase
     }
 
     /**
-     * @param FlockMutex::STRATEGY_* $strategy
-     *
-     * @dataProvider provideTimeoutableStrategiesCases
+     * @param string $strategy
+     * @throws \Throwable
      */
     #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testAcquireTimeoutOccurs(string $strategy): void
@@ -68,7 +66,7 @@ class FlockMutexTest extends TestCase
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
-        new TestAccess($this->mutex)->setProperty('strategy', $strategy);
+        (new TestAccess($this->mutex))->setProperty('strategy', $strategy);
 
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
