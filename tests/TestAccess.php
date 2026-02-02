@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests;
 
-use Closure;
 
 /**
  * Helper to access private/protected members for tests.
@@ -23,7 +22,7 @@ final class TestAccess
 
     /**
      * Gets a private/protected property on the wrapped object.
-     * 
+     *
      * @param string $property
      * @return mixed
      */
@@ -31,8 +30,8 @@ final class TestAccess
     {
         $accessor = \Closure::bind(
             function (string $property) {
-                /** @phpstan-ignore-next-line */
-                return $this->$property;
+                // @phpstan-ignore-next-line
+                return $this->{$property};
             },
             $this->object,
             $this->object
@@ -43,7 +42,7 @@ final class TestAccess
 
     /**
      * Sets a private/protected property on the wrapped object.
-     * 
+     *
      * @param string $property
      * @param mixed $value
      */
@@ -51,8 +50,8 @@ final class TestAccess
     {
         $accessor = \Closure::bind(
             function (string $property, mixed $value): void {
-                /** @phpstan-ignore-next-line */
-                $this->$property = $value;
+                // @phpstan-ignore-next-line
+                $this->{$property} = $value;
             },
             $this->object,
             $this->object
@@ -63,7 +62,7 @@ final class TestAccess
 
     /**
      * Proxy calls to inaccessible methods on the wrapped object.
-     * 
+     *
      * @param string $method
      * @param array $args
      * @return mixed
@@ -72,8 +71,8 @@ final class TestAccess
     {
         $caller = \Closure::bind(
             function (string $method, array $args): mixed {
-                /** @phpstan-ignore-next-line */
-                return $this->$method(...$args);
+                // @phpstan-ignore-next-line
+                return $this->{$method}(...$args);
             },
             $this->object,
             $this->object
@@ -94,7 +93,7 @@ final class TestAccess
 
     /**
      * Proxy access to inaccessible properties on the wrapped object.
-     * 
+     *
      * @param string $property
      */
     public function __get(string $property): mixed
@@ -104,12 +103,22 @@ final class TestAccess
 
     /**
      * Proxy setting of inaccessible properties on the wrapped object.
-     * 
+     *
      * @param string $property
-     * @param mixed $value 
+     * @param mixed $value
      */
     public function __set(string $property, mixed $value): void
     {
         $this->setProperty($property, $value);
+    }
+
+    /**
+     * Returns the wrapped object.
+     *
+     * @return object
+     */
+    public function popsValue(): object
+    {
+        return $this->object;
     }
 }
