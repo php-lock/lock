@@ -16,6 +16,7 @@ use Malkusch\Lock\Mutex\SemaphoreMutex;
 use Malkusch\Lock\Util\LockUtil;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Constraint\IsType;
+use PHPUnit\Framework\NativeType;
 use PHPUnit\Framework\TestCase;
 use Predis\Client as PredisClient;
 use Spatie\Async\Pool;
@@ -183,7 +184,7 @@ class MutexConcurrencyTest extends TestCase
                     $semaphore,
                     self::logicalOr(
                         self::isInstanceOf(\SysvSemaphore::class),
-                        new IsType('resource')
+                        new IsType(NativeType::Resource)
                     )
                 );
 

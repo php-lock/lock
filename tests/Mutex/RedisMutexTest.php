@@ -12,6 +12,7 @@ use Malkusch\Lock\Mutex\RedisMutex;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\Constraint\IsType;
+use PHPUnit\Framework\NativeType;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface as PredisClientInterface;
 
@@ -228,12 +229,12 @@ class RedisMutexTest extends TestCase
 
         $client->expects(self::once())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType('string'), 'PX', 31_557_600_000_000, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(NativeType::String), 'PX', 31_557_600_000_000, 'NX')
             ->willReturnSelf();
 
         $client->expects(self::once())
             ->method('eval')
-            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType('string'))
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(NativeType::String))
             ->willReturn(true);
 
         $this->mutex->synchronized(static function () {});

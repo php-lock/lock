@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-use Malkusch\Lock\Tests\TestAccess;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
+use Malkusch\Lock\Tests\TestAccess;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\NativeType;
 use PHPUnit\Framework\TestCase;
 
 class PostgreSQLMutexTest extends TestCase
@@ -47,7 +48,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::once())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType('array'),
+                new IsType(NativeType::Array),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -80,7 +81,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::once())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType('array'),
+                new IsType(NativeType::Array),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -113,7 +114,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::atLeastOnce())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType('array'),
+                new IsType(NativeType::Array),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
