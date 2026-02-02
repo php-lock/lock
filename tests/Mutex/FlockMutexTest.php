@@ -68,7 +68,7 @@ class FlockMutexTest extends TestCase
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
-        $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
+        new TestAccess($this->mutex)->setProperty('strategy', $strategy);
 
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
@@ -102,8 +102,10 @@ class FlockMutexTest extends TestCase
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
-        $this->mutex->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_BLOCK, null, FlockMutex::class)(); // @phpstan-ignore property.private
-
+        (new TestAccess($this->mutex))->setProperty(
+            'strategy',
+            \Closure::bind(static fn () => FlockMutex::STRATEGY_BLOCK, null, FlockMutex::class)()
+        );
         $timebox = new PcntlTimeout(1);
 
         $this->expectException(DeadlineException::class);
