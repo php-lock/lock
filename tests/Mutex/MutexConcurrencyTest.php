@@ -13,6 +13,7 @@ use Malkusch\Lock\Mutex\MySQLMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
+use Malkusch\Lock\Tests\TestAccess;
 use Malkusch\Lock\Util\LockUtil;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Constraint\IsType;
@@ -67,7 +68,6 @@ class MutexConcurrencyTest extends TestCase
      * @param \Closure(0|1): int     $code         The counter code
      * @param \Closure(float): Mutex $mutexFactory
      * @param \Closure(): void       $setUp
-     *
      */
     #[DataProvider('provideHighContentionCases')]
     public function testHighContention(\Closure $code, \Closure $mutexFactory, ?\Closure $setUp = null): void
@@ -162,19 +162,18 @@ class MutexConcurrencyTest extends TestCase
             yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename) {
                 $file = fopen($filename, 'w');
                 $lock = new FlockMutex($file, $timeout);
-                (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
+                (new TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
-                return (new \Malkusch\Lock\Tests\TestAccess($lock))->popsValue();
-
+                return (new TestAccess($lock))->popsValue();
             }];
         }
 
         yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename) {
             $file = fopen($filename, 'w');
             $lock = new FlockMutex($file, $timeout);
-            (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
+            (new TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
-            return (new \Malkusch\Lock\Tests\TestAccess($lock))->popsValue();
+            return (new TestAccess($lock))->popsValue();
         }];
 
         if (extension_loaded('sysvsem')) {
