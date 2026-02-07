@@ -16,6 +16,7 @@ use Malkusch\Lock\Mutex\NullMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
+use Malkusch\Lock\Tests\TestAccess;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
@@ -115,18 +116,18 @@ class MutexTest extends TestCase
             yield 'flockWithTimoutPcntl' => [static function () {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = new FlockMutex($file, 3);
-                (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
+                (new TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
-                return (new \Malkusch\Lock\Tests\TestAccess($lock))->popsValue();
+                return (new TestAccess($lock))->popsValue();
             }];
         }
 
         yield 'flockWithTimoutLoop' => [static function () {
             $file = fopen(vfsStream::url('test/lock'), 'w');
             $lock = new FlockMutex($file, 3);
-            (new \Malkusch\Lock\Tests\TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
+            (new TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
-            return (new \Malkusch\Lock\Tests\TestAccess($lock))->popsValue();
+            return (new TestAccess($lock))->popsValue();
         }];
 
         if (extension_loaded('sysvsem')) {

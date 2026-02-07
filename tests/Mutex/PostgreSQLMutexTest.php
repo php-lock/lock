@@ -7,9 +7,7 @@ namespace Malkusch\Lock\Tests\Mutex;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Tests\TestAccess;
-use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\NativeType;
 use PHPUnit\Framework\TestCase;
 
 class PostgreSQLMutexTest extends TestCase
@@ -66,7 +64,7 @@ class PostgreSQLMutexTest extends TestCase
                 [533558444, -1716795572]
             ));
 
-        \Closure::bind(static fn($mutex) => $mutex->lock(), null, PostgreSQLMutex::class)($this->mutex);
+            \Closure::bind(static fn($mutex) => $mutex->lock(), null, PostgreSQLMutex::class)($this->mutex);
     }
 
     public function testReleaseLock(): void

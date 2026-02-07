@@ -41,8 +41,7 @@ class FlockMutexTest extends TestCase
     }
 
     /**
-     * @param FlockMutex::STRATEGY_* $strategy
-     *
+     * @throws \Throwable
      */
     #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testCodeExecutedOutsideLockIsNotThrown(string $strategy): void
@@ -57,7 +56,6 @@ class FlockMutexTest extends TestCase
     }
 
     /**
-     * @param string $strategy
      * @throws \Throwable
      */
     #[DataProvider('provideTimeoutableStrategiesCases')]

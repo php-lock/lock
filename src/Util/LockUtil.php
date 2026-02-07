@@ -71,7 +71,7 @@ class LockUtil
      */
     public function formatTimeout(float $value): string
     {
-       // Handle NaN explicitly (normalize to a safe numeric string)
+        // Handle NaN explicitly (normalize to a safe numeric string)
         if (\is_nan($value)) {
             return 'NAN';
         }
@@ -85,7 +85,6 @@ class LockUtil
         if (strpos($res, '.') === false) {
             $res .= '.0';
         }
-        
         return $res;
     }
 }
