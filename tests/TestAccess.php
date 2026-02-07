@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests;
 
+use PHPUnit\Framework\Constraint\IsType;
+use PHPUnit\Framework\NativeType;
 
 /**
  * Helper to access private/protected members for tests.
@@ -22,9 +24,6 @@ final class TestAccess
 
     /**
      * Gets a private/protected property on the wrapped object.
-     *
-     * @param string $property
-     * @return mixed
      */
     public function getProperty(string $property): mixed
     {
@@ -42,9 +41,6 @@ final class TestAccess
 
     /**
      * Sets a private/protected property on the wrapped object.
-     *
-     * @param string $property
-     * @param mixed $value
      */
     public function setProperty(string $property, mixed $value): void
     {
@@ -62,10 +58,6 @@ final class TestAccess
 
     /**
      * Proxy calls to inaccessible methods on the wrapped object.
-     *
-     * @param string $method
-     * @param array $args
-     * @return mixed
      */
     public function callMethod(string $method, array $args = []): mixed
     {
@@ -93,8 +85,6 @@ final class TestAccess
 
     /**
      * Proxy access to inaccessible properties on the wrapped object.
-     *
-     * @param string $property
      */
     public function __get(string $property): mixed
     {
@@ -103,9 +93,6 @@ final class TestAccess
 
     /**
      * Proxy setting of inaccessible properties on the wrapped object.
-     *
-     * @param string $property
-     * @param mixed $value
      */
     public function __set(string $property, mixed $value): void
     {
@@ -114,11 +101,42 @@ final class TestAccess
 
     /**
      * Returns the wrapped object.
-     *
-     * @return object
      */
     public function popsValue(): object
     {
         return $this->object;
+    }
+
+    /**
+     * Returns a PHPUnit IsType constraint compatible with multiple PHPUnit versions.
+     */
+    public static function phpunitIsType(string $type): IsType
+    {
+        $normalized = strtolower($type);
+
+        if (class_exists(NativeType::class)) {
+            $map = [
+                'array' => NativeType::Array,
+                'bool' => NativeType::Bool,
+                'boolean' => NativeType::Bool,
+                'callable' => NativeType::Callable,
+                'double' => NativeType::Float,
+                'float' => NativeType::Float,
+                'int' => NativeType::Int,
+                'integer' => NativeType::Int,
+                'iterable' => NativeType::Iterable,
+                'null' => NativeType::Null,
+                'numeric' => NativeType::Numeric,
+                'object' => NativeType::Object,
+                'resource' => NativeType::Resource,
+                'scalar' => NativeType::Scalar,
+                'string' => NativeType::String,
+            ];
+
+            return new IsType($map[$normalized] ?? $type);
+        }
+
+        // @phpstan-ignore-next-line PHPUnit 9 expects string type names here.
+        return new IsType($normalized);
     }
 }

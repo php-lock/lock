@@ -48,7 +48,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::once())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType(NativeType::Array),
+                TestAccess::phpunitIsType('array'),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -66,7 +66,7 @@ class PostgreSQLMutexTest extends TestCase
                 [533558444, -1716795572]
             ));
 
-        \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PostgreSQLMutex::class)($this->mutex);
+        \Closure::bind(static fn($mutex) => $mutex->lock(), null, PostgreSQLMutex::class)($this->mutex);
     }
 
     public function testReleaseLock(): void
@@ -81,7 +81,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::once())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType(NativeType::Array),
+                TestAccess::phpunitIsType('array'),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -114,7 +114,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::atLeastOnce())
             ->method('execute')
             ->with(self::logicalAnd(
-                new IsType(NativeType::Array),
+                TestAccess::phpunitIsType('array'),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891

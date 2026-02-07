@@ -9,10 +9,9 @@ use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
 use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
+use Malkusch\Lock\Tests\TestAccess;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
-use PHPUnit\Framework\Constraint\IsType;
-use PHPUnit\Framework\NativeType;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface as PredisClientInterface;
 
@@ -229,12 +228,12 @@ class RedisMutexTest extends TestCase
 
         $client->expects(self::once())
             ->method('set')
-            ->with('php-malkusch-lock:test', new IsType(NativeType::String), 'PX', 31_557_600_000_000, 'NX')
+            ->with('php-malkusch-lock:test', TestAccess::phpunitIsType('string'), 'PX', 31_557_600_000_000, 'NX')
             ->willReturnSelf();
 
         $client->expects(self::once())
             ->method('eval')
-            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(NativeType::String))
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', TestAccess::phpunitIsType('string'))
             ->willReturn(true);
 
         $this->mutex->synchronized(static function () {});
