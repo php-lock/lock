@@ -38,6 +38,7 @@
         "symfony/polyfill-php80": "^1.28"
     },
     "require-dev": {
+        "cweagans/composer-patches": "^1.7",
         "ext-igbinary": "*",
         "ext-lzf": "*",
         "ext-memcached": "*",
@@ -85,9 +86,17 @@
     },
     "config": {
         "allow-plugins": {
+            "cweagans/composer-patches": true,
             "ergebnis/composer-normalize": true,
             "phpstan/extension-installer": true
         },
         "sort-packages": true
+    },
+    "extra": {
+        "patches": {
+            "spatie/async": {
+                "Fix ArrayAccess offsetExists signature": "patches/spatie-async-offsetexists.patch"
+            }
+        }
     }
 }
