@@ -33,7 +33,7 @@
     ],
     "homepage": "https://github.com/malkusch/lock",
     "require": {
-        "php": ">=7.4 <8.6",
+        "php": ">=8.2",
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "symfony/polyfill-php80": "^1.28"
     },
@@ -47,7 +47,6 @@
         "ext-pdo_sqlite": "*",
         "ext-redis": "*",
         "ext-sysvsem": "*",
-        "eloquent/liberator": "^2.0 || ^3.0",
         "ergebnis/composer-normalize": "^2.13",
         "ergebnis/phpunit-slow-test-detector": "^2.9",
         "friendsofphp/php-cs-fixer": "^3.0",
@@ -59,7 +58,8 @@
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0",
         "predis/predis": "^1.1.8 || ^2.0",
-        "spatie/async": "^1.5 || ^1.8"
+        "spatie/async": "^1.5 || ^1.8",
+        "vedavith/liberator-fork": "^4.0"
     },
     "suggest": {
         "ext-igbinary": "To use this library with PHP Redis igbinary serializer enabled.",
