@@ -15,47 +15,24 @@ use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface as PredisClientInterface;
 
-if (\PHP_MAJOR_VERSION >= 8) {
-    trait RedisCompatibilityTrait
+trait RedisCompatibilityTrait
+{
+    /**
+     * @param list<mixed> $args
+     */
+    #[\Override] // @phpstan-ignore method.childParameterType
+    public function eval($script, $args = [], $numKeys = 0): mixed
     {
-        /**
-         * @param list<mixed> $args
-         */
-        #[\Override] // @phpstan-ignore method.childParameterType
-        public function eval($script, $args = [], $numKeys = 0): mixed
-        {
-            return $this->_eval($script, $args, $numKeys);
-        }
-
-        /**
-         * @param mixed $options
-         */
-        #[\Override]
-        public function set($key, $value, $options = null): /* \Redis|string| */ bool
-        {
-            return $this->_set($key, $value, $options);
-        }
+        return $this->_eval($script, $args, $numKeys);
     }
-} else {
-    trait RedisCompatibilityTrait
-    {
-        /**
-         * @return mixed
-         */
-        #[\Override]
-        public function eval($script, $args = [], $numKeys = 0)
-        {
-            return $this->_eval($script, $args, $numKeys);
-        }
 
-        /**
-         * @return \Redis|string|bool
-         */
-        #[\Override]
-        public function set($key, $value, $options = null)
-        {
-            return $this->_set($key, $value, $options);
-        }
+    /**
+     * @param mixed $options
+     */
+    #[\Override]
+    public function set($key, $value, $options = null): /* \Redis|string| */ bool
+    {
+        return $this->_set($key, $value, $options);
     }
 }
 
@@ -151,8 +128,8 @@ class RedisMutexTest extends TestCase
             if (!empty($uri['pass'])) {
                 $connection->auth(
                     empty($uri['user'])
-                    ? $uri['pass']
-                    : [$uri['user'], $uri['pass']]
+                        ? $uri['pass']
+                        : [$uri['user'], $uri['pass']]
                 );
             }
 
