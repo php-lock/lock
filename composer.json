@@ -58,7 +58,7 @@
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0",
         "predis/predis": "^1.1.8 || ^2.0",
-        "spatie/async": "^1.5 || ^1.8",
+        "spatie/async": "^1.5",
         "vedavith/liberator-fork": "^4.0"
     },
     "suggest": {
