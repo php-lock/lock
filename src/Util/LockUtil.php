@@ -71,7 +71,9 @@ class LockUtil
      */
     public function formatTimeout(float $value): string
     {
-        $res = (string) round($value, 6);
+        $res = \is_nan($value)
+            ? 'NAN'
+            : (string) round($value, 6);
         if (\is_finite($value) && strpos($res, '.') === false) {
             $res .= '.0';
         }
