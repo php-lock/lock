@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Mutex\AbstractLockMutex;
 use Malkusch\Lock\Mutex\AbstractSpinlockMutex;
 use Malkusch\Lock\Mutex\DistributedMutex;
@@ -31,6 +30,18 @@ use Predis\Client as PredisClient;
 class MutexTest extends TestCase
 {
     protected const TIMEOUT = 4;
+
+    /**
+     * Helper to set a non-public FlockMutex strategy without Liberator.
+     */
+    private static function withFlockStrategy(FlockMutex $mutex, string $strategy): FlockMutex
+    {
+        \Closure::bind(static function () use ($mutex, $strategy): void {
+            $mutex->strategy = $strategy;
+        }, null, FlockMutex::class)();
+
+        return $mutex;
+    }
 
     #[\Override]
     public static function setUpBeforeClass(): void
@@ -114,19 +125,23 @@ class MutexTest extends TestCase
         if (extension_loaded('pcntl')) {
             yield 'flockWithTimoutPcntl' => [static function () {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
-                $lock = Liberator::liberate(new FlockMutex($file, 3));
-                $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
+                $lock = new FlockMutex($file, 3);
 
-                return $lock->popsValue();
+                $strategy = (new \ReflectionClass(FlockMutex::class))
+                    ->getConstant('STRATEGY_PCNTL');
+
+                return self::withFlockStrategy($lock, $strategy);
             }];
         }
 
         yield 'flockWithTimoutLoop' => [static function () {
             $file = fopen(vfsStream::url('test/lock'), 'w');
-            $lock = Liberator::liberate(new FlockMutex($file, 3));
-            $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
+            $lock = new FlockMutex($file, 3);
 
-            return $lock->popsValue();
+            $strategy = (new \ReflectionClass(FlockMutex::class))
+                ->getConstant('STRATEGY_LOOP');
+
+            return self::withFlockStrategy($lock, $strategy);
         }];
 
         if (extension_loaded('sysvsem')) {

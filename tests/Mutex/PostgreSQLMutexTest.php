@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use PHPUnit\Framework\Constraint\IsType;
@@ -26,7 +25,7 @@ class PostgreSQLMutexTest extends TestCase
 
         $this->pdo = $this->createMock(\PDO::class);
 
-        $this->mutex = Liberator::liberate(new PostgreSQLMutex($this->pdo, 'test-one-negative-key')); // @phpstan-ignore assign.propertyType
+        $this->mutex = new PostgreSQLMutex($this->pdo, 'test-one-negative-key');
     }
 
     private function isPhpunit9x(): bool
@@ -134,10 +133,11 @@ class PostgreSQLMutexTest extends TestCase
             ->method('fetchColumn')
             ->willReturn(false);
 
-        $this->mutex->acquireTimeout = 1.0; // @phpstan-ignore property.private
-
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
-        \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PostgreSQLMutex::class)($this->mutex);
+        \Closure::bind(static function (PostgreSQLMutex $mutex): void {
+            $mutex->acquireTimeout = 1.0;
+            $mutex->lock();
+        }, null, PostgreSQLMutex::class)($this->mutex);
     }
 }
