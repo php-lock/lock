@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Exception\DeadlineException;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\FlockMutex;
@@ -28,7 +27,17 @@ class FlockMutexTest extends TestCase
 
         $this->file = LockUtil::getInstance()->makeRandomTemporaryFilePath('flock');
         touch($this->file);
-        $this->mutex = Liberator::liberate(new FlockMutex(fopen($this->file, 'r'), 1)); // @phpstan-ignore assign.propertyType
+        $this->mutex = new FlockMutex(fopen($this->file, 'r'), 1);
+    }
+
+    /**
+     * @param FlockMutex::STRATEGY_* $strategy
+     */
+    private static function mutexSetStrategy(FlockMutex $mutex, string $strategy): void
+    {
+        \Closure::bind(static function () use ($mutex, $strategy): void {
+            $mutex->strategy = $strategy;
+        }, null, FlockMutex::class)();
     }
 
     #[\Override]
@@ -47,7 +56,7 @@ class FlockMutexTest extends TestCase
     #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testCodeExecutedOutsideLockIsNotThrown(string $strategy): void
     {
-        $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
+        self::mutexSetStrategy($this->mutex, $strategy);
 
         self::assertTrue($this->mutex->synchronized(static function () { // @phpstan-ignore staticMethod.alreadyNarrowedType
             usleep(1100 * 1000);
@@ -67,7 +76,7 @@ class FlockMutexTest extends TestCase
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
-        $this->mutex->strategy = $strategy; // @phpstan-ignore property.private
+        self::mutexSetStrategy($this->mutex, $strategy);
 
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
@@ -101,7 +110,7 @@ class FlockMutexTest extends TestCase
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
-        $this->mutex->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_BLOCK, null, FlockMutex::class)(); // @phpstan-ignore property.private
+        self::mutexSetStrategy($this->mutex, \Closure::bind(static fn () => FlockMutex::STRATEGY_BLOCK, null, FlockMutex::class)());
 
         $timebox = new PcntlTimeout(1);
 

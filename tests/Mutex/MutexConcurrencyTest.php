@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
@@ -42,6 +41,16 @@ class MutexConcurrencyTest extends TestCase
         self::$temporaryFiles = [];
 
         parent::tearDownAfterClass();
+    }
+
+    /**
+     * @param FlockMutex::STRATEGY_* $strategy
+     */
+    private static function mutexSetStrategy(FlockMutex $mutex, string $strategy): void
+    {
+        \Closure::bind(static function () use ($mutex, $strategy): void {
+            $mutex->strategy = $strategy;
+        }, null, FlockMutex::class)();
     }
 
     /**
@@ -163,19 +172,19 @@ class MutexConcurrencyTest extends TestCase
         if (extension_loaded('pcntl')) {
             yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename) {
                 $file = fopen($filename, 'w');
-                $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-                $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
+                $lock = new FlockMutex($file, $timeout);
+                self::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
-                return $lock->popsValue();
+                return $lock;
             }];
         }
 
         yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename) {
             $file = fopen($filename, 'w');
-            $lock = Liberator::liberate(new FlockMutex($file, $timeout));
-            $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
+            $lock = new FlockMutex($file, $timeout);
+            self::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
-            return $lock->popsValue();
+            return $lock;
         }];
 
         if (extension_loaded('sysvsem')) {
