@@ -33,7 +33,7 @@
     ],
     "homepage": "https://github.com/malkusch/lock",
     "require": {
-        "php": "^8.0",
+        "php": ">=7.4 <8.5",
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "symfony/polyfill-php80": "^1.28"
     },

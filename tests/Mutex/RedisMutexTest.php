@@ -15,24 +15,47 @@ use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface as PredisClientInterface;
 
-trait RedisCompatibilityTrait
-{
-    /**
-     * @param list<mixed> $args
-     */
-    #[\Override] // @phpstan-ignore method.childParameterType
-    public function eval($script, $args = [], $numKeys = 0): mixed
+if (\PHP_MAJOR_VERSION >= 8) {
+    trait RedisCompatibilityTrait
     {
-        return $this->_eval($script, $args, $numKeys);
-    }
+        /**
+         * @param list<mixed> $args
+         */
+        #[\Override] // @phpstan-ignore method.childParameterType
+        public function eval($script, $args = [], $numKeys = 0): mixed
+        {
+            return $this->_eval($script, $args, $numKeys);
+        }
 
-    /**
-     * @param mixed $options
-     */
-    #[\Override]
-    public function set($key, $value, $options = null): /* \Redis|string| */ bool
+        /**
+         * @param mixed $options
+         */
+        #[\Override]
+        public function set($key, $value, $options = null): /* \Redis|string| */ bool
+        {
+            return $this->_set($key, $value, $options);
+        }
+    }
+} else {
+    trait RedisCompatibilityTrait
     {
-        return $this->_set($key, $value, $options);
+        /**
+         * @return mixed
+         */
+        #[\Override]
+        public function eval($script, $args = [], $numKeys = 0)
+        {
+            return $this->_eval($script, $args, $numKeys);
+        }
+
+        /**
+         * @return \Redis|string|bool
+         */
+        #[\Override]
+        public function set($key, $value, $options = null)
+        {
+            return $this->_set($key, $value, $options);
+        }
     }
 }
 

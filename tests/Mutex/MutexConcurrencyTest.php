@@ -32,18 +32,6 @@ class MutexConcurrencyTest extends TestCase
     /** @var list<string> */
     protected static $temporaryFiles = [];
 
-    /**
-     * Helper to set a non-public FlockMutex strategy without Liberator.
-     */
-    private static function withFlockStrategy(FlockMutex $mutex, string $strategy): FlockMutex
-    {
-        \Closure::bind(static function () use ($mutex, $strategy): void {
-            $mutex->strategy = $strategy;
-        }, null, FlockMutex::class)();
-
-        return $mutex;
-    }
-
     #[\Override]
     public static function tearDownAfterClass(): void
     {
@@ -175,22 +163,18 @@ class MutexConcurrencyTest extends TestCase
             yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename) {
                 $file = fopen($filename, 'w');
                 $lock = new FlockMutex($file, $timeout);
+                FlockMutexTest::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
-                return self::withFlockStrategy(
-                    $lock,
-                    \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)()
-                );
+                return $lock;
             }];
         }
 
         yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename) {
             $file = fopen($filename, 'w');
             $lock = new FlockMutex($file, $timeout);
+            FlockMutexTest::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
-            return self::withFlockStrategy(
-                $lock,
-                \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)()
-            );
+            return $lock;
         }];
 
         if (extension_loaded('sysvsem')) {

@@ -20,9 +20,6 @@ class FlockMutexTest extends TestCase
 
     private string $file;
 
-    /**
-     * @throws \ReflectionException
-     */
     #[\Override]
     protected function setUp(): void
     {
@@ -30,35 +27,17 @@ class FlockMutexTest extends TestCase
 
         $this->file = LockUtil::getInstance()->makeRandomTemporaryFilePath('flock');
         touch($this->file);
-        $this->mutex = $this->withStrategy(
-            new FlockMutex(fopen($this->file, 'r'), 1),
-            self::getPrivateConstant(FlockMutex::class, 'STRATEGY_LOOP')
-        );
+        $this->mutex = new FlockMutex(fopen($this->file, 'r'), 1);
     }
 
     /**
-     * @throws \ReflectionException
+     * @param FlockMutex::STRATEGY_* $strategy
      */
-    private static function getPrivateConstant(string $class, string $name): string
+    public static function mutexSetStrategy(FlockMutex $mutex, string $strategy): void
     {
-        return (new \ReflectionClass($class))->getConstant($name);
-    }
-
-    /**
-     * Helper to set a non-public FlockMutex strategy without Liberator.
-     */
-    private function withStrategy(FlockMutex $mutex, string $strategy): FlockMutex
-    {
-        $reflection = new \ReflectionClass($mutex);
-        $property = $reflection->getProperty('strategy');
-
-        if (\PHP_VERSION_ID < 80100) {
-            $property->setAccessible(true);
-        }
-
-        $property->setValue($mutex, $strategy);
-
-        return $mutex;
+        \Closure::bind(static function () use ($mutex, $strategy): void {
+            $mutex->strategy = $strategy;
+        }, null, FlockMutex::class)();
     }
 
     #[\Override]
@@ -77,7 +56,8 @@ class FlockMutexTest extends TestCase
     #[DataProvider('provideTimeoutableStrategiesCases')]
     public function testCodeExecutedOutsideLockIsNotThrown(string $strategy): void
     {
-        $this->withStrategy($this->mutex, $strategy);
+        self::mutexSetStrategy($this->mutex, $strategy);
+
         self::assertTrue($this->mutex->synchronized(static function () { // @phpstan-ignore staticMethod.alreadyNarrowedType
             usleep(1100 * 1000);
 
@@ -96,7 +76,7 @@ class FlockMutexTest extends TestCase
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
-        $this->withStrategy($this->mutex, $strategy);
+        self::mutexSetStrategy($this->mutex, $strategy);
 
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
@@ -111,16 +91,14 @@ class FlockMutexTest extends TestCase
 
     /**
      * @return iterable<list<mixed>>
-     *
-     * @throws \ReflectionException
      */
     public static function provideTimeoutableStrategiesCases(): iterable
     {
         if (extension_loaded('pcntl')) {
-            yield [self::getPrivateConstant(FlockMutex::class, 'STRATEGY_PCNTL')];
+            yield [\Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)()];
         }
 
-        yield [self::getPrivateConstant(FlockMutex::class, 'STRATEGY_LOOP')];
+        yield [\Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)()];
     }
 
     /**
@@ -132,10 +110,7 @@ class FlockMutexTest extends TestCase
         $anotherResource = fopen($this->file, 'r');
         flock($anotherResource, \LOCK_EX);
 
-        $this->withStrategy(
-            $this->mutex,
-            self::getPrivateConstant(FlockMutex::class, 'STRATEGY_BLOCK')
-        );
+        self::mutexSetStrategy($this->mutex, \Closure::bind(static fn () => FlockMutex::STRATEGY_BLOCK, null, FlockMutex::class)());
 
         $timebox = new PcntlTimeout(1);
 

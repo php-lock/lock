@@ -31,18 +31,6 @@ class MutexTest extends TestCase
 {
     protected const TIMEOUT = 4;
 
-    /**
-     * Helper to set a non-public FlockMutex strategy without Liberator.
-     */
-    private static function withFlockStrategy(FlockMutex $mutex, string $strategy): FlockMutex
-    {
-        \Closure::bind(static function () use ($mutex, $strategy): void {
-            $mutex->strategy = $strategy;
-        }, null, FlockMutex::class)();
-
-        return $mutex;
-    }
-
     #[\Override]
     public static function setUpBeforeClass(): void
     {
@@ -126,22 +114,18 @@ class MutexTest extends TestCase
             yield 'flockWithTimoutPcntl' => [static function () {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = new FlockMutex($file, 3);
+                FlockMutexTest::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
-                $strategy = (new \ReflectionClass(FlockMutex::class))
-                    ->getConstant('STRATEGY_PCNTL');
-
-                return self::withFlockStrategy($lock, $strategy);
+                return $lock;
             }];
         }
 
         yield 'flockWithTimoutLoop' => [static function () {
             $file = fopen(vfsStream::url('test/lock'), 'w');
             $lock = new FlockMutex($file, 3);
+            FlockMutexTest::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
-            $strategy = (new \ReflectionClass(FlockMutex::class))
-                ->getConstant('STRATEGY_LOOP');
-
-            return self::withFlockStrategy($lock, $strategy);
+            return $lock;
         }];
 
         if (extension_loaded('sysvsem')) {

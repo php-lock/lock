@@ -133,10 +133,13 @@ class PostgreSQLMutexTest extends TestCase
             ->method('fetchColumn')
             ->willReturn(false);
 
+        \Closure::bind(static function (PostgreSQLMutex $mutex): void {
+            $mutex->acquireTimeout = 1.0;
+        }, null, PostgreSQLMutex::class)($this->mutex);
+
         $this->expectException(LockAcquireTimeoutException::class);
         $this->expectExceptionMessage('Lock acquire timeout of 1.0 seconds has been exceeded');
         \Closure::bind(static function (PostgreSQLMutex $mutex): void {
-            $mutex->acquireTimeout = 1.0;
             $mutex->lock();
         }, null, PostgreSQLMutex::class)($this->mutex);
     }
