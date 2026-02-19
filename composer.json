@@ -33,12 +33,11 @@
     ],
     "homepage": "https://github.com/malkusch/lock",
     "require": {
-        "php": ">=8.2 <8.6",
+        "php": ">=7.4 <8.6",
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "symfony/polyfill-php80": "^1.28"
     },
     "require-dev": {
-        "cweagans/composer-patches": "^1.7",
         "ext-igbinary": "*",
         "ext-lzf": "*",
         "ext-memcached": "*",
@@ -48,6 +47,7 @@
         "ext-pdo_sqlite": "*",
         "ext-redis": "*",
         "ext-sysvsem": "*",
+        "eloquent/liberator": "^2.0 || ^3.0",
         "ergebnis/composer-normalize": "^2.13",
         "ergebnis/phpunit-slow-test-detector": "^2.9",
         "friendsofphp/php-cs-fixer": "^3.0",
@@ -57,7 +57,7 @@
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
+        "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0",
         "predis/predis": "^1.1.8 || ^2.0",
         "spatie/async": "^1.5"
     },
@@ -86,17 +86,9 @@
     },
     "config": {
         "allow-plugins": {
-            "cweagans/composer-patches": true,
             "ergebnis/composer-normalize": true,
             "phpstan/extension-installer": true
         },
         "sort-packages": true
-    },
-    "extra": {
-        "patches": {
-            "spatie/async": {
-                "Fix ArrayAccess offsetExists signature": "patches/spatie-async-offsetexists.patch"
-            }
-        }
     }
 }

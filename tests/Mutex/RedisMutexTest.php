@@ -9,9 +9,9 @@ use Malkusch\Lock\Exception\LockReleaseException;
 use Malkusch\Lock\Exception\MutexException;
 use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
-use Malkusch\Lock\Tests\TestAccess;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
+use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 use Predis\ClientInterface as PredisClientInterface;
 
@@ -228,12 +228,12 @@ class RedisMutexTest extends TestCase
 
         $client->expects(self::once())
             ->method('set')
-            ->with('php-malkusch-lock:test', TestAccess::phpunitIsType('string'), 'PX', 31_557_600_000_000, 'NX')
+            ->with('php-malkusch-lock:test', new IsType(IsType::TYPE_STRING), 'PX', 31_557_600_000_000, 'NX')
             ->willReturnSelf();
 
         $client->expects(self::once())
             ->method('eval')
-            ->with(self::anything(), 1, 'php-malkusch-lock:test', TestAccess::phpunitIsType('string'))
+            ->with(self::anything(), 1, 'php-malkusch-lock:test', new IsType(IsType::TYPE_STRING))
             ->willReturn(true);
 
         $this->mutex->synchronized(static function () {});
@@ -242,6 +242,8 @@ class RedisMutexTest extends TestCase
     /**
      * @param \Redis::SERIALIZER_*  $serializer
      * @param \Redis::COMPRESSION_* $compressor
+     *
+     * @dataProvider provideSerializersAndCompressorsCases
      */
     #[DataProvider('provideSerializersAndCompressorsCases')]
     public function testSerializersAndCompressors(int $serializer, int $compressor): void

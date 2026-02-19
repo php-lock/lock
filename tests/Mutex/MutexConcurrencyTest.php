@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
-require_once __DIR__ . '/../TestAccess.php';
+use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Mutex\DistributedMutex;
 use Malkusch\Lock\Mutex\FlockMutex;
 use Malkusch\Lock\Mutex\MemcachedMutex;
@@ -13,9 +13,9 @@ use Malkusch\Lock\Mutex\MySQLMutex;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
 use Malkusch\Lock\Mutex\RedisMutex;
 use Malkusch\Lock\Mutex\SemaphoreMutex;
-use Malkusch\Lock\Tests\TestAccess;
 use Malkusch\Lock\Util\LockUtil;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\TestCase;
 use Predis\Client as PredisClient;
 use Spatie\Async\Pool;
@@ -66,6 +66,8 @@ class MutexConcurrencyTest extends TestCase
      * @param \Closure(0|1): int     $code         The counter code
      * @param \Closure(float): Mutex $mutexFactory
      * @param \Closure(): void       $setUp
+     *
+     * @dataProvider provideHighContentionCases
      */
     #[DataProvider('provideHighContentionCases')]
     public function testHighContention(\Closure $code, \Closure $mutexFactory, ?\Closure $setUp = null): void
@@ -122,6 +124,8 @@ class MutexConcurrencyTest extends TestCase
      * Tests that five processes run sequentially.
      *
      * @param \Closure(float): Mutex $mutexFactory
+     *
+     * @dataProvider provideExecutionIsSerializedWhenLockedCases
      */
     #[DataProvider('provideExecutionIsSerializedWhenLockedCases')]
     public function testExecutionIsSerializedWhenLocked(\Closure $mutexFactory): void
@@ -159,19 +163,19 @@ class MutexConcurrencyTest extends TestCase
         if (extension_loaded('pcntl')) {
             yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename) {
                 $file = fopen($filename, 'w');
-                $lock = new FlockMutex($file, $timeout);
-                (new TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
+                $lock = Liberator::liberate(new FlockMutex($file, $timeout));
+                $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
 
-                return (new TestAccess($lock))->popsValue();
+                return $lock->popsValue();
             }];
         }
 
         yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename) {
             $file = fopen($filename, 'w');
-            $lock = new FlockMutex($file, $timeout);
-            (new TestAccess($lock))->setProperty('strategy', \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
+            $lock = Liberator::liberate(new FlockMutex($file, $timeout));
+            $lock->strategy = \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)(); // @phpstan-ignore property.notFound
 
-            return (new TestAccess($lock))->popsValue();
+            return $lock->popsValue();
         }];
 
         if (extension_loaded('sysvsem')) {
@@ -181,7 +185,7 @@ class MutexConcurrencyTest extends TestCase
                     $semaphore,
                     self::logicalOr(
                         self::isInstanceOf(\SysvSemaphore::class),
-                        TestAccess::phpunitIsType('resource')
+                        new IsType(IsType::TYPE_RESOURCE)
                     )
                 );
 

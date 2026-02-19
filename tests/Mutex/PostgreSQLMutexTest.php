@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Malkusch\Lock\Tests\Mutex;
 
+use Eloquent\Liberator\Liberator;
 use Malkusch\Lock\Exception\LockAcquireTimeoutException;
 use Malkusch\Lock\Mutex\PostgreSQLMutex;
-use Malkusch\Lock\Tests\TestAccess;
+use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -25,8 +26,7 @@ class PostgreSQLMutexTest extends TestCase
 
         $this->pdo = $this->createMock(\PDO::class);
 
-        $this->mutex = new PostgreSQLMutex($this->pdo, 'test-one-negative-key');
-        $this->mutex = new TestAccess($this->mutex); // @phpstan-ignore assign.propertyType
+        $this->mutex = Liberator::liberate(new PostgreSQLMutex($this->pdo, 'test-one-negative-key')); // @phpstan-ignore assign.propertyType
     }
 
     private function isPhpunit9x(): bool
@@ -46,7 +46,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::once())
             ->method('execute')
             ->with(self::logicalAnd(
-                TestAccess::phpunitIsType('array'),
+                new IsType(IsType::TYPE_ARRAY),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -64,7 +64,7 @@ class PostgreSQLMutexTest extends TestCase
                 [533558444, -1716795572]
             ));
 
-            \Closure::bind(static fn($mutex) => $mutex->lock(), null, PostgreSQLMutex::class)($this->mutex);
+        \Closure::bind(static fn ($mutex) => $mutex->lock(), null, PostgreSQLMutex::class)($this->mutex);
     }
 
     public function testReleaseLock(): void
@@ -79,7 +79,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::once())
             ->method('execute')
             ->with(self::logicalAnd(
-                TestAccess::phpunitIsType('array'),
+                new IsType(IsType::TYPE_ARRAY),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
@@ -112,7 +112,7 @@ class PostgreSQLMutexTest extends TestCase
         $statement->expects(self::atLeastOnce())
             ->method('execute')
             ->with(self::logicalAnd(
-                TestAccess::phpunitIsType('array'),
+                new IsType(IsType::TYPE_ARRAY),
                 self::countOf(2),
                 self::callback(function (...$arguments) {
                     if ($this->isPhpunit9x()) { // https://github.com/sebastianbergmann/phpunit/issues/5891
