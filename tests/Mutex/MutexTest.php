@@ -40,6 +40,16 @@ class MutexTest extends TestCase
     }
 
     /**
+     * @param FlockMutex::STRATEGY_* $strategy
+     */
+    private static function mutexSetStrategy(FlockMutex $mutex, string $strategy): void
+    {
+        \Closure::bind(static function () use ($mutex, $strategy): void {
+            $mutex->strategy = $strategy;
+        }, null, FlockMutex::class)();
+    }
+
+    /**
      * Tests synchronized() executes the code and returns its result.
      *
      * @param \Closure(): Mutex $mutexFactory
@@ -114,7 +124,7 @@ class MutexTest extends TestCase
             yield 'flockWithTimoutPcntl' => [static function () {
                 $file = fopen(vfsStream::url('test/lock'), 'w');
                 $lock = new FlockMutex($file, 3);
-                FlockMutexTest::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
+                self::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
                 return $lock;
             }];
@@ -123,7 +133,7 @@ class MutexTest extends TestCase
         yield 'flockWithTimoutLoop' => [static function () {
             $file = fopen(vfsStream::url('test/lock'), 'w');
             $lock = new FlockMutex($file, 3);
-            FlockMutexTest::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
+            self::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
             return $lock;
         }];

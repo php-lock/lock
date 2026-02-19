@@ -33,7 +33,7 @@ class FlockMutexTest extends TestCase
     /**
      * @param FlockMutex::STRATEGY_* $strategy
      */
-    public static function mutexSetStrategy(FlockMutex $mutex, string $strategy): void
+    private static function mutexSetStrategy(FlockMutex $mutex, string $strategy): void
     {
         \Closure::bind(static function () use ($mutex, $strategy): void {
             $mutex->strategy = $strategy;

@@ -44,6 +44,16 @@ class MutexConcurrencyTest extends TestCase
     }
 
     /**
+     * @param FlockMutex::STRATEGY_* $strategy
+     */
+    private static function mutexSetStrategy(FlockMutex $mutex, string $strategy): void
+    {
+        \Closure::bind(static function () use ($mutex, $strategy): void {
+            $mutex->strategy = $strategy;
+        }, null, FlockMutex::class)();
+    }
+
+    /**
      * Forks, runs code in the children and wait until all finished.
      *
      * @param \Closure(): void $code The code for the fork
@@ -163,7 +173,7 @@ class MutexConcurrencyTest extends TestCase
             yield 'flockWithTimoutPcntl' => [static function ($timeout) use ($filename) {
                 $file = fopen($filename, 'w');
                 $lock = new FlockMutex($file, $timeout);
-                FlockMutexTest::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
+                self::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_PCNTL, null, FlockMutex::class)());
 
                 return $lock;
             }];
@@ -172,7 +182,7 @@ class MutexConcurrencyTest extends TestCase
         yield 'flockWithTimoutLoop' => [static function ($timeout) use ($filename) {
             $file = fopen($filename, 'w');
             $lock = new FlockMutex($file, $timeout);
-            FlockMutexTest::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
+            self::mutexSetStrategy($lock, \Closure::bind(static fn () => FlockMutex::STRATEGY_LOOP, null, FlockMutex::class)());
 
             return $lock;
         }];
