@@ -151,8 +151,8 @@ class RedisMutexTest extends TestCase
             if (!empty($uri['pass'])) {
                 $connection->auth(
                     empty($uri['user'])
-                    ? $uri['pass']
-                    : [$uri['user'], $uri['pass']]
+                        ? $uri['pass']
+                        : [$uri['user'], $uri['pass']]
                 );
             }
 
