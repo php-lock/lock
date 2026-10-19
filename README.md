@@ -273,7 +273,7 @@ $mutex = new DistributedMutex([
 
 ## Authors
 
-Since year 2015 the development was led by Markus Malkusch, and many GitHub contributors.
+Since year 2015 the development was led by Markus Malkusch and many GitHub contributors.
 
 Currently this library is maintained by Michael Voříšek - [GitHub](https://github.com/mvorisek) | [LinkedIn](https://www.linkedin.com/in/mvorisek/).
 
